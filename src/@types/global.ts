@@ -10,6 +10,7 @@ export interface ChatProps {
 
 export interface ModelProps {
   name: string;
+  id: string;
   photoUrl: string;
   bio: string;
   sellPrompt: string;

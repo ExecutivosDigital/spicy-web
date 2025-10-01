@@ -39,9 +39,9 @@ const MessageFooter = ({}: {}) => {
   const [isEmojiPopoverOpen, setIsEmojiPopoverOpen] = useState(false);
   const [recordState, setRecordState] = useState<string | null>(null);
   const [recordStartTime, setRecordStartTime] = useState<number | null>(null);
-  const [fileType, setFileType] = useState<"file" | "audio" | "image" | null>(
-    null,
-  );
+  const [fileType, setFileType] = useState<
+    "file" | "audio" | "image" | "video" | null
+  >(null);
 
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(
     null,
@@ -247,16 +247,20 @@ const MessageFooter = ({}: {}) => {
   return (
     <>
       <div
-        className="relative flex w-full items-end gap-1 px-2 lg:gap-2 lg:px-2 xl:gap-4 xl:px-4"
+        className={`relative flex w-full items-end gap-1 ${file ? "rounded-tr-full" : ""} border-t border-t-zinc-500 bg-zinc-400/10 px-2 lg:gap-2 lg:px-2 xl:gap-4 xl:px-4`}
         style={{
           boxSizing: "border-box",
         }}
       >
         <>
-          <button className="border-primary relative flex h-10 w-10 items-center justify-center rounded-full border p-2 disabled:opacity-50 lg:h-8 lg:w-8 xl:h-10 xl:w-10">
-            <Icon icon="tabler:file-filled" className="text-primary text-xl" />
+          <button className="relative flex h-10 w-10 items-center justify-center rounded-full border border-[#BC5DFF]/60 p-2 disabled:opacity-50 lg:h-8 lg:w-8 xl:h-10 xl:w-10">
+            <Icon
+              icon="tabler:file-filled"
+              className="text-xl text-[#BC5DFF]/60"
+            />
             <input
               type="file"
+              accept=".jpg, .jpeg, .png, .mp4, .webm"
               className="absolute h-full w-full rounded-full opacity-0"
               onChange={(e) => {
                 const files = e.target.files;
@@ -264,8 +268,10 @@ const MessageFooter = ({}: {}) => {
                 if (files && files.length > 0) {
                   if (files[0].type.startsWith("image/")) {
                     setFileType("image");
+                  } else if (files[0].type.startsWith("video/")) {
+                    setFileType("video");
                   } else {
-                    setFileType("file");
+                    return;
                   }
                   setFile(files[0]);
                 }
@@ -285,10 +291,10 @@ const MessageFooter = ({}: {}) => {
                       onClick={() => setFile(null)}
                       className="absolute top-0 right-0 text-red-500"
                     />
-                    <div className="border-primary mx-auto flex h-10 w-10 flex-col items-center justify-center gap-2 rounded-full border">
+                    <div className="mx-auto flex h-10 w-10 flex-col items-center justify-center gap-2 rounded-full border border-[#BC5DFF]/60">
                       <Icon
                         icon="tabler:file-filled"
-                        className="text-primary h-4 w-4 text-xl"
+                        className="h-4 w-4 text-xl text-[#BC5DFF]/60"
                       />
                     </div>
                     <span className="truncate text-xs">{file.name}</span>
@@ -297,20 +303,37 @@ const MessageFooter = ({}: {}) => {
               )}
               {file && fileType === "image" && (
                 <div className="relative flex w-full flex-wrap gap-2 p-2 pt-0">
-                  <div className="relative flex w-60 flex-col gap-1 rounded-md border p-1">
-                    <X
-                      size={16}
-                      onClick={() => setFile(null)}
-                      className="absolute top-0 right-0 text-red-500"
-                    />
+                  <div className="relative flex w-20 flex-col gap-1 rounded-2xl bg-zinc-600/40 p-2">
+                    <div className="absolute top-1 right-1 z-40 rounded-full bg-red-500/40 p-2 text-white">
+                      <X size={16} onClick={() => setFile(null)} className="" />
+                    </div>
                     <Image
                       src={URL.createObjectURL(file)}
                       alt={file.name}
                       width={500}
                       height={500}
-                      className="h-full w-full object-contain"
+                      className="h-20 rounded-2xl object-contain"
                     />
                     <span className="truncate text-xs">{file.name}</span>
+                  </div>
+                </div>
+              )}
+              {file && fileType === "video" && (
+                <div className="relative flex w-full flex-wrap gap-2 p-2 pt-0">
+                  <div className="relative flex w-60 flex-col gap-1 rounded-2xl bg-zinc-600/40 p-2">
+                    <div className="absolute top-1 right-1 z-40 rounded-full bg-red-500/40 p-2 text-white">
+                      <X size={16} onClick={() => setFile(null)} className="" />
+                    </div>
+
+                    <video
+                      src={URL.createObjectURL(file)}
+                      width={500}
+                      height={500}
+                      className="h-full w-full rounded-2xl object-contain"
+                    />
+                    <span className="truncate text-center text-xs">
+                      {file.name}
+                    </span>
                   </div>
                 </div>
               )}
@@ -325,7 +348,7 @@ const MessageFooter = ({}: {}) => {
                   onChange={handleChange}
                   ref={textareaRef}
                   placeholder="Escreva sua mensagem..."
-                  className="no-scrollbar border-default-200 bg-background focus:border-primary h-10 flex-1 rounded-lg border p-1 px-3 pt-2 pl-3 text-sm break-words outline-none placeholder:text-sm disabled:opacity-50 lg:h-8 xl:h-10"
+                  className="no-scrollbar border-default-200 bg-background h-10 flex-1 rounded-lg border p-1 px-3 pt-2 pl-3 text-sm break-words outline-none placeholder:text-sm focus:border-[#BC5DFF]/60 disabled:opacity-50 lg:h-8 xl:h-10"
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey) {
                       e.preventDefault();
@@ -353,8 +376,8 @@ const MessageFooter = ({}: {}) => {
                     onOpenChange={setIsEmojiPopoverOpen}
                   >
                     <PopoverTrigger asChild>
-                      <span className="bg-primary/10 flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg ltr:right-12 rtl:left-12">
-                        <Annoyed className="text-primary h-6 w-6" />
+                      <span className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg bg-[#BC5DFF]/60 ltr:right-12 rtl:left-12">
+                        <Annoyed className="h-6 w-6 text-[#BC5DFF]/60" />
                       </span>
                     </PopoverTrigger>
                     <PopoverContent
@@ -377,10 +400,10 @@ const MessageFooter = ({}: {}) => {
                 <Button
                   onClick={HandleSend}
                   type="submit"
-                  className="bg-primary hover:bg-default-300 relative h-8 w-8 overflow-hidden rounded-lg p-0"
+                  className="hover:bg-default-300 relative h-8 w-8 overflow-hidden rounded-lg bg-[#BC5DFF]/60 p-0"
                 >
                   <>
-                    <div className="bg-primary absolute flex h-full w-full items-center justify-center rounded-lg">
+                    <div className="absolute flex h-full w-full items-center justify-center rounded-lg bg-[#BC5DFF]/60">
                       {isRecording ? (
                         <div className="absolute flex h-full w-full items-center justify-center gap-0.5">
                           <div className="animate-recording h-1.5 w-1.5 rounded-full bg-white delay-200"></div>
@@ -410,7 +433,7 @@ const MessageFooter = ({}: {}) => {
                         </>
                       )}
                     </div>
-                    <div className="bg-primary absolute flex h-full w-full items-center justify-center rounded-lg">
+                    <div className="absolute flex h-full w-full items-center justify-center rounded-lg bg-[#BC5DFF]/60">
                       {isRecording ? (
                         <div className="absolute flex h-full w-full items-center justify-center gap-0.5">
                           <div className="animate-recording h-1.5 w-1.5 rounded-full bg-white delay-200"></div>
