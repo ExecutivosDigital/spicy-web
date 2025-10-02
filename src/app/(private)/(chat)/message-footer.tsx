@@ -7,6 +7,12 @@ import React, { useEffect, useRef, useState } from "react";
 import { MessageProps } from "@/@types/global";
 import { Button } from "@/components/ui/button";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   Popover,
   PopoverContent,
   PopoverTrigger,
@@ -22,7 +28,7 @@ import { twMerge } from "tailwind-merge";
 import fixWebmDuration from "webm-duration-fix";
 import { AudioPlayer } from "./AudioPlayer";
 
-const MessageFooter = ({}: {}) => {
+const MessageFooter = ({ onSend }: { onSend: () => void }) => {
   const { selectedChatId, selectedChat, setSelectedChatMessages } =
     useChatContext();
 
@@ -65,6 +71,7 @@ const MessageFooter = ({}: {}) => {
         ...prev,
         connect.body.message,
       ]);
+      onSend();
     }
 
     if (connect.status !== 200) {
@@ -224,6 +231,7 @@ const MessageFooter = ({}: {}) => {
         setRecordStartTime(null);
         setElapsedTime("00:00");
         setSelectedChatMessages((prev) => [...prev, fileSend.body.message]);
+        onSend();
         return setIsSendingMessage(false);
       }
       alert(fileSend.body.message);
@@ -247,42 +255,102 @@ const MessageFooter = ({}: {}) => {
   return (
     <>
       <div
-        className={`relative flex w-full items-end gap-1 ${file ? "rounded-tr-full" : ""} border-t border-t-zinc-500 bg-zinc-400/10 px-2 lg:gap-2 lg:px-2 xl:gap-4 xl:px-4`}
+        className={`relative flex w-full items-end gap-1 border-t border-t-zinc-200 bg-zinc-400/10 px-2 py-2 lg:gap-2 lg:px-2 xl:gap-4 xl:px-4`}
         style={{
           boxSizing: "border-box",
         }}
       >
         <>
-          <button className="relative flex h-10 w-10 items-center justify-center rounded-full border border-[#BC5DFF]/60 p-2 disabled:opacity-50 lg:h-8 lg:w-8 xl:h-10 xl:w-10">
-            <Icon
-              icon="tabler:file-filled"
-              className="text-xl text-[#BC5DFF]/60"
-            />
-            <input
-              type="file"
-              accept=".jpg, .jpeg, .png, .mp4, .webm"
-              className="absolute h-full w-full rounded-full opacity-0"
-              onChange={(e) => {
-                const files = e.target.files;
+          <DropdownMenu
+            open={
+              (file && fileType === "image") || (file && fileType === "video")
+                ? true
+                : false
+            }
+            modal={false}
+          >
+            <DropdownMenuTrigger asChild>
+              <button className="group relative flex h-10 w-10 min-w-10 cursor-pointer items-center justify-center rounded-full border border-zinc-300 p-2 hover:border-[#BC5DFF]/60 disabled:opacity-50 xl:h-10 xl:w-10">
+                <Icon
+                  icon="tabler:file-filled"
+                  className="cursor-pointer text-xl text-zinc-300 group-hover:text-[#BC5DFF]/60"
+                />
+                <input
+                  type="file"
+                  accept=".jpg, .jpeg, .png, .mp4, .webm"
+                  className="absolute top-0 left-0 h-full w-full cursor-pointer rounded-full opacity-0"
+                  onChange={(e) => {
+                    const files = e.target.files;
 
-                if (files && files.length > 0) {
-                  if (files[0].type.startsWith("image/")) {
-                    setFileType("image");
-                  } else if (files[0].type.startsWith("video/")) {
-                    setFileType("video");
-                  } else {
-                    return;
-                  }
-                  setFile(files[0]);
-                }
-              }}
-            />
-          </button>
+                    if (files && files.length > 0) {
+                      if (files[0].type.startsWith("image/")) {
+                        setFileType("image");
+                      } else if (files[0].type.startsWith("video/")) {
+                        setFileType("video");
+                      } else {
+                        return;
+                      }
+                      setFile(files[0]);
+                    }
+                  }}
+                />
+              </button>
+            </DropdownMenuTrigger>
+
+            {file && fileType === "image" && (
+              <DropdownMenuContent
+                align="start"
+                className="w-max min-w-max border-zinc-200 bg-white"
+              >
+                <DropdownMenuItem className="w-max p-0">
+                  <div className="relative flex w-full flex-col gap-1 rounded-2xl bg-transparent p-2">
+                    <div className="absolute top-0 right-0 z-40 cursor-pointer rounded-full bg-red-500/40 p-1 text-white hover:bg-red-500/60">
+                      <X size={16} onClick={() => setFile(null)} className="" />
+                    </div>
+                    <Image
+                      src={URL.createObjectURL(file)}
+                      alt={file.name}
+                      width={500}
+                      height={500}
+                      className="h-40 w-auto rounded-2xl object-contain"
+                    />
+                  </div>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            )}
+            {file && fileType === "video" && (
+              <DropdownMenuContent
+                align="start"
+                side="top"
+                className="w-max min-w-max border-zinc-200 bg-white"
+              >
+                <DropdownMenuItem className="w-max p-0">
+                  <div className="relative flex w-full flex-col gap-1 rounded-2xl bg-transparent p-2">
+                    <div className="absolute top-0 right-0 z-40 cursor-pointer rounded-full bg-red-500/40 p-1 text-white hover:bg-red-500/60">
+                      <X size={16} onClick={() => setFile(null)} className="" />
+                    </div>
+                    <video
+                      src={URL.createObjectURL(file)}
+                      width={500}
+                      height={500}
+                      className="h-40 w-auto rounded-2xl object-contain"
+                    />
+                  </div>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            )}
+          </DropdownMenu>
+
           <div className="flex-1">
             <form
               onSubmit={handleSubmit}
               className={twMerge("flex flex-col", "gap-2")}
             >
+              {file && fileType === "audio" && (
+                <div className={twMerge("w-full transition duration-500")}>
+                  <AudioPlayer className="w-full" audioUrl={audioUrl} />
+                </div>
+              )}
               {file && fileType === "file" && (
                 <div className="flex w-full flex-wrap gap-2 p-2 pt-0">
                   <div className="relative flex w-20 flex-col gap-1 rounded-md border p-1">
@@ -301,54 +369,14 @@ const MessageFooter = ({}: {}) => {
                   </div>
                 </div>
               )}
-              {file && fileType === "image" && (
-                <div className="relative flex w-full flex-wrap gap-2 p-2 pt-0">
-                  <div className="relative flex w-20 flex-col gap-1 rounded-2xl bg-zinc-600/40 p-2">
-                    <div className="absolute top-1 right-1 z-40 rounded-full bg-red-500/40 p-2 text-white">
-                      <X size={16} onClick={() => setFile(null)} className="" />
-                    </div>
-                    <Image
-                      src={URL.createObjectURL(file)}
-                      alt={file.name}
-                      width={500}
-                      height={500}
-                      className="h-20 rounded-2xl object-contain"
-                    />
-                    <span className="truncate text-xs">{file.name}</span>
-                  </div>
-                </div>
-              )}
-              {file && fileType === "video" && (
-                <div className="relative flex w-full flex-wrap gap-2 p-2 pt-0">
-                  <div className="relative flex w-60 flex-col gap-1 rounded-2xl bg-zinc-600/40 p-2">
-                    <div className="absolute top-1 right-1 z-40 rounded-full bg-red-500/40 p-2 text-white">
-                      <X size={16} onClick={() => setFile(null)} className="" />
-                    </div>
 
-                    <video
-                      src={URL.createObjectURL(file)}
-                      width={500}
-                      height={500}
-                      className="h-full w-full rounded-2xl object-contain"
-                    />
-                    <span className="truncate text-center text-xs">
-                      {file.name}
-                    </span>
-                  </div>
-                </div>
-              )}
-              {file && fileType === "audio" && (
-                <div className={twMerge("w-full transition duration-500")}>
-                  <AudioPlayer className="w-full" audioUrl={audioUrl} />
-                </div>
-              )}
-              <div className="relative flex items-center gap-2">
+              <div className="relative flex w-full items-center gap-1 xl:gap-2">
                 <textarea
                   value={message}
                   onChange={handleChange}
                   ref={textareaRef}
                   placeholder="Escreva sua mensagem..."
-                  className="no-scrollbar border-default-200 bg-background h-10 flex-1 rounded-lg border p-1 px-3 pt-2 pl-3 text-sm break-words outline-none placeholder:text-sm focus:border-[#BC5DFF]/60 disabled:opacity-50 lg:h-8 xl:h-10"
+                  className="no-scrollbar border-default-200 bg-background h-10 max-h-10 min-h-10 w-full rounded-full border border-zinc-300 p-1 px-3 pt-2 pl-3 text-base break-words outline-none placeholder:text-base focus:border-[#BC5DFF]/60 disabled:opacity-50 xl:h-10"
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey) {
                       e.preventDefault();
@@ -366,7 +394,7 @@ const MessageFooter = ({}: {}) => {
                 {fileType === "audio" && file ? (
                   <button
                     onClick={HandleCancelAudio}
-                    className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg bg-red-500/10 transition duration-100 hover:scale-[1.05] hover:bg-red-500/20 ltr:right-12 rtl:left-12"
+                    className="flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-red-500/10 transition duration-100 hover:scale-[1.05] hover:bg-red-500/20 xl:h-8 xl:w-8 ltr:right-12 rtl:left-12"
                   >
                     <X className="h-6 w-6 text-red-500" />
                   </button>
@@ -376,12 +404,13 @@ const MessageFooter = ({}: {}) => {
                     onOpenChange={setIsEmojiPopoverOpen}
                   >
                     <PopoverTrigger asChild>
-                      <span className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg bg-[#BC5DFF]/60 ltr:right-12 rtl:left-12">
-                        <Annoyed className="h-6 w-6 text-[#BC5DFF]/60" />
+                      <span className="group flex h-10 w-10 min-w-10 cursor-pointer items-center justify-center rounded-full border border-zinc-300 hover:border-[#BC5DFF]/60 xl:h-10 xl:w-10">
+                        <Annoyed className="h-6 w-6 text-zinc-300 group-hover:text-[#BC5DFF]/60" />
                       </span>
                     </PopoverTrigger>
                     <PopoverContent
                       side="top"
+                      align="end"
                       className="bottom-0 w-fit border-none p-0 shadow-none ltr:-left-[110px] rtl:left-5"
                     >
                       <Picker
@@ -400,74 +429,38 @@ const MessageFooter = ({}: {}) => {
                 <Button
                   onClick={HandleSend}
                   type="submit"
-                  className="hover:bg-default-300 relative h-8 w-8 overflow-hidden rounded-lg bg-[#BC5DFF]/60 p-0"
+                  className="group relative z-[99999] h-10 w-10 min-w-10 overflow-hidden rounded-full border border-zinc-300 p-0 xl:h-10 xl:w-10"
                 >
-                  <>
-                    <div className="absolute flex h-full w-full items-center justify-center rounded-lg bg-[#BC5DFF]/60">
-                      {isRecording ? (
-                        <div className="absolute flex h-full w-full items-center justify-center gap-0.5">
-                          <div className="animate-recording h-1.5 w-1.5 rounded-full bg-white delay-200"></div>
-                          <div className="animate-recording h-1.5 w-1.5 rounded-full bg-white delay-100"></div>
-                          <div className="animate-recording h-1.5 w-1.5 rounded-full bg-white"></div>
-                        </div>
-                      ) : isSendingMessage ? (
-                        <Loader2 className="m-auto h-4 w-4 animate-spin" />
-                      ) : (
-                        <>
-                          <Mic
-                            className={cn(
-                              "absolute top-1/2 left-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 text-white transition duration-100",
-                              message.length === 0 && !file
-                                ? "opacity-100"
-                                : "translate-x-full opacity-0",
-                            )}
-                          />
-                          <SendHorizontal
-                            className={cn(
-                              "absolute top-1/2 left-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 text-white transition duration-100",
-                              message.length === 0 && !file
-                                ? "opacity-0"
-                                : "opacity-100",
-                            )}
-                          />
-                        </>
-                      )}
-                    </div>
-                    <div className="absolute flex h-full w-full items-center justify-center rounded-lg bg-[#BC5DFF]/60">
-                      {isRecording ? (
-                        <div className="absolute flex h-full w-full items-center justify-center gap-0.5">
-                          <div className="animate-recording h-1.5 w-1.5 rounded-full bg-white delay-200"></div>
-                          <div className="animate-recording h-1.5 w-1.5 rounded-full bg-white delay-100"></div>
-                          <div className="animate-recording h-1.5 w-1.5 rounded-full bg-white"></div>
-                        </div>
-                      ) : (
-                        <>
-                          {isSendingMessage ? (
-                            <Loader2 className="m-auto h-4 w-4 animate-spin" />
-                          ) : (
-                            <>
-                              <Mic
-                                className={cn(
-                                  "absolute top-1/2 left-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 text-white transition duration-100",
-                                  message.length === 0 && !file
-                                    ? "opacity-100"
-                                    : "translate-x-full opacity-0",
-                                )}
-                              />
-                              <SendHorizontal
-                                className={cn(
-                                  "absolute top-1/2 left-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 text-white transition duration-100",
-                                  message.length === 0 && !file
-                                    ? "opacity-0"
-                                    : "opacity-100",
-                                )}
-                              />
-                            </>
+                  <div className="absolute flex h-full w-full cursor-pointer items-center justify-center rounded-lg bg-[#BC5DFF]/60 group-hover:bg-transparent">
+                    {isRecording ? (
+                      <div className="absolute flex h-full w-full items-center justify-center gap-0.5">
+                        <div className="animate-recording h-1.5 w-1.5 rounded-full bg-white delay-200"></div>
+                        <div className="animate-recording h-1.5 w-1.5 rounded-full bg-white delay-100"></div>
+                        <div className="animate-recording h-1.5 w-1.5 rounded-full bg-white"></div>
+                      </div>
+                    ) : isSendingMessage ? (
+                      <Loader2 className="m-auto h-4 w-4 animate-spin" />
+                    ) : (
+                      <>
+                        <Mic
+                          className={cn(
+                            "absolute top-1/2 left-1/2 h-6 w-6 -translate-x-1/2 -translate-y-1/2 text-white transition duration-100 group-hover:text-[#BC5DFF]/60",
+                            message.length === 0 && !file
+                              ? "opacity-100"
+                              : "translate-x-full opacity-0",
                           )}
-                        </>
-                      )}
-                    </div>
-                  </>
+                        />
+                        <SendHorizontal
+                          className={cn(
+                            "absolute top-1/2 left-1/2 h-6 w-6 -translate-x-1/2 -translate-y-1/2 text-white transition duration-100 group-hover:text-[#BC5DFF]/60",
+                            message.length === 0 && !file
+                              ? "opacity-0"
+                              : "opacity-100",
+                          )}
+                        />
+                      </>
+                    )}
+                  </div>
                 </Button>
               </div>
             </form>

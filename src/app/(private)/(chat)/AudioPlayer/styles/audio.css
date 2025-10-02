@@ -76,3 +76,18 @@ audio.audio-lg-height {
 audio.ai.audio-sm-scale {
   /* Specific styles for scaled AI audio if necessary */
 }
+
+/* Keep your existing rules, but add this */
+audio,
+audio.ai {
+  background-color: transparent; /* affects the outer box */
+  color-scheme: light; /* nudge FF to use light controls */
+}
+
+/* If your site supports dark mode but you want light controls even then: */
+@media (prefers-color-scheme: dark) {
+  audio,
+  audio.ai {
+    color-scheme: light;
+  }
+}

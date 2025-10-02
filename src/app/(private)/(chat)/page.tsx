@@ -1,6 +1,4 @@
 "use client";
-import { useMemo, useRef, useState } from "react";
-
 import { MessageProps } from "@/@types/global";
 import PixSheetSteps from "@/components/PixSheetSteps";
 import { GiftsBento } from "@/components/bento-cards";
@@ -14,12 +12,7 @@ import {
   gallery5,
 } from "@/components/midia";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-} from "@/components/ui/card";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useApiContext } from "@/context/ApiContext";
 import { useChatContext } from "@/context/chatContext";
@@ -29,19 +22,18 @@ import clsx from "clsx";
 import { motion } from "framer-motion";
 import {
   ArrowDown,
+  ChevronLeft,
   ImageIcon,
   LayoutGrid,
-  Loader,
   MessageCircle,
 } from "lucide-react";
-import { useCookies } from "next-client-cookies";
 import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Blank from "./blank";
 import ContactList from "./contact-list";
 import EmptyMessage from "./empty-message";
 import MessageFooter from "./message-footer";
 import Messages from "./messages";
-import MyProfileHeader from "./my-profile-header";
 
 export type GalleryItem = {
   src: string;
@@ -53,14 +45,8 @@ export type GalleryItem = {
   placeholder?: boolean;
 };
 
-const ChatPage = ({
-  searchParams,
-}: {
-  searchParams: { [key: string]: string | undefined };
-}) => {
+const ChatPage = () => {
   const router = useRouter();
-  const cookies = useCookies();
-
   const {
     chats,
     isChatsLoading,
@@ -72,139 +58,81 @@ const ChatPage = ({
     selectedChat,
   } = useChatContext();
   const [page, setPage] = useState<0 | 1 | 2>(1);
-  //region
-  const [searchScrollId, setSearchScrollId] = useState<string | null>(null);
+  const pagesX = ["0%", "-33.3333%", "-66.6666%"];
+  const initialPageRef = useRef(page);
+  const lastMsgIdRef = useRef<string | null>(null);
   const containerRef = useRef(null);
-  const messageRefs = useRef<any>({});
+  const bottomRef = useRef<HTMLDivElement | null>(null);
   const [openQrCode, setOpenQrCode] = useState<boolean>(false);
 
-  // const handleScrollToBottom = () => {
-  //   const messageFilters = selectedChatMessages.filter((message) =>
-  //     selectedChat?.instanceId
-  //       ? message.instanceId === selectedChat?.instanceId
-  //       : true,
-  //   );
-
-  //   const lastMessage = messageFilters[messageFilters.length - 1];
-
-  //   if (!lastMessage) return;
-
-  //   const container: any = containerRef.current;
-  //   const messageElement = messageRefs.current[lastMessage.id];
-
-  //   setIsAutoScrollEnabled(true);
-  //   if (container && messageElement) {
-  //     const containerRect = container.getBoundingClientRect();
-  //     const messageRect = messageElement.getBoundingClientRect();
-  //     const offset = messageRect.top - containerRect.top + container.scrollTop;
-
-  //     container.scrollTo({
-  //       top: offset,
-  //       behavior: "smooth",
-  //     });
-  //   }
-  // };
-
-  const scrollToMessage = (id: string | null) => {
-    setSearchScrollId(id);
-    if (!id) return;
-    const container: any = containerRef.current;
-    const messageElement = messageRefs.current[id];
-
-    if (container && messageElement) {
-      const containerRect = container.getBoundingClientRect();
-      const messageRect = messageElement.getBoundingClientRect();
-      const offset = messageRect.top - containerRect.top + container.scrollTop;
-
-      container.scrollTo({
-        top: offset,
+  const handleScrollToBottom = () => {
+    setIsAutoScrollEnabled(true);
+    if (bottomRef.current) {
+      bottomRef.current.scrollIntoView({
         behavior: "smooth",
+        block: "end",
       });
     }
   };
 
-  //endregion
-
   const [isAutoScrollEnabled, setIsAutoScrollEnabled] = useState(true);
   const lastScrollTop = useRef(0);
 
-  // useEffect(() => {
-  //   if (
-  //     selectedChatMessages.length > 0 &&
-  //     query === "" &&
-  //     isAutoScrollEnabled
-  //   ) {
-  //     handleScrollToBottom();
-  //   }
+  useEffect(() => {
+    if (selectedChatMessages.length > 0 && isAutoScrollEnabled) {
+      handleScrollToBottom();
+    }
+  }, [selectedChatMessages, isAutoScrollEnabled, selectedChat, selectedChatId]);
 
-  //   if (
-  //     query !== "" &&
-  //     chatMessageQuery !== query &&
-  //     selectedChatMessages.length > 0 &&
-  //     isAutoScrollEnabled
-  //   ) {
-  //     const messages = selectedChatMessages.filter((message) =>
-  //       normalizeName(message.text).includes(normalizeName(query)),
-  //     );
+  useEffect(() => {
+    const chatElement: any = containerRef.current;
+    const handleScroll = () => {
+      const scrollTop = chatElement.scrollTop;
+      const scrollHeight = chatElement.scrollHeight;
+      const clientHeight = chatElement.clientHeight;
 
-  //     setFilteredMessages(messages);
+      if (scrollTop < lastScrollTop.current) {
+        setIsAutoScrollEnabled(false);
+      } else if (Math.abs(scrollTop + clientHeight - scrollHeight) <= 10) {
+        setIsAutoScrollEnabled(true);
+      }
 
-  //     setChatMessageQuery(query);
+      lastScrollTop.current = scrollTop;
+    };
 
-  //     if (messages.length > 0) {
-  //       const lastMessage = messages[messages.length - 1];
-  //       scrollToMessage(lastMessage.id);
-  //     } else {
-  //       handleScrollToBottom();
-  //     }
-  //   }
-  // }, [
-  //   selectedChatMessages,
-  //   isAutoScrollEnabled,
-  //   selectedChat?.instanceId,
-  //   selectedChatId,
-  // ]);
+    if (chatElement) {
+      chatElement.addEventListener("scroll", handleScroll);
+    }
 
-  // useEffect(() => {
-  //   const chatElement: any = containerRef.current;
-  //   const handleScroll = () => {
-  //     const scrollTop = chatElement.scrollTop;
-  //     const scrollHeight = chatElement.scrollHeight;
-  //     const clientHeight = chatElement.clientHeight;
+    return () => {
+      if (chatElement) {
+        chatElement.removeEventListener("scroll", handleScroll);
+      }
+    };
+  }, [containerRef.current, selectedChatId, selectedChat]);
 
-  //     // Se o usuário fez scroll para cima, desativa o auto scroll
-  //     if (scrollTop < lastScrollTop.current) {
-  //       setIsAutoScrollEnabled(false);
-  //     }
-  //     // Se o usuário fez scroll para baixo e chegou ao final da página
-  //     else if (Math.abs(scrollTop + clientHeight - scrollHeight) <= 10) {
-  //       setIsAutoScrollEnabled(true);
-  //     }
+  useEffect(() => {
+    const chatElement: any = containerRef.current;
+    if (chatElement) {
+      lastScrollTop.current = chatElement.scrollTop;
+    }
+  }, [selectedChatId, selectedChat]);
 
-  //     lastScrollTop.current = scrollTop;
-  //   };
+  useEffect(() => {
+    const last = selectedChatMessages[selectedChatMessages.length - 1];
+    if (!last) return;
 
-  //   if (chatElement) {
-  //     chatElement.addEventListener("scroll", handleScroll);
-  //   }
+    // If the last message changed, we just appended one → scroll
+    if (last.id !== lastMsgIdRef.current) {
+      lastMsgIdRef.current = last.id;
+      // next frame to ensure layout is ready
+      requestAnimationFrame(() => handleScrollToBottom());
+    }
+  }, [selectedChatMessages.length]); // only care that the list grew
 
-  //   return () => {
-  //     if (chatElement) {
-  //       chatElement.removeEventListener("scroll", handleScroll);
-  //     }
-  //   };
-  // }, [containerRef.current, selectedChatId, selectedChat?.instanceId]);
-
-  // useEffect(() => {
-  //   const chatElement: any = containerRef.current;
-  //   if (chatElement) {
-  //     lastScrollTop.current = chatElement.scrollTop;
-  //   }
-  // }, [selectedChatId, selectedChat?.instanceId]);
-
-  // useEffect(() => {
-  //   setIsAutoScrollEnabled(true);
-  // }, [selectedChatId]);
+  useEffect(() => {
+    setIsAutoScrollEnabled(true);
+  }, [selectedChatId]);
 
   const [showContactSidebar, setShowContactSidebar] = useState<boolean>(false);
 
@@ -228,10 +156,11 @@ const ChatPage = ({
   }
 
   const openChat = (chatId: string) => {
-    router.replace(`/chat?id=${chatId}`);
+    router.replace(`/?id=${chatId}`);
     handleVerify(chatId);
     setShowInfo(false);
     setIsAutoScrollEnabled(true);
+    setShowContactSidebar(false);
   };
 
   // async function handleSetUnreadMessages(id: string) {
@@ -433,27 +362,20 @@ const ChatPage = ({
   const viewportRef = useRef<HTMLDivElement | null>(null);
 
   return (
-    <div className="flex h-screen flex-col lg:gap-2 xl:gap-5 rtl:space-x-reverse">
-      {isLg && showContactSidebar && (
-        <div
-          className="bg-background/60 absolute inset-0 z-[998] w-screen flex-1 rounded-md backdrop-blur-sm backdrop-filter"
-          onClick={() => setShowContactSidebar(false)}
-        ></div>
-      )}
+    <div className="flex h-screen flex-col pb-20 lg:gap-2 xl:gap-5 xl:pb-0 rtl:space-x-reverse">
       {isLg && showInfo && (
         <div
           className="bg-background/60 absolute inset-0 z-40 w-full flex-1 rounded-md backdrop-blur-sm backdrop-filter"
           onClick={() => setShowInfo(false)}
         ></div>
       )}
-      <Header />
       <div className="relative flex-1 overflow-hidden">
         <motion.div
-          ref={viewportRef}
           className="flex h-full w-[300vw]"
-          animate={{
-            x: page === 0 ? "0%" : page === 1 ? "-33.333%" : "-66.6666%",
-          }}
+          initial={false}
+          style={{ x: pagesX[initialPageRef.current] }} // render in the right spot
+          animate={{ x: pagesX[page] }} // animate only on later changes
+          transition={{ type: "spring", damping: 30, stiffness: 250 }}
         >
           {/* 0 – Bento gifts */}
           <section className="w-[100%] overflow-y-auto">
@@ -465,17 +387,23 @@ const ChatPage = ({
             {/* <Chat /> */}
             <div
               className={cn("flex-none transition-all duration-150", {
-                "absolute top-0 z-[999] w-10/12 max-w-[400px]": isLg,
+                "absolute top-0 z-[999] h-full w-80 max-w-[400px]": isLg,
                 "flex-none lg:max-w-[250px] lg:min-w-[250px] xl:max-w-[350px] xl:min-w-[350px]":
                   !isLg,
-                "left-0": isLg && showContactSidebar,
+                "left-screen bg-white": isLg && showContactSidebar,
                 "-left-full": isLg && !showContactSidebar,
               })}
             >
-              <Card className="h-full pb-0">
-                <CardHeader className="mb-0 border-none p-0">
-                  <MyProfileHeader />
-                </CardHeader>
+              <Card className="h-full rounded-none pb-0">
+                <div className="relative h-16 border-b border-neutral-100">
+                  <ChevronLeft
+                    className="absolute top-1/2 left-2 -translate-y-1/2 lg:hidden"
+                    onClick={() => setShowContactSidebar(false)}
+                  />
+                  <span className="flex h-full items-center justify-center text-sm font-semibold xl:text-lg">
+                    Mensagens
+                  </span>
+                </div>
                 <CardContent className="w-full p-0 lg:h-[calc(100%-130px)] xl:h-[calc(100%-180px)]">
                   <div className="flex h-full flex-col">
                     <span className="ml-2 font-semibold text-zinc-400 lg:text-[7px] xl:text-xs">
@@ -483,7 +411,11 @@ const ChatPage = ({
                     </span>
                     <ScrollArea className="w-full">
                       {isChatsLoading ? (
-                        <Loader />
+                        <div
+                          className={cn(
+                            "animate-puls flex h-14 cursor-pointer border-l-2 border-transparent bg-zinc-200 px-3 py-2 transition duration-150 lg:max-w-[250px] lg:min-w-[250px] lg:gap-2 lg:px-2 lg:py-1 xl:max-w-[350px] xl:min-w-[350px] xl:gap-4 xl:px-3 xl:py-2",
+                          )}
+                        />
                       ) : chats.length !== 0 ? (
                         chats.map((chat) => (
                           <>
@@ -512,13 +444,47 @@ const ChatPage = ({
                 <div className="flex h-full space-x-5 lg:space-x-2 xl:space-x-5 rtl:space-x-reverse">
                   <div className="flex-1">
                     <Card className="flex h-full flex-col">
-                      <CardContent className="relative h-full overflow-y-auto p-2">
+                      <Header />
+                      <CardContent className="relative h-full p-2">
                         <div
                           className="flex h-full w-full flex-col overflow-y-auto py-4 lg:py-2 xl:py-4"
                           ref={containerRef}
                         >
                           {isMessageLoading ? (
-                            <Loader />
+                            <>
+                              {Array.from({ length: 3 }).map((_, index) => (
+                                <div key={index}>
+                                  <div className="group mb-4 flex max-w-[calc(100%-50px)] items-end justify-end space-x-2 lg:mb-2 xl:mb-4">
+                                    <div className="flex w-60 animate-pulse flex-col items-end gap-1 rounded-2xl rounded-br-none bg-zinc-200 px-3 py-2 text-transparent">
+                                      <div className="flex w-full items-center gap-2 text-end lg:text-[8px] xl:text-xs">
+                                        <span>
+                                          <span>.</span>.
+                                        </span>
+                                        <span></span>
+                                        <div className="rounded-full lg:h-5 lg:w-5 xl:h-8 xl:w-8"></div>
+                                      </div>
+                                      <div className="flex items-center gap-1">
+                                        .
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="group mb-4 ml-[50px] flex max-w-[calc(100%-50px)] items-start justify-start space-x-2 lg:mb-2 xl:mb-4 rtl:space-x-reverse">
+                                    <div className="flex w-60 animate-pulse flex-col items-end gap-1 rounded-2xl rounded-bl-none bg-zinc-200 px-3 py-2 text-transparent">
+                                      <div className="flex w-full items-center gap-2 text-end lg:text-[8px] xl:text-xs">
+                                        <span>
+                                          <span>.</span>.
+                                        </span>
+                                        <span></span>
+                                        <div className="rounded-full lg:h-5 lg:w-5 xl:h-8 xl:w-8"></div>
+                                      </div>
+                                      <div className="flex items-center gap-1">
+                                        .
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </>
                           ) : (
                             <>
                               {isMessageLoading ? (
@@ -527,12 +493,13 @@ const ChatPage = ({
                                 selectedChatMessages.map(
                                   (message: MessageProps, i: number) => (
                                     <Messages
-                                      key={`message-list-${i}`}
+                                      key={`message-list-${i}-${message.id}`}
                                       message={message}
                                     />
                                   ),
                                 )
                               )}
+                              <div ref={bottomRef} />
                             </>
                           )}
                         </div>
@@ -540,7 +507,7 @@ const ChatPage = ({
                           !isMessageLoading &&
                           selectedChatMessages.length !== 0 && (
                             <Button
-                              // onClick={handleScrollToBottom}
+                              onClick={handleScrollToBottom}
                               size="icon"
                               variant="outline"
                               className="absolute right-1/2 bottom-4 z-[100]"
@@ -549,8 +516,14 @@ const ChatPage = ({
                             </Button>
                           )}
                       </CardContent>
-                      <CardFooter className="flex-none flex-col px-0 py-4 lg:py-2 xl:py-4">
-                        <MessageFooter />
+                      <CardFooter className="flex-none flex-col p-0">
+                        <MessageFooter
+                          onSend={() => {
+                            // ensure future appends keep scrolling
+                            setIsAutoScrollEnabled(true);
+                            handleScrollToBottom();
+                          }}
+                        />
                       </CardFooter>
                     </Card>
                   </div>
@@ -585,10 +558,10 @@ const ChatPage = ({
         setIndex={(i: number) => setLightboxIndex(i)}
         setOpenQrCode={() => console.log(false)}
       /> */}
-      {selectedChat && (
+      {selectedChat && openQrCode && (
         <PixSheetSteps
           open={openQrCode}
-          onOpenChange={setOpenQrCode}
+          onClose={() => setOpenQrCode(false)}
           modelId={selectedChat.model.id}
           modelName={selectedChat?.model.name}
         />

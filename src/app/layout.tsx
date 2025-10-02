@@ -2,6 +2,7 @@ import { Locked } from "@/components/locked";
 import { ContextProviders } from "@/context/ContextProviders";
 import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
+import { Toaster } from "react-hot-toast";
 import "./globals.css";
 
 const poppins = Poppins({
@@ -25,6 +26,10 @@ export default function RootLayout({
       <body className={`${poppins.variable}`}>
         <ContextProviders>
           {children} <Locked />
+          <Toaster
+            position="top-center"
+            toastOptions={{ duration: 5000, className: "z-[1000000]" }}
+          />
         </ContextProviders>
       </body>
     </html>

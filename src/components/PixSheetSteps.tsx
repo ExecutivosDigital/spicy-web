@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Check, Loader2 } from "lucide-react";
 import Image from "next/image";
 import * as React from "react";
+import toast from "react-hot-toast";
 import { CopyBlock } from "./CopyBlock";
 import { QrBlock } from "./QrBlock";
 
@@ -22,26 +23,26 @@ export type Plan = {
 
 export type Props = {
   open: boolean;
-  onOpenChange: (open: boolean) => void;
+  onClose: () => void;
   modelName?: string;
-  titleIntro?: string;
-  subtitleIntro?: string;
-  dataUrl?: string;
-  copyAndPaste?: string;
-  copied?: boolean;
-  onCopy?: () => void;
-  onConfirmPayment?: () => void;
-  plans?: Plan[];
-  selectedPlanId?: string;
-  onPlanSelect?: (id: string) => void;
-  whatsAppPlans?: Plan[];
-  selectedWhatsAppPlanId?: string;
-  onWhatsAppPlanSelect?: (id: string) => void;
-  initialStep?: StepKey;
-  onStepChange?: (s: StepKey) => void;
-  className?: string;
-  autoIntroToPlans?: boolean;
-  introDelayMs?: number;
+  // titleIntro?: string;
+  // subtitleIntro?: string;
+  // dataUrl?: string;
+  // copyAndPaste?: string;
+  // copied?: boolean;
+  // onCopy?: () => void;
+  // onConfirmPayment?: () => void;
+  // plans?: Plan[];
+  // selectedPlanId?: string;
+  // onPlanSelect?: (id: string) => void;
+  // whatsAppPlans?: Plan[];
+  // selectedWhatsAppPlanId?: string;
+  // onWhatsAppPlanSelect?: (id: string) => void;
+  // initialStep?: StepKey;
+  // onStepChange?: (s: StepKey) => void;
+  // className?: string;
+  // autoIntroToPlans?: boolean;
+  // introDelayMs?: number;
   modelId: string;
 };
 
@@ -59,7 +60,7 @@ const plans: Plan[] = [
 
 export default function PixSheetSteps({
   open,
-  onOpenChange,
+  onClose,
   modelId,
   modelName = "Modelo",
   // titleIntro,
@@ -152,6 +153,8 @@ export default function PixSheetSteps({
   const generatePix = async () => {
     const planValueValid = typeof planValue === "number" && planValue >= 0;
 
+    if (planValue === 0) return toast.error("Selecione um plano");
+
     if (!planValueValid) {
       alert("Selecione um valor válido para continuar.");
       return false;
@@ -186,13 +189,13 @@ export default function PixSheetSteps({
 
   return (
     <>
-      <Sheet open={open} onOpenChange={onOpenChange}>
+      <Sheet open={open}>
         <SheetContent
           side="bottom"
           className={clsx(
-            "z-[90999] flex min-h-1/2 w-[100vw] flex-col items-center justify-between self-center rounded-t-4xl bg-white md:rounded-t-none md:border-0 md:bg-transparent",
+            "z-[90999] flex min-h-1/2 w-[100vw] flex-col items-center justify-between gap-0 self-center rounded-t-4xl bg-white p-0 outline-none md:rounded-t-none md:border-0 md:bg-transparent",
           )}
-          overlayClass="bg-[#BC5DFF]/20 backdrop-blur-sm"
+          overlayClass="bg-[#BC5DFF]/20 backdrop-blur-sm "
           onKeyDown={(e: React.KeyboardEvent) => e.key === "Enter" && next()}
         >
           {/* container "cartão" */}
@@ -333,7 +336,7 @@ export default function PixSheetSteps({
                         Voltar
                       </button>
                       <button
-                        // onClick={onConfirmPayment}
+                        onClick={() => onClose()}
                         className="rounded-xl bg-gradient-to-r from-violet-500 to-fuchsia-500 px-4 py-2 text-sm font-black text-white"
                       >
                         Finalizar
@@ -409,8 +412,12 @@ export default function PixSheetSteps({
                     >
                       {loadingPix ? (
                         <Loader2 className="m-auto h-4 w-4 animate-spin" />
-                      ) : (
+                      ) : planValue !== 0 ? (
                         "Gerar Pagamento"
+                      ) : planValue === 0 ? (
+                        "Selecione um plano"
+                      ) : (
+                        ""
                       )}
                     </motion.button>
                   </>

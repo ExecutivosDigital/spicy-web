@@ -37,10 +37,13 @@ const Messages = ({ message, className }: Props) => {
     <div className="">
       {entity !== "USER" ? (
         <>
-          <div className="group mb-4 ml-[50px] flex max-w-[calc(100%-50px)] items-start justify-start space-x-2 lg:mb-2 xl:mb-4 rtl:space-x-reverse">
-            <div className="flex flex-col items-end gap-1 rounded-2xl rounded-bl-none bg-[#BC5DFF]/60 px-3 py-2">
-              <div className="flex w-full items-center gap-2 text-end lg:text-[8px] xl:text-xs">
+          <div className="group mb-4 ml-2 flex max-w-[calc(100%-8px)] items-start justify-start space-x-2 lg:mb-2 xl:mb-4 xl:ml-[50px] xl:max-w-[calc(100%-50px)] rtl:space-x-reverse">
+            <div className="flex flex-col items-end gap-1 rounded-2xl rounded-bl-none bg-[#BC5DFF]/60 px-2 py-1 xl:px-3 xl:py-2">
+              <div className="flex w-full items-center gap-2 text-end text-xs lg:text-[8px] xl:text-xs">
                 <span className="text-default-500">
+                  <span>
+                    {(selectedChat && selectedChat.model.name) || ""} {""}
+                  </span>
                   {new Date(createdAt).toLocaleDateString("pt-BR", {
                     day: "numeric",
                     month: "numeric",
@@ -104,14 +107,6 @@ const Messages = ({ message, className }: Props) => {
                         className="w-full cursor-pointer rounded-md"
                         onClick={() => setOpenImageModal(true)}
                       />
-                      <span
-                        className={twMerge(
-                          "bg-primary text-primary-foreground rounded-md rounded-tr-none px-3 py-2 whitespace-pre-line lg:px-2 lg:py-1 lg:text-[10px] xl:px-3 xl:py-2 xl:text-sm",
-                          className,
-                        )}
-                      >
-                        {text}
-                      </span>
                     </div>
                   </div>
                 ) : audioUrl ? (
@@ -126,14 +121,6 @@ const Messages = ({ message, className }: Props) => {
                         size="default"
                         audioUrl={audioUrl}
                       />
-                      <span
-                        className={twMerge(
-                          "bg-primary rounded-md rounded-tr-none px-3 py-2 whitespace-pre-line text-black lg:px-2 lg:py-1 lg:text-[10px] xl:px-3 xl:text-sm",
-                          className,
-                        )}
-                      >
-                        {text}
-                      </span>
                     </div>
                   </div>
                 ) : (
@@ -164,10 +151,9 @@ const Messages = ({ message, className }: Props) => {
           </div>
         </>
       ) : (
-        <div className="group mb-4 flex max-w-[calc(100%-50px)] items-end justify-end space-x-2 lg:mb-2 xl:mb-4">
+        <div className="group mb-4 flex max-w-[calc(100%-8px)] items-end justify-end space-x-2 lg:mb-2 xl:mb-4 xl:max-w-[calc(100%-50px)]">
           <div className="flex flex-col items-end gap-1 rounded-2xl rounded-br-none bg-sky-500/20 px-3 py-2">
             <div className="flex items-center justify-start gap-2 text-xs lg:text-[8px] xl:text-xs">
-              <span>{(selectedChat && selectedChat.model.name) || ""}</span>
               <span className="text-default-500">
                 {new Date(createdAt).toLocaleDateString("pt-BR", {
                   day: "numeric",
@@ -177,14 +163,13 @@ const Messages = ({ message, className }: Props) => {
                 })}
               </span>
               <CheckCheck className="text-primary lg:h-3 lg:w-3 xl:h-5 xl:w-5" />
-              <span className="text-default-500 hidden group-hover:block"></span>
             </div>
             <div className="group flex items-center gap-1">
               {audioUrl ? (
                 <div className="relative z-[1] break-normal whitespace-pre-wrap">
                   <div
                     className={twMerge(
-                      "flex-1 rounded-md rounded-tl-none bg-[#F3F6F8] px-3 py-2 text-sm lg:px-2 lg:py-1 lg:text-xs xl:px-3 xl:py-2 xl:text-sm",
+                      "flex-1 rounded-md rounded-tl-none px-3 py-2 text-sm lg:px-2 lg:py-1 lg:text-xs xl:px-3 xl:py-2 xl:text-sm",
                     )}
                   >
                     <AudioPlayer
@@ -192,14 +177,6 @@ const Messages = ({ message, className }: Props) => {
                       className="min-w-full"
                       audioUrl={audioUrl}
                     />
-                    <span
-                      className={twMerge(
-                        "flex-1 bg-[#F3F6F8] px-3 text-sm lg:px-2 lg:text-[10px] xl:px-3 xl:text-sm",
-                        className,
-                      )}
-                    >
-                      {text}
-                    </span>
                   </div>
                 </div>
               ) : fileUrl ? (
@@ -229,7 +206,7 @@ const Messages = ({ message, className }: Props) => {
                 <div className="relative z-[1] break-normal whitespace-pre-wrap">
                   <div
                     className={twMerge(
-                      "flex w-full flex-col items-center gap-2 rounded-md rounded-tl-none bg-[#BC5DFF]/60 px-3 py-2 text-sm lg:px-2 lg:py-1 lg:text-xs xl:px-3 xl:py-2 xl:text-sm",
+                      "flex w-full flex-col items-center gap-2 rounded-md rounded-tl-none bg-transparent px-3 py-2 text-sm lg:px-2 lg:py-1 lg:text-xs xl:px-3 xl:py-2 xl:text-sm",
                     )}
                   >
                     <Image
@@ -240,14 +217,6 @@ const Messages = ({ message, className }: Props) => {
                       className="w-full cursor-pointer rounded-md"
                       onClick={() => setOpenImageModal(true)}
                     />
-                    <span
-                      className={twMerge(
-                        "flex-1 rounded-md rounded-tl-none bg-[#BC5DFF]/60 px-3 py-2 text-sm break-words lg:px-2 lg:py-1 lg:text-[10px] xl:px-3 xl:py-2 xl:text-sm",
-                        className,
-                      )}
-                    >
-                      {text}
-                    </span>
                   </div>
                 </div>
               ) : (
