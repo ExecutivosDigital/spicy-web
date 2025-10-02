@@ -445,7 +445,7 @@ const ChatPage = () => {
                   <div className="flex-1">
                     <Card className="flex h-full flex-col">
                       <Header />
-                      <CardContent className="relative h-full p-2">
+                      <CardContent className="relative h-full overflow-y-auto p-2">
                         <div
                           className="flex h-full w-full flex-col overflow-y-auto py-4 lg:py-2 xl:py-4"
                           ref={containerRef}
