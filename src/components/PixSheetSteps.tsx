@@ -1,144 +1,113 @@
 import { Sheet, SheetContent } from "@/components/sheet";
-import { ApiCall } from "@/utils/apiCall";
-import { maskPhone } from "@/utils/masks";
-import { phoneNumberRegex } from "@/utils/phoneNumberRegex";
+import { useApiContext } from "@/context/ApiContext";
+import { useChatContext } from "@/context/chatContext";
 import clsx from "clsx";
 import { AnimatePresence, motion } from "framer-motion";
-import { Check } from "lucide-react";
+import { Check, Loader2 } from "lucide-react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import * as React from "react";
 import { CopyBlock } from "./CopyBlock";
 import { QrBlock } from "./QrBlock";
-import { AvatarGroup } from "./avatar-block";
 
-export type StepKey =
-  | "intro"
-  | "qr_copy"
-  | "phone"
-  | "qr_confirm"
-  | "plans"
-  | "whatsapp";
+export type StepKey = "intro" | "qr_copy" | "qr_confirm" | "plans" | "whatsapp";
 
 export type Plan = {
   id: string;
   priceLabel: string; // ex: "R$29,90"
   periodLabel: string; // ex: "15 dias"
   avatars?: string[]; // urls das fotos
-  value?: number;
+  value: number;
   best?: boolean; // destaca como melhor custo
 };
 
 export type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-
-  /** textos */
-  modelName?: string; // ex: "Gabi"
+  modelName?: string;
   titleIntro?: string;
   subtitleIntro?: string;
-
-  /** QRCode (opcional vindo do pai — o componente agora prioriza os valores locais) */
-  dataUrl?: string; // "data:image/png;base64,..."
-  copyAndPaste?: string; // payload pix
+  dataUrl?: string;
+  copyAndPaste?: string;
   copied?: boolean;
   onCopy?: () => void;
-
-  /** confirmação */
   onConfirmPayment?: () => void;
-
-  /** planos */
   plans?: Plan[];
   selectedPlanId?: string;
   onPlanSelect?: (id: string) => void;
-
-  /** whatsapp */
   whatsAppPlans?: Plan[];
   selectedWhatsAppPlanId?: string;
   onWhatsAppPlanSelect?: (id: string) => void;
-
-  /** controle de step (opcional) */
   initialStep?: StepKey;
   onStepChange?: (s: StepKey) => void;
-
-  /** telefone do usuário (controlado pelo pai) */
-  phoneNumber: string;
-  setPhoneNumber: (phone: string) => void;
-
   className?: string;
-
-  /** animação automática da intro para planos (padrão: true) */
   autoIntroToPlans?: boolean;
-  /** tempo antes de animar a intro (ms) — padrão 1500 */
   introDelayMs?: number;
+  modelId: string;
 };
 
-const stepOrder: StepKey[] = [
-  "intro",
-  "phone",
-  "qr_copy",
-  "qr_confirm",
-  "plans",
+const stepOrder: StepKey[] = ["intro", "qr_copy", "qr_confirm", "plans"];
+
+const plans: Plan[] = [
+  {
+    id: "1",
+    priceLabel: "R$29,90",
+    periodLabel: "15 dias",
+    avatars: [],
+    value: 29.9,
+  },
 ];
 
 export default function PixSheetSteps({
   open,
   onOpenChange,
+  modelId,
   modelName = "Modelo",
-  titleIntro,
-  subtitleIntro,
-  dataUrl,
-  copyAndPaste,
-  copied,
-  onCopy,
-  onConfirmPayment,
-  plans = [],
-  selectedPlanId,
-  onPlanSelect,
-  phoneNumber,
-  setPhoneNumber,
-  initialStep = "intro",
-  onStepChange,
-  className,
-  autoIntroToPlans = true,
-  introDelayMs = 1500,
+  // titleIntro,
+  // subtitleIntro,
+  // dataUrl,
+  // copyAndPaste,
+  // copied,
+  // onCopy,
+  // onConfirmPayment,
+  // plans = [],
+  // selectedPlanId,
+  // onPlanSelect,
+  // initialStep = "intro",
+  // onStepChange,
+  // className,
+  // autoIntroToPlans = true,
+  // introDelayMs = 1500,
 }: Props) {
-  const [step, setStep] = React.useState<StepKey>(initialStep);
+  const { paymentWebhookConfirmation } = useChatContext();
+  const { PostAPI } = useApiContext();
+  const [step, setStep] = React.useState<StepKey>("intro");
   const [showHeaderHero, setShowHeaderHero] = React.useState(false);
   const [plansReady, setPlansReady] = React.useState(false);
-  const router = useRouter();
-  // Valores selecionados (mantidos como no seu componente)
   const [planValue, setPlanValue] = React.useState(0);
-
-  // === NOVO: estados para os dados gerados pelo ApiCall ===
   const [localQrBase64, setLocalQrBase64] = React.useState<string>("");
   const [localPayload, setLocalPayload] = React.useState<string>("");
   const [loadingPix, setLoadingPix] = React.useState<boolean>(false);
+  const [selectedPlanId, setSelectedPlanId] = React.useState<string>("");
+
   const localDataUrl = localQrBase64
     ? `data:image/png;base64,${localQrBase64}`
     : undefined;
 
   React.useEffect(() => {
     if (open) {
-      setStep(initialStep);
+      setStep("intro");
       setShowHeaderHero(false);
       setPlansReady(false);
-      // limpar QR/payload quando reabrir
       setLocalQrBase64("");
       setLocalPayload("");
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, initialStep]);
+  }, [open]);
 
-  // sequência automática: esperar introDelayMs → mover hero para o topo → quando acabar, mostrar planos
   React.useEffect(() => {
-    if (!open || step !== "intro" || !autoIntroToPlans) return;
-    const t = setTimeout(
-      () => setShowHeaderHero(true),
-      Math.max(0, introDelayMs)
-    );
+    if (!open || step !== "intro") return;
+    const t = setTimeout(() => setShowHeaderHero(true), Math.max(0, 1500));
     return () => clearTimeout(t);
-  }, [open, step, autoIntroToPlans, introDelayMs]);
+  }, [open, step]);
 
   React.useEffect(() => {
     if (!showHeaderHero) return;
@@ -151,7 +120,6 @@ export default function PixSheetSteps({
 
   const setStepSafe = (s: StepKey) => {
     setStep(s);
-    onStepChange?.(s);
   };
 
   const next = () => {
@@ -159,50 +127,62 @@ export default function PixSheetSteps({
     if (i < stepOrder.length - 1) setStepSafe(stepOrder[i + 1]);
   };
 
+  const [copied, setCopied] = React.useState(false);
+
+  // Efeito para resetar o estado de 'copiado' após um tempo
+  React.useEffect(() => {
+    if (copied) {
+      const timer = setTimeout(() => setCopied(false), 20000); // Resetar após 2 segundos
+      return () => clearTimeout(timer);
+    }
+  }, [copied]);
+
   // Handler padrão de cópia caso o pai não forneça
   const handleCopyFallback = React.useCallback(async () => {
     try {
-      await navigator.clipboard.writeText(localPayload || copyAndPaste || "");
+      await navigator.clipboard.writeText(localPayload);
+      setCopied(true);
     } catch {
       alert(
-        "Não foi possível copiar automaticamente. Selecione o texto e copie manualmente."
+        "Não foi possível copiar automaticamente. Selecione o texto e copie manualmente.",
       );
     }
-  }, [localPayload, copyAndPaste]);
+  }, [localPayload]);
 
-  // Geração do Pix via ApiCall (você já possui este util)
-  const generatePix = React.useCallback(async () => {
-    const phone = phoneNumberRegex(phoneNumber);
-
-    if (!phone) {
-      alert("Digite seu telefone para gerar o Pix.");
-      return false;
-    }
+  const generatePix = async () => {
     const planValueValid = typeof planValue === "number" && planValue >= 0;
 
     if (!planValueValid) {
-      alert("Selecione um plano válido para continuar.");
+      alert("Selecione um valor válido para continuar.");
       return false;
     }
 
-    try {
-      setLoadingPix(true);
-      const response = await ApiCall({
-        phone,
-        value: planValue > 0 ? planValue : 30,
-        name: modelName,
-      });
-      setLocalQrBase64(response.encodedImage);
-      setLocalPayload(response.payload);
-      return true;
-    } catch {
-      alert("Não foi possível gerar o Pix agora. Tente novamente.");
-      return false;
-    } finally {
-      setLoadingPix(false);
+    setLoadingPix(true);
+
+    const payload = {
+      modelId,
+      value: planValue,
+    };
+
+    const response = await PostAPI("/signature/pix", payload, true);
+    setLoadingPix(false);
+
+    if (response.status !== 200) {
+      return alert("Não foi possível gerar o Pix agora. Tente novamente.");
     }
-  }, [ApiCall, phoneNumber, planValue]);
-  console.log("planValue: ", planValue);
+
+    setLocalQrBase64(response.body.payment.encodedImage);
+    setLocalPayload(response.body.payment.payload);
+    setLoadingPix(false);
+    setStepSafe("qr_copy");
+    return true;
+  };
+
+  React.useEffect(() => {
+    if (paymentWebhookConfirmation && step === "qr_copy") {
+      setStepSafe("qr_confirm");
+    }
+  }, [paymentWebhookConfirmation]);
 
   return (
     <>
@@ -210,19 +190,18 @@ export default function PixSheetSteps({
         <SheetContent
           side="bottom"
           className={clsx(
-            "min-h-1/2 self-center flex z-[90999] flex-col items-center md:border-0 rounded-t-4xl md:rounded-t-none md:bg-transparent bg-white   w-[100vw]  justify-between",
-            className
+            "z-[90999] flex min-h-1/2 w-[100vw] flex-col items-center justify-between self-center rounded-t-4xl bg-white md:rounded-t-none md:border-0 md:bg-transparent",
           )}
           overlayClass="bg-[#BC5DFF]/20 backdrop-blur-sm"
           onKeyDown={(e: React.KeyboardEvent) => e.key === "Enter" && next()}
         >
           {/* container "cartão" */}
-          <div className="w-full min-h-[40vh] md:min-h-[50vh] md:rounded-t-4xl lg:w-[500px] md:bg-white h-full flex p-2 text-neutral-900">
-            <div className="rounded-2xl  flex flex-col w-full overflow-hidden">
+          <div className="flex h-full min-h-[40vh] w-full p-2 text-neutral-900 md:min-h-[50vh] md:rounded-t-4xl md:bg-white lg:w-[500px]">
+            <div className="flex w-full flex-col overflow-hidden rounded-2xl">
               {/* header */}
               <header className="relative flex items-center justify-between gap-3 px-4 py-3 sm:px-5 sm:py-4">
-                <div className="absolute inset-0 pointer-events-none">
-                  <div className="h-full w-full px-4 sm:px-5 flex items-center">
+                <div className="pointer-events-none absolute inset-0">
+                  <div className="flex h-full w-full items-center px-4 sm:px-5">
                     <AnimatePresence initial={false}>
                       {showHeaderHero && (
                         <motion.div
@@ -237,11 +216,11 @@ export default function PixSheetSteps({
                             className="h-6 w-6"
                           />
                           <div className="leading-tight text-black">
-                            <div className="text-sm t font-extrabold">
-                              {titleIntro}
+                            <div className="t text-sm font-extrabold">
+                              Apoie o criador de Conteúdos
                             </div>
                             <div className="text-[11px] text-neutral-500">
-                              {subtitleIntro}
+                              Receba acesso ao chat e a conteúdos exclusivos
                             </div>
                           </div>
                         </motion.div>
@@ -252,7 +231,7 @@ export default function PixSheetSteps({
               </header>
 
               {/* conteúdo por step */}
-              <div className="p-2 flex flex-1 flex-col gap-5">
+              <div className="flex flex-1 flex-col gap-5 p-2">
                 {/* STEP: Intro (origem do HERO) */}
                 {step === "intro" && (
                   <div className="grid place-items-center gap-6">
@@ -274,10 +253,10 @@ export default function PixSheetSteps({
                           />
                           <div className="text-center">
                             <h4 className="text-lg font-extrabold">
-                              {titleIntro}
+                              Apoie o criador de Conteúdos
                             </h4>
                             <p className="mt-1 text-sm text-neutral-500">
-                              {subtitleIntro}
+                              Receba acesso ao chat e a conteúdos exclusivos
                             </p>
                           </div>
                         </motion.div>
@@ -285,85 +264,21 @@ export default function PixSheetSteps({
                     </AnimatePresence>
                   </div>
                 )}
-
-                {step === "phone" && (
-                  <div className="w-full flex-1 flex flex-col gap-4">
-                    <span>Estamos quase lá</span>
-                    <span>Para gerar o Pix, digite o seu telefone</span>
-
-                    <div className="flex flex-col flex-1 gap-2">
-                      <label className="text-sm font-semibold">Telefone</label>
-                      <div className="flex flex-col gap-2">
-                        <input
-                          type="tel"
-                          className="w-full rounded-xl border border-neutral-200 px-4 py-2 text-sm"
-                          placeholder="DDD XXXXXX"
-                          maxLength={15}
-                          value={maskPhone(phoneNumber)}
-                          onChange={(e) => setPhoneNumber(e.target.value)}
-                        />
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => router.push("/terms")}
-                        className="text-center cursor-pointer mt-auto"
-                      >
-                        <span>
-                          Ao continuar você aceita nosso{" "}
-                          <span className="underline">
-                            termos de uso e politica de privacidade
-                          </span>
-                        </span>
-                      </button>
-                    </div>
-
-                    <div className="flex mt-auto flex-row gap-1">
-                      <motion.button
-                        initial={{ opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.2 }}
-                        onClick={() => setStepSafe("plans")}
-                        className="mt-2 rounded-xl bg-gradient-to-r from-violet-500 to-fuchsia-500 px-4 py-3 text-sm font-black text-white"
-                      >
-                        Voltar
-                      </motion.button>
-
-                      <motion.button
-                        initial={{ opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.2 }}
-                        onClick={async () => {
-                          const ok = await generatePix();
-                          if (ok) setStepSafe("qr_copy");
-                        }}
-                        className="mt-2 flex-1 rounded-xl bg-gradient-to-r from-violet-500 to-fuchsia-500 px-4 py-3 text-sm font-black text-white disabled:opacity-60"
-                        disabled={loadingPix || !phoneNumber}
-                      >
-                        {loadingPix
-                          ? "Gerando Pix..."
-                          : `Ver Pix ${
-                              modelName === "José" ? "do" : "da"
-                            } ${modelName}`}
-                      </motion.button>
-                    </div>
-                  </div>
-                )}
-
                 {step === "qr_copy" && (
                   <>
                     {/* Prioriza dados locais; se vazio, usa os props do pai */}
-                    <QrBlock dataUrl={localDataUrl || dataUrl} />
+                    <QrBlock dataUrl={localDataUrl} />
                     <CopyBlock
-                      copyAndPaste={localPayload || copyAndPaste}
+                      copyAndPaste={localPayload}
                       copied={copied}
-                      onCopy={onCopy ?? handleCopyFallback}
+                      onCopy={handleCopyFallback}
                       modelName={modelName}
                     />
 
                     <div className="flex items-center justify-between gap-2 pt-1">
                       <button
                         onClick={() => setStepSafe("plans")}
-                        className="rounded-xl border border-neutral-200 bg-white px-4 py-2 text-sm font-semibold hover:bg-neutral-50 transition"
+                        className="rounded-xl border border-neutral-200 bg-white px-4 py-2 text-sm font-semibold transition hover:bg-neutral-50"
                       >
                         Voltar
                       </button>
@@ -378,10 +293,10 @@ export default function PixSheetSteps({
                 )}
 
                 {step === "qr_confirm" && (
-                  <div className=" flex-1 flex flex-col justify-between ">
+                  <div className="flex flex-1 flex-col justify-between">
                     {/* <QrBlock dataUrl={localDataUrl || dataUrl} /> */}
                     <div className="flex flex-col items-center gap-2">
-                      <div className="h-28 w-28 min-w-28 overflow-hidden rounded-full bg-red-500 border-4 border-white shadow-xl">
+                      <div className="h-28 w-28 min-w-28 overflow-hidden rounded-full border-4 border-white bg-red-500 shadow-xl">
                         <img
                           src={
                             modelName === "José"
@@ -392,7 +307,7 @@ export default function PixSheetSteps({
                           className="h-full w-full object-cover"
                         />
                       </div>
-                      <div className="flex flex-row gap-2 items-center">
+                      <div className="flex flex-row items-center gap-2">
                         <div className="font-extrabold">
                           {modelName === "José"
                             ? "@ze.rodrigues66"
@@ -406,19 +321,19 @@ export default function PixSheetSteps({
                           className="h-6 w-6"
                         />
                       </div>
-                      <p className="text-xs text-neutral-500 text-center -mt-1">
+                      <p className="-mt-1 text-center text-xs text-neutral-500">
                         Você contribuiu, e eu fico muito feliz
                       </p>
                     </div>
                     <div className="flex items-center justify-between gap-2 pt-1">
                       <button
-                        onClick={() => setStepSafe("phone")}
-                        className="rounded-xl border border-neutral-200 bg-white px-4 py-2 text-sm font-semibold hover:bg-neutral-50 transition"
+                        onClick={() => setStepSafe("qr_confirm")}
+                        className="rounded-xl border border-neutral-200 bg-white px-4 py-2 text-sm font-semibold transition hover:bg-neutral-50"
                       >
                         Voltar
                       </button>
                       <button
-                        onClick={onConfirmPayment}
+                        // onClick={onConfirmPayment}
                         className="rounded-xl bg-gradient-to-r from-violet-500 to-fuchsia-500 px-4 py-2 text-sm font-black text-white"
                       >
                         Finalizar
@@ -452,27 +367,27 @@ export default function PixSheetSteps({
                             key={p.id}
                             variants={itemVariants}
                             onClick={() => {
-                              onPlanSelect?.(p.id);
-                              setPlanValue(p.value || 0);
+                              setSelectedPlanId(p.id);
+                              setPlanValue(p.value);
                             }}
                             className={clsx(
                               "flex w-full items-center justify-between rounded-xl border px-3 py-3",
                               selected
                                 ? "border-violet-500 bg-violet-50"
-                                : "border-neutral-200 bg-white"
+                                : "border-neutral-200 bg-white",
                             )}
                           >
                             <div className="flex items-center gap-3">
-                              <div className="flex relative items-center justify-center">
-                                <AvatarGroup urls={p.avatars} />
+                              <div className="relative flex items-center justify-center">
+                                {/* <AvatarGroup urls={p.avatars} /> */}
                                 {selected && (
-                                  <div className="rounded-full absolute items-center justify-center flex p-1 bg-white">
-                                    <Check className="h-5 w-5 text-emerald-500 rounded-full" />
+                                  <div className="absolute flex items-center justify-center rounded-full bg-white p-1">
+                                    <Check className="h-5 w-5 rounded-full text-emerald-500" />
                                   </div>
                                 )}
                               </div>
                               <div className="text-left">
-                                <div className="text-[15px] font-extrabold leading-tight">
+                                <div className="text-[15px] leading-tight font-extrabold">
                                   {p.priceLabel}
                                 </div>
                                 <div className="text-[12px] text-neutral-500">
@@ -489,10 +404,14 @@ export default function PixSheetSteps({
                       initial={{ opacity: 0, y: 8 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.2 }}
-                      onClick={() => setStepSafe("phone")}
+                      onClick={generatePix}
                       className="mt-2 w-full rounded-xl bg-gradient-to-r from-violet-500 to-fuchsia-500 px-4 py-3 text-sm font-black text-white"
                     >
-                      Continuar
+                      {loadingPix ? (
+                        <Loader2 className="m-auto h-4 w-4 animate-spin" />
+                      ) : (
+                        "Gerar Pagamento"
+                      )}
                     </motion.button>
                   </>
                 )}

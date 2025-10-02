@@ -1,6 +1,7 @@
 "use client";
 
 import { ChatProps, MessageProps } from "@/@types/global";
+import { useCookies } from "next-client-cookies";
 import { createContext, useContext, useEffect, useState } from "react";
 import { Socket, io } from "socket.io-client";
 import { useApiContext } from "./ApiContext";
@@ -20,6 +21,8 @@ interface ChatContextProps {
   setSelectedChat: (value: ChatProps | null) => void;
   setSelectedChatMessages: (value: MessageProps[]) => void;
   setIsMessageLoading: (value: boolean) => void;
+  paymentWebhookConfirmation: boolean;
+  setUserId: (value: string | undefined) => void;
 }
 
 const ChatContext = createContext<ChatContextProps | undefined>(undefined);
@@ -30,12 +33,18 @@ interface ProviderProps {
 
 export const ChatContextProvider = ({ children }: ProviderProps) => {
   const { GetAPI } = useApiContext();
+  const cookies = useCookies();
 
   const [isChatsLoading, setIsChatsLoading] = useState(false);
   const [chats, setChats] = useState<ChatProps[]>([]);
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
   const [selectedChat, setSelectedChat] = useState<ChatProps | null>(null);
   const [socket, setSocket] = useState<null | Socket>(null);
+  const [paymentWebhookConfirmation, setPaymentWebHookConfirmation] =
+    useState(false);
+  const [userId, setUserId] = useState(
+    cookies.get(process.env.NEXT_PUBLIC_USER_ID as string),
+  );
 
   const [selectedChatMessages, setSelectedChatMessages] = useState<
     MessageProps[]
@@ -45,7 +54,7 @@ export const ChatContextProvider = ({ children }: ProviderProps) => {
   async function handleGetChats() {
     setIsChatsLoading(true);
 
-    const connect = await GetAPI("/chat", false);
+    const connect = await GetAPI("/chat", true);
 
     if (connect.status === 200) {
       setChats(connect.body.chats);
@@ -59,11 +68,10 @@ export const ChatContextProvider = ({ children }: ProviderProps) => {
 
     setIsMessageLoading(true);
 
-    const connect = await GetAPI(`/message/${selectedChatId}`, false);
+    const connect = await GetAPI(`/message/${selectedChatId}`, true);
 
     if (connect.status === 200) {
       setSelectedChatMessages(connect.body.messages);
-      setSelectedChat(connect.body.chat);
     }
 
     setIsMessageLoading(false);
@@ -76,7 +84,12 @@ export const ChatContextProvider = ({ children }: ProviderProps) => {
       });
       setSocket(newSocket);
     } else {
+      if (userId) {
+        socket.emit("connectRoom", userId);
+      }
+
       socket.on("newMessage", (message: MessageProps) => {
+        console.log("entrou aqui");
         if (message.chatId === selectedChatId) {
           setSelectedChatMessages((prev) => [...prev, message]);
         }
@@ -97,8 +110,12 @@ export const ChatContextProvider = ({ children }: ProviderProps) => {
           }
         });
       });
+
+      socket.on("payment", () => {
+        setPaymentWebHookConfirmation(true);
+      });
     }
-  }, [socket, selectedChatId]);
+  }, [socket, selectedChatId, userId]);
 
   useEffect(() => {
     handleGetChatMessages();
@@ -123,6 +140,8 @@ export const ChatContextProvider = ({ children }: ProviderProps) => {
         setSelectedChat,
         setSelectedChatMessages,
         setIsMessageLoading,
+        paymentWebhookConfirmation,
+        setUserId,
       }}
     >
       {children}

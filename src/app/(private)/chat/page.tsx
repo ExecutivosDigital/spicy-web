@@ -2,10 +2,10 @@
 import { useMemo, useRef, useState } from "react";
 
 import { MessageProps } from "@/@types/global";
+import PixSheetSteps from "@/components/PixSheetSteps";
 import { GiftsBento } from "@/components/bento-cards";
 import { GalleryMosaicPager } from "@/components/galery";
 import { Header } from "@/components/header";
-import { Lightbox } from "@/components/light-box";
 import {
   gallery1,
   gallery2,
@@ -13,7 +13,6 @@ import {
   gallery4,
   gallery5,
 } from "@/components/midia";
-import PixSheetSteps from "@/components/PixSheetSteps";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -69,7 +68,6 @@ const ChatPage = ({
     setSelectedChatId,
     selectedChatMessages,
     isMessageLoading,
-    setChats,
     setSelectedChat,
     selectedChat,
   } = useChatContext();
@@ -78,6 +76,7 @@ const ChatPage = ({
   const [searchScrollId, setSearchScrollId] = useState<string | null>(null);
   const containerRef = useRef(null);
   const messageRefs = useRef<any>({});
+  const [openQrCode, setOpenQrCode] = useState<boolean>(false);
 
   // const handleScrollToBottom = () => {
   //   const messageFilters = selectedChatMessages.filter((message) =>
@@ -211,23 +210,26 @@ const ChatPage = ({
 
   const [showInfo, setShowInfo] = useState<boolean>(false);
   const { GetAPI } = useApiContext();
+
   async function handleVerify(chatId: string) {
     const chat = chats.find((chat) => chat.id === chatId);
 
+    if (!chat) return;
     const response = await GetAPI(
       `/signature/validation/${chat?.model.id}`,
       true,
     );
-    console.log("resposta do chat", response);
-    if (response.status !== 200) {
-      const USER_TOKEN_KEY = process.env.NEXT_PUBLIC_USER_TOKEN as string; //
-      cookies.remove(USER_TOKEN_KEY);
+    console.log("response: ", response);
+    if (response.status === 403) {
+      setOpenQrCode(true);
     }
+    setSelectedChat(chat);
+    setSelectedChatId(chatId);
   }
+
   const openChat = (chatId: string) => {
     router.replace(`/chat?id=${chatId}`);
     handleVerify(chatId);
-    setSelectedChatId(chatId);
     setShowInfo(false);
     setIsAutoScrollEnabled(true);
   };
@@ -575,39 +577,22 @@ const ChatPage = ({
         </motion.div>
       </div>
       <BottomBar />
-
-      <Lightbox
+      {/* <Lightbox
         open={lightboxOpen}
         images={lightboxItems}
         index={lightboxIndex}
         onClose={() => setLightboxOpen(false)}
         setIndex={(i: number) => setLightboxIndex(i)}
         setOpenQrCode={() => console.log(false)}
-      />
-      <PixSheetSteps
-        open={openQrCode}
-        onOpenChange={setOpenQrCode}
-        modelName="Gabi"
-        dataUrl={dataUrl}
-        copyAndPaste={copyAndPaste}
-        copied={copied}
-        onCopy={handleCopy}
-        phoneNumber={phoneNumber}
-        setPhoneNumber={setPhoneNumber}
-        onConfirmPayment={() => {
-          setOpenQrCode(false);
-        }}
-        plans={plans}
-        selectedPlanId={selectedPlanId}
-        titleIntro="Vem me conhecer melhor"
-        subtitleIntro="Além de se divertir voce me da ajuda"
-        onPlanSelect={setSelectedPlanId}
-        whatsAppPlans={whatsAppPlans}
-        selectedWhatsAppPlanId={selectedWhatsAppPlanId}
-        onWhatsAppPlanSelect={setSelectedWhatsAppPlanId}
-        initialStep="intro"
-        onStepChange={(s) => console.log("step:", s)}
-      />
+      /> */}
+      {selectedChat && (
+        <PixSheetSteps
+          open={openQrCode}
+          onOpenChange={setOpenQrCode}
+          modelId={selectedChat.model.id}
+          modelName={selectedChat?.model.name}
+        />
+      )}
     </div>
   );
 };

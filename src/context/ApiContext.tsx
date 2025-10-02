@@ -2,7 +2,7 @@
 "use client";
 import axios from "axios";
 import { useCookies } from "next-client-cookies";
-import { createContext, useContext } from "react";
+import { createContext, useContext, useState } from "react";
 
 const baseURL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -25,6 +25,7 @@ interface ApiContextProps {
     url: string,
     auth: boolean,
   ) => Promise<{ status: number; body: any }>;
+  setToken: (token: string) => void;
 }
 
 const ApiContext = createContext<ApiContextProps | undefined>(undefined);
@@ -36,7 +37,9 @@ interface ProviderProps {
 export const ApiContextProvider = ({ children }: ProviderProps) => {
   const cookies = useCookies();
 
-  const token = cookies.get(process.env.NEXT_PUBLIC_USER_TOKEN as string);
+  const [token, setToken] = useState(
+    cookies.get(process.env.NEXT_PUBLIC_USER_TOKEN as string),
+  );
 
   const api = axios.create({
     baseURL,
@@ -150,6 +153,7 @@ export const ApiContextProvider = ({ children }: ProviderProps) => {
         GetAPI,
         PutAPI,
         DeleteAPI,
+        setToken,
       }}
     >
       {children}
