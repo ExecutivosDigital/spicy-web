@@ -25,6 +25,7 @@ interface ApiContextProps {
     url: string,
     auth: boolean,
   ) => Promise<{ status: number; body: any }>;
+  token: string | undefined;
   setToken: (token: string) => void;
 }
 
@@ -153,6 +154,7 @@ export const ApiContextProvider = ({ children }: ProviderProps) => {
         GetAPI,
         PutAPI,
         DeleteAPI,
+        token,
         setToken,
       }}
     >

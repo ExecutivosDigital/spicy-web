@@ -12,9 +12,10 @@ const ContactList = ({
   openChat,
 }: {
   contact: ChatProps;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   openChat: (id: any) => void;
 }) => {
-  const { id, model, lastMessage, lastMessageDate } = contact;
+  const { id, model, lastMessage } = contact;
   const { selectedChatId } = useChatContext();
 
   return (

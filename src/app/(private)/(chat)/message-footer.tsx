@@ -1,9 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import data from "@emoji-mart/data";
-import Picker from "@emoji-mart/react";
-import { Annoyed, Loader2, Mic, SendHorizontal, X } from "lucide-react";
-import React, { useEffect, useRef, useState } from "react";
-
 import { MessageProps } from "@/@types/global";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,42 +16,45 @@ import {
 import { useApiContext } from "@/context/ApiContext";
 import { useChatContext } from "@/context/chatContext";
 import { cn } from "@/lib/utils";
+import data from "@emoji-mart/data";
 import i18n from "@emoji-mart/data/i18n/pt.json";
+import Picker from "@emoji-mart/react";
 import { Icon } from "@iconify/react";
-import { useCookies } from "next-client-cookies";
+import { Annoyed, Loader2, Mic, SendHorizontal, X } from "lucide-react";
 import Image from "next/image";
+import React, { useEffect, useRef, useState } from "react";
 import { twMerge } from "tailwind-merge";
 import fixWebmDuration from "webm-duration-fix";
 import { AudioPlayer } from "./AudioPlayer";
 
-const MessageFooter = ({ onSend }: { onSend: () => void }) => {
-  const { selectedChatId, selectedChat, setSelectedChatMessages } =
-    useChatContext();
+const MessageFooter = ({
+  onSend,
+  hasNotPayed,
+}: {
+  onSend: () => void;
+  hasNotPayed: boolean;
+}) => {
+  const { selectedChatId, setSelectedChatMessages } = useChatContext();
 
   const { PostAPI } = useApiContext();
-
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-
   const [message, setMessage] = useState("");
-
   const [audioUrl, setAudioUrl] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [elapsedTime, setElapsedTime] = useState("00:00");
   const [isSendingMessage, setIsSendingMessage] = useState(false);
   const [isEmojiPopoverOpen, setIsEmojiPopoverOpen] = useState(false);
-  const [recordState, setRecordState] = useState<string | null>(null);
   const [recordStartTime, setRecordStartTime] = useState<number | null>(null);
   const [fileType, setFileType] = useState<
     "file" | "audio" | "image" | "video" | null
   >(null);
-
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(
     null,
   );
-  const [audioChunks, setAudioChunks] = useState<Blob[]>([]);
   const [isRecording, setIsRecording] = useState(false);
 
   const handleSendMessage = async (message: string) => {
+    if (hasNotPayed) return onSend();
     if (!selectedChatId || !message) return;
 
     const connect = await PostAPI(
@@ -79,8 +78,6 @@ const MessageFooter = ({ onSend }: { onSend: () => void }) => {
     }
   };
 
-  const cookies = useCookies();
-
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setMessage(e.target.value);
     e.target.style.height = "auto"; // Reset the height to auto to adjust
@@ -94,7 +91,9 @@ const MessageFooter = ({ onSend }: { onSend: () => void }) => {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     handleSendMessage(message);
-    setMessage("");
+    if (!hasNotPayed) {
+      setMessage("");
+    }
   };
   const startRecording = async () => {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -121,7 +120,6 @@ const MessageFooter = ({ onSend }: { onSend: () => void }) => {
 
     recorder.start();
     setMediaRecorder(recorder);
-    setAudioChunks(chunks);
     setIsRecording(true);
     setRecordStartTime(Date.now());
   };
@@ -152,12 +150,6 @@ const MessageFooter = ({ onSend }: { onSend: () => void }) => {
     return () => clearInterval(intervalId);
   }, [recordStartTime, isRecording]);
 
-  const onStop = async (audioData?: any) => {
-    setAudioUrl(audioData.url);
-    setFile(audioData.blob);
-    setFileType("audio");
-  };
-
   const HandleSend = async () => {
     if (message.length === 0 && !file) {
       if (isRecording) {
@@ -167,7 +159,9 @@ const MessageFooter = ({ onSend }: { onSend: () => void }) => {
       }
     } else if (message.length !== 0 && !file) {
       handleSendMessage(message);
-      return setMessage("");
+      if (!hasNotPayed) {
+        return setMessage("");
+      }
     } else if (message.length === 0 && file) {
       return handleSendFile();
     }
@@ -185,7 +179,7 @@ const MessageFooter = ({ onSend }: { onSend: () => void }) => {
     const handlePaste = (event: ClipboardEvent) => {
       if (event.clipboardData) {
         const items = event.clipboardData.items;
-        for (let item of items) {
+        for (const item of items) {
           if (item.type.startsWith("image/")) {
             const file = item.getAsFile();
             if (file) {
@@ -210,6 +204,7 @@ const MessageFooter = ({ onSend }: { onSend: () => void }) => {
   }, []);
 
   async function handleSendFile() {
+    if (hasNotPayed) return onSend();
     setIsSendingMessage(true);
     if (file) {
       const uploadFormData = new FormData();
@@ -227,7 +222,6 @@ const MessageFooter = ({ onSend }: { onSend: () => void }) => {
         setMessage("");
         setAudioUrl("");
         setFileType(null);
-        setRecordState(null);
         setRecordStartTime(null);
         setElapsedTime("00:00");
         setSelectedChatMessages((prev) => [...prev, fileSend.body.message]);
@@ -243,7 +237,6 @@ const MessageFooter = ({ onSend }: { onSend: () => void }) => {
     setAudioUrl("");
     setFile(null);
     setFileType(null);
-    setRecordState(null);
     setRecordStartTime(null);
     setElapsedTime("00:00");
   }

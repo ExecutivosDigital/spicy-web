@@ -1,7 +1,4 @@
-import { useRouter } from "next/navigation";
-
 const MyProfileHeader = () => {
-  const router = useRouter();
   return (
     <>
       <div className="flex h-20 justify-between bg-red-500 p-2">

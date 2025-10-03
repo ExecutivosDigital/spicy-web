@@ -2,7 +2,6 @@ import { MessageProps } from "@/@types/global";
 import { useChatContext } from "@/context/chatContext";
 import { ArrowLeft, Download } from "lucide-react";
 import moment from "moment";
-import { useCookies } from "next-client-cookies";
 import Image from "next/image";
 import { useState } from "react";
 import ReactMarkdown from "react-markdown";
@@ -16,19 +15,7 @@ interface Props {
   className?: string;
 }
 const Messages = ({ message, className }: Props) => {
-  const cookies = useCookies();
-  const {
-    text,
-    entity,
-    audioUrl,
-    fileUrl,
-    chatId,
-    createdAt,
-    isMessageOpen,
-    messageType,
-    imageUrl,
-    videoUrl,
-  } = message;
+  const { text, entity, audioUrl, fileUrl, createdAt, imageUrl } = message;
   const [openImageModal, setOpenImageModal] = useState(false);
   const { selectedChat } = useChatContext();
   const [routeModal, setRouteModal] = useState(false);
@@ -38,35 +25,8 @@ const Messages = ({ message, className }: Props) => {
     <div className="">
       {entity !== "USER" ? (
         <>
-          <div className="group mb-4 ml-2 flex max-w-[calc(100%-8px)] items-start justify-start space-x-2 lg:mb-2 xl:mb-4 xl:ml-[50px] xl:max-w-[calc(100%-50px)] rtl:space-x-reverse">
-            <div className="flex flex-col items-end gap-1 rounded-2xl rounded-bl-none bg-[#E77988]/60 px-2 py-1 xl:px-3 xl:py-2">
-              <div className="flex w-full items-center gap-2 text-end text-xs lg:text-[8px] xl:text-xs">
-                <span className="text-default-500">
-                  <span>
-                    {(selectedChat && selectedChat.model.name) || ""} {""}
-                  </span>
-                  {new Date(createdAt).toLocaleDateString("pt-BR", {
-                    day: "numeric",
-                    month: "numeric",
-                    hour: "numeric",
-                    minute: "numeric",
-                  })}
-                </span>
-                <span></span>
-                <div className="rounded-full lg:h-5 lg:w-5 xl:h-8 xl:w-8">
-                  {/* <Image
-                    src={
-                      entity === "ai"
-                        ? "/images/avatar/ia.png"
-                        : "/images/avatar/user-chat.png"
-                    }
-                    alt=""
-                    width={64}
-                    height={64}
-                    className="block h-full w-full rounded-full object-cover"
-                  /> */}
-                </div>
-              </div>
+          <div className="group mb-4 ml-2 flex max-w-[calc(100%-8px)] flex-col items-start justify-start gap-1 space-x-2 lg:mb-2 xl:mb-4 xl:ml-[50px] xl:max-w-[calc(100%-50px)] rtl:space-x-reverse">
+            <div className="flex min-w-10 justify-center gap-1 rounded-3xl rounded-bl-none bg-gradient-to-r from-[#B273DF] to-[#E77988] p-2 shadow-sm">
               <div className="flex items-center gap-1">
                 {fileUrl ? (
                   <div className="relative z-[1] break-normal whitespace-pre-wrap">
@@ -128,7 +88,7 @@ const Messages = ({ message, className }: Props) => {
                   <ReactMarkdown
                     remarkPlugins={[remarkGfm]}
                     components={{
-                      a: ({ node, ...props }) => (
+                      a: ({ ...props }) => (
                         <a
                           {...props}
                           className="italic"
@@ -149,11 +109,19 @@ const Messages = ({ message, className }: Props) => {
                 )}
               </div>
             </div>
+            <div className="flex w-full items-center gap-2 text-end text-xs lg:text-[8px] xl:text-xs">
+              <span className="text-default-500">
+                <span>
+                  {(selectedChat && selectedChat.model.name) || ""} {""}
+                </span>
+                {moment(createdAt).format("DD/MM/YY - HH:mm")}
+              </span>
+            </div>
           </div>
         </>
       ) : (
         <div className="group mb-4 flex max-w-[calc(100%-8px)] flex-col items-end justify-end gap-1 lg:mb-2 xl:mb-4 xl:max-w-[calc(100%-50px)]">
-          <div className="flex min-w-10 justify-center gap-1 rounded-3xl rounded-br-none bg-gradient-to-r from-[#B273DF] to-[#E77988] p-2 shadow-sm">
+          <div className="flex min-w-10 justify-center gap-1 rounded-3xl rounded-br-none bg-neutral-800 p-2 shadow-sm">
             <div className="group flex items-center gap-1">
               {audioUrl ? (
                 <div className="relative z-[1] break-normal whitespace-pre-wrap">
@@ -214,7 +182,7 @@ const Messages = ({ message, className }: Props) => {
                   <ReactMarkdown
                     remarkPlugins={[remarkGfm]}
                     components={{
-                      a: ({ node, ...props }) => (
+                      a: ({ ...props }) => (
                         <a
                           {...props}
                           className="inline-block max-w-[calc(100vw-80px)] truncate italic lg:max-w-[550px]"

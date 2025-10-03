@@ -1,16 +1,9 @@
 "use client";
 import { MessageProps } from "@/@types/global";
-import PixSheetSteps from "@/components/PixSheetSteps";
 import { GiftsBento } from "@/components/bento-cards";
 import { GalleryMosaicPager } from "@/components/galery";
 import { Header } from "@/components/header";
-import {
-  gallery1,
-  gallery2,
-  gallery3,
-  gallery4,
-  gallery5,
-} from "@/components/midia";
+import PixSheetSteps from "@/components/PixSheetSteps";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -20,15 +13,9 @@ import { useMediaQuery } from "@/hook/use-media-query";
 import { cn } from "@/lib/utils";
 import clsx from "clsx";
 import { motion } from "framer-motion";
-import {
-  ArrowDown,
-  ChevronLeft,
-  ImageIcon,
-  LayoutGrid,
-  MessageCircle,
-} from "lucide-react";
+import { ArrowDown, ChevronLeft, ImageIcon, MessageCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Blank from "./blank";
 import ContactList from "./contact-list";
 import EmptyMessage from "./empty-message";
@@ -64,6 +51,7 @@ const ChatPage = () => {
   const containerRef = useRef(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const [openQrCode, setOpenQrCode] = useState<boolean>(false);
+  const [hasNotPayed, setHasNotPayed] = useState<boolean>(true);
 
   const handleScrollToBottom = () => {
     setIsAutoScrollEnabled(true);
@@ -85,6 +73,7 @@ const ChatPage = () => {
   }, [selectedChatMessages, isAutoScrollEnabled, selectedChat, selectedChatId]);
 
   useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const chatElement: any = containerRef.current;
     const handleScroll = () => {
       const scrollTop = chatElement.scrollTop;
@@ -112,6 +101,7 @@ const ChatPage = () => {
   }, [containerRef.current, selectedChatId, selectedChat]);
 
   useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const chatElement: any = containerRef.current;
     if (chatElement) {
       lastScrollTop.current = chatElement.scrollTop;
@@ -148,10 +138,13 @@ const ChatPage = () => {
       true,
     );
     if (response.status === 403) {
-      setOpenQrCode(true);
+      // setOpenQrCode(true);
+      setHasNotPayed(true);
+    } else {
+      setSelectedChat(chat);
+      setSelectedChatId(chatId);
+      setHasNotPayed(false);
     }
-    setSelectedChat(chat);
-    setSelectedChatId(chatId);
   }
 
   const openChat = (chatId: string) => {
@@ -212,11 +205,11 @@ const ChatPage = () => {
 
   function BottomBar() {
     return (
-      <nav className="w-full pb-4">
+      <nav className="w-full">
         <div className="mx-auto max-w-md px-3 pb-[env(safe-area-inset-bottom)]">
-          <div className="flex h-12 items-stretch justify-around rounded-2xl border border-neutral-200 bg-white shadow-lg">
+          <div className="flex h-12 items-stretch justify-around rounded-2xl border border-neutral-500 bg-neutral-800 shadow-lg">
             {[
-              { i: 0, label: "Presentes", Icon: LayoutGrid },
+              // { i: 0, label: "Presentes", Icon: LayoutGrid },
               { i: 1, label: "Chat", Icon: MessageCircle },
               { i: 2, label: "Galeria", Icon: ImageIcon },
             ].map(({ i, label, Icon }) => (
@@ -224,8 +217,8 @@ const ChatPage = () => {
                 key={i}
                 onClick={() => setPage(i as 0 | 1 | 2)}
                 className={clsx(
-                  "flex flex-1 items-center justify-center gap-1 text-[12px] font-semibold",
-                  page === i ? "text-violet-600" : "text-neutral-500",
+                  "flex flex-1 cursor-pointer items-center justify-center gap-1 text-[12px] font-semibold",
+                  page === i ? "text-[#E77988]" : "text-neutral-500",
                 )}
                 aria-label={label}
               >
@@ -307,61 +300,8 @@ const ChatPage = () => {
   //   );
   // }
 
-  const [lightboxOpen, setLightboxOpen] = useState(false);
-  const [lightboxIndex, setLightboxIndex] = useState(0);
-  const [selectedTab, setSelectedTab] = useState(0); // 0: tudo, 1: fotos desbloq, 2: fotos bloqueadas (dot), 3: vídeos (dot)
-  function isVideoItem(it: GalleryItem) {
-    if (it.mediaType) return it.mediaType === "video";
-    return /\.(mp4|webm|ogg)$/i.test(it.src);
-  }
-  type TabKey = "all" | "photos_unlocked" | "videos";
-
-  function filterByTab(items: GalleryItem[], tabKey: TabKey) {
-    switch (tabKey) {
-      case "photos_unlocked":
-        return items.filter((it) => !isVideoItem(it) && !it.locked);
-      case "videos":
-        return items.filter((it) => isVideoItem(it));
-      case "all":
-      default:
-        return items;
-    }
-  }
-
-  // lista plana com tudo (desordenado como você já tem)
-  const allItems: GalleryItem[] = useMemo(
-    () => [...gallery1, ...gallery2, ...gallery3, ...gallery4, ...gallery5],
-    [],
-  );
-
-  // map de abas para a mesma regra usada no pager interno
-  const tabMap: Record<number, TabKey> = {
-    0: "all",
-    1: "photos_unlocked",
-    2: "videos",
-  };
-
-  // coleção filtrada — usada pela Lightbox para ficar consistente com o Pager
-  const filtered = useMemo(
-    () => filterByTab(allItems, tabMap[selectedTab] ?? "all"),
-    [allItems, selectedTab],
-  );
-
-  // Lightbox aceita fotos e vídeos; passamos poster/mediaType se houver
-  const lightboxItems = useMemo(
-    () =>
-      filtered.map((it) => ({
-        src: it.src,
-        alt: it.alt ?? "",
-        poster: it.poster,
-        mediaType: it.mediaType,
-      })),
-    [filtered, tabMap],
-  );
-  const viewportRef = useRef<HTMLDivElement | null>(null);
-
   return (
-    <div className="flex h-screen flex-col bg-neutral-900 pb-20 text-white lg:gap-2 xl:gap-5 xl:pb-0 rtl:space-x-reverse">
+    <div className="flex h-screen flex-col gap-2 bg-neutral-900 pb-20 text-white xl:gap-5 xl:pb-0 rtl:space-x-reverse">
       {isLg && showInfo && (
         <div
           className="bg-background/60 absolute inset-0 z-40 w-full flex-1 rounded-md backdrop-blur-sm backdrop-filter"
@@ -382,7 +322,7 @@ const ChatPage = () => {
           </section>
 
           {/* 1 – Chat */}
-          <section className="flex w-[100%] overflow-hidden">
+          <section className="relative flex w-[100%] overflow-hidden">
             {/* <Chat /> */}
             <div
               className={cn("flex-none transition-all duration-150", {
@@ -412,7 +352,7 @@ const ChatPage = () => {
                       {isChatsLoading ? (
                         <div
                           className={cn(
-                            "animate-puls flex h-14 cursor-pointer border-l-2 border-transparent bg-zinc-200 px-3 py-2 transition duration-150 lg:max-w-[250px] lg:min-w-[250px] lg:gap-2 lg:px-2 lg:py-1 xl:max-w-[350px] xl:min-w-[350px] xl:gap-4 xl:px-3 xl:py-2",
+                            "flex h-14 animate-pulse cursor-pointer border-l-2 border-transparent bg-neutral-800 px-3 py-2 transition duration-150 lg:max-w-[250px] lg:min-w-[250px] lg:gap-2 lg:px-2 lg:py-1 xl:max-w-[350px] xl:min-w-[350px] xl:gap-4 xl:px-3 xl:py-2",
                           )}
                         />
                       ) : chats.length !== 0 ? (
@@ -442,9 +382,12 @@ const ChatPage = () => {
               <div className="flex-1">
                 <div className="flex h-full space-x-5 lg:space-x-2 xl:space-x-5 rtl:space-x-reverse">
                   <div className="flex-1">
-                    <Card className="flex h-full flex-col">
+                    <Card className="relative flex h-full flex-col">
                       <Header />
                       <CardContent className="relative h-full overflow-y-auto p-2">
+                        {hasNotPayed && (
+                          <div className="absolute top-0 left-0 z-[999999] h-full w-full bg-[#E77988]/5 backdrop-blur-2xl" />
+                        )}
                         <div
                           className="flex h-full w-full flex-col overflow-y-auto py-4 lg:py-2 xl:py-4"
                           ref={containerRef}
@@ -453,32 +396,28 @@ const ChatPage = () => {
                             <>
                               {Array.from({ length: 3 }).map((_, index) => (
                                 <div key={index}>
-                                  <div className="group mb-4 flex max-w-[calc(100%-50px)] items-end justify-end space-x-2 lg:mb-2 xl:mb-4">
-                                    <div className="flex w-60 animate-pulse flex-col items-end gap-1 rounded-2xl rounded-br-none bg-zinc-200 px-3 py-2 text-transparent">
-                                      <div className="flex w-full items-center gap-2 text-end lg:text-[8px] xl:text-xs">
-                                        <span>
-                                          <span>.</span>.
-                                        </span>
-                                        <span></span>
-                                        <div className="rounded-full lg:h-5 lg:w-5 xl:h-8 xl:w-8"></div>
+                                  <div className="group mb-4 flex max-w-[calc(100%-8px)] animate-pulse flex-col items-end justify-end gap-1 text-transparent lg:mb-2 xl:mb-4 xl:max-w-[calc(100%-50px)]">
+                                    <div className="flex w-60 min-w-10 justify-center gap-1 rounded-3xl rounded-br-none bg-neutral-800 p-2 shadow-sm">
+                                      <div className="group flex items-center gap-1">
+                                        <div className="relative z-[1] break-normal whitespace-pre-wrap">
+                                          .
+                                        </div>
                                       </div>
+                                    </div>
+                                    <div className="flex items-center justify-start gap-2 text-xs lg:text-[8px] xl:text-xs">
+                                      .
+                                    </div>
+                                  </div>
+                                  <div className="group mb-4 ml-2 flex max-w-[calc(100%-8px)] animate-pulse flex-col items-start justify-start gap-1 space-x-2 text-transparent lg:mb-2 xl:mb-4 xl:ml-[50px] xl:max-w-[calc(100%-50px)] rtl:space-x-reverse">
+                                    <div className="flex w-60 min-w-10 justify-center gap-1 rounded-3xl rounded-bl-none bg-neutral-800 p-2 shadow-sm">
                                       <div className="flex items-center gap-1">
                                         .
                                       </div>
                                     </div>
-                                  </div>
-                                  <div className="group mb-4 ml-[50px] flex max-w-[calc(100%-50px)] items-start justify-start space-x-2 lg:mb-2 xl:mb-4 rtl:space-x-reverse">
-                                    <div className="flex w-60 animate-pulse flex-col items-end gap-1 rounded-2xl rounded-bl-none bg-zinc-200 px-3 py-2 text-transparent">
-                                      <div className="flex w-full items-center gap-2 text-end lg:text-[8px] xl:text-xs">
-                                        <span>
-                                          <span>.</span>.
-                                        </span>
-                                        <span></span>
-                                        <div className="rounded-full lg:h-5 lg:w-5 xl:h-8 xl:w-8"></div>
-                                      </div>
-                                      <div className="flex items-center gap-1">
-                                        .
-                                      </div>
+                                    <div className="flex w-full items-center gap-2 text-end text-xs lg:text-[8px] xl:text-xs">
+                                      <span className="text-default-500">
+                                        <span>.</span>.
+                                      </span>
                                     </div>
                                   </div>
                                 </div>
@@ -518,10 +457,13 @@ const ChatPage = () => {
                       <CardFooter className="flex-none flex-col p-0">
                         <MessageFooter
                           onSend={() => {
-                            // ensure future appends keep scrolling
+                            if (hasNotPayed) {
+                              return setOpenQrCode(true);
+                            }
                             setIsAutoScrollEnabled(true);
                             handleScrollToBottom();
                           }}
+                          hasNotPayed={hasNotPayed}
                         />
                       </CardFooter>
                     </Card>
@@ -535,15 +477,9 @@ const ChatPage = () => {
 
           {/* 2 – Galeria */}
           <section className="w-[100%] overflow-y-auto">
-            {" "}
             <GalleryMosaicPager
-              items={allItems}
-              selectedTab={selectedTab}
-              onItemClick={(globalIndex, _item) => {
-                // índice já é relativo ao filtrado; a Lightbox usa a mesma coleção `filtered`
-                setLightboxIndex(globalIndex);
-                setLightboxOpen(true);
-              }}
+              handleVerify={handleVerify}
+              setOpenQrCode={setOpenQrCode}
             />
           </section>
         </motion.div>

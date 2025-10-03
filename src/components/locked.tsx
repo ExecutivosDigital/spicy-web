@@ -18,11 +18,13 @@ export function Locked() {
   const { PostAPI, setToken } = useApiContext();
   const { setUserId, handleGetChats } = useChatContext();
   const [isVerifying, setIsVerifying] = useState<boolean>(false);
+  const [isChecked, setIsChecked] = useState<boolean>(false);
   const cookies = useCookies();
   const USER_TOKEN_KEY = process.env.NEXT_PUBLIC_USER_TOKEN as string;
   const USER_ID_KEY = process.env.NEXT_PUBLIC_USER_ID as string;
 
   async function handleVerify() {
+    if (!isChecked) return toast.error("Você precisa aceitar os termos");
     setIsVerifying(true);
     const modelId = params.get("modelId");
     const response = await PostAPI("/user/auth", { phone, modelId }, false);
@@ -42,10 +44,10 @@ export function Locked() {
 
   useEffect(() => {
     const cookiesExists = cookies.get(USER_TOKEN_KEY);
-    if (!cookiesExists) {
-      handleVerify();
-    } else {
+    if (cookiesExists) {
       setIsUnlocked(true);
+    } else {
+      setIsLoading(false);
     }
   }, []);
 
@@ -58,7 +60,7 @@ export function Locked() {
           : "flex",
       )}
     >
-      <div className="flex h-[40vh] w-[90vw] flex-col justify-center gap-2 rounded-2xl bg-neutral-900 p-4 xl:w-[30vw]">
+      <div className="flex h-[40vh] w-[90vw] flex-col items-center justify-center gap-2 rounded-2xl bg-neutral-900 p-4 xl:w-[30vw]">
         <Image
           alt="loading"
           src="/logo.png"
@@ -111,6 +113,8 @@ export function Locked() {
               <input
                 type="checkbox"
                 id="check"
+                checked={isChecked}
+                onChange={(e) => setIsChecked(e.target.checked)}
                 className="bg-transparent fill-transparent accent-[#E77988]"
               />{" "}
               Tenho mais de 18 anos e aceito os termos de uso

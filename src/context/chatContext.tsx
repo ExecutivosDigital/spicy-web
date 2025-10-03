@@ -19,7 +19,7 @@ interface ChatContextProps {
   setChats: (value: ChatProps[]) => void;
   setSelectedChatId: (value: string | null) => void;
   setSelectedChat: (value: ChatProps | null) => void;
-  setSelectedChatMessages: (value: MessageProps[]) => void;
+  setSelectedChatMessages: React.Dispatch<React.SetStateAction<MessageProps[]>>;
   setIsMessageLoading: (value: boolean) => void;
   paymentWebhookConfirmation: boolean;
   setUserId: (value: string | undefined) => void;
@@ -33,7 +33,7 @@ interface ProviderProps {
 }
 
 export const ChatContextProvider = ({ children }: ProviderProps) => {
-  const { GetAPI } = useApiContext();
+  const { GetAPI, token } = useApiContext();
   const cookies = useCookies();
 
   const [isChatsLoading, setIsChatsLoading] = useState(false);
@@ -55,9 +55,12 @@ export const ChatContextProvider = ({ children }: ProviderProps) => {
   async function handleGetChats() {
     setIsChatsLoading(true);
     const connect = await GetAPI("/chat", true);
-    console.log("connect: ", connect);
     if (connect.status === 200) {
       setChats(connect.body.chats);
+      if (connect.body.chats.length > 0) {
+        setSelectedChatId(connect.body.chats[0].id!);
+        setSelectedChat(connect.body.chats[0]);
+      }
     }
 
     setIsChatsLoading(false);
@@ -67,7 +70,6 @@ export const ChatContextProvider = ({ children }: ProviderProps) => {
     if (!selectedChatId) return;
     setIsMessageLoading(true);
     const connect = await GetAPI(`/message/${selectedChatId}`, true);
-    console.log("connect: ", connect);
     if (connect.status === 200) {
       setSelectedChatMessages(connect.body.messages);
     }
@@ -120,7 +122,7 @@ export const ChatContextProvider = ({ children }: ProviderProps) => {
 
   useEffect(() => {
     handleGetChats();
-  }, []);
+  }, [token]);
 
   return (
     <ChatContext.Provider

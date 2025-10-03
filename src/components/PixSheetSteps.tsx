@@ -192,7 +192,7 @@ export default function PixSheetSteps({
 
   return (
     <>
-      <Sheet open={open}>
+      <Sheet open={open} onOpenChange={onClose}>
         <SheetContent
           side="bottom"
           className={clsx(
@@ -278,7 +278,6 @@ export default function PixSheetSteps({
                       copyAndPaste={localPayload}
                       copied={copied}
                       onCopy={handleCopyFallback}
-                      modelName={modelName}
                     />
 
                     <div className="flex items-center justify-between gap-2 pt-1">
@@ -290,7 +289,7 @@ export default function PixSheetSteps({
                       </button>
                       <button
                         onClick={() => setStepSafe("qr_confirm")}
-                        className="rounded-xl bg-gradient-to-r from-violet-500 to-fuchsia-500 px-4 py-2 text-sm font-black text-white"
+                        className="rounded-xl bg-gradient-to-r from-[#B273DF] to-[#E77988] px-4 py-2 text-sm font-black text-white"
                       >
                         Confirmar Pagamento
                       </button>
@@ -302,7 +301,7 @@ export default function PixSheetSteps({
                   <div className="flex flex-1 flex-col justify-between">
                     {/* <QrBlock dataUrl={localDataUrl || dataUrl} /> */}
                     <div className="flex flex-col items-center gap-2">
-                      <div className="h-28 w-28 min-w-28 overflow-hidden rounded-full border-4 border-white bg-red-500 shadow-xl">
+                      <div className="h-28 w-28 min-w-28 overflow-hidden rounded-full border-4 border-white shadow-xl">
                         <img
                           src={modelPhoto}
                           alt="avatar"
@@ -310,7 +309,9 @@ export default function PixSheetSteps({
                         />
                       </div>
                       <div className="flex flex-row items-center gap-2">
-                        <div className="font-extrabold">{modelName}</div>
+                        <div className="font-extrabold text-white">
+                          {modelName}
+                        </div>
                         <Image
                           src="/verify.png"
                           alt="gabi"
@@ -332,7 +333,7 @@ export default function PixSheetSteps({
                       </button>
                       <button
                         onClick={() => onClose()}
-                        className="rounded-xl bg-gradient-to-r from-violet-500 to-fuchsia-500 px-4 py-2 text-sm font-black text-white"
+                        className="rounded-xl bg-gradient-to-r from-[#B273DF] to-[#E77988] px-4 py-2 text-sm font-black text-white"
                       >
                         Finalizar
                       </button>

@@ -43,6 +43,7 @@ const CustomPopover: React.FC<CustomPopoverProps> = ({
 }) => {
   const popoverRef = React.useRef<HTMLDivElement>(null);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleClickOutside = (event: any) => {
     if (
       popoverRef.current &&

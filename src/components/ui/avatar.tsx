@@ -22,6 +22,7 @@ Avatar.displayName = AvatarPrimitive.Root.displayName;
 interface AvatarGroupProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
   className?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   max?: any;
   total?: number;
   custom?: boolean;
@@ -41,7 +42,7 @@ const AvatarGroup = React.forwardRef<HTMLDivElement, AvatarGroupProps>(
         )}
         {...props}
       >
-        {avatars.slice(0, max).map((avatar, index) => (
+        {avatars.slice(0, max).map((avatar) => (
           <React.Fragment key={`avatar-group-key-${faker.string.uuid()}`}>
             {avatar}
           </React.Fragment>
