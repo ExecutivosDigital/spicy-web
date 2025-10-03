@@ -27,6 +27,7 @@ export function AudioPlayer({
       {/* Use cn to merge base classes, AI class, size class, and any passed className */}
       <audio
         className={cn(
+          "ai",
           aiClass, // Add 'ai' class if isAI is true
           sizeClass, // Add the calculated size class
           className, // Add any custom classes passed via props

@@ -1,6 +1,7 @@
 import { Sheet, SheetContent } from "@/components/sheet";
 import { useApiContext } from "@/context/ApiContext";
 import { useChatContext } from "@/context/chatContext";
+import { cn } from "@/lib/utils";
 import clsx from "clsx";
 import { AnimatePresence, motion } from "framer-motion";
 import { Check, Loader2 } from "lucide-react";
@@ -25,6 +26,7 @@ export type Props = {
   open: boolean;
   onClose: () => void;
   modelName?: string;
+  modelPhoto?: string;
   // titleIntro?: string;
   // subtitleIntro?: string;
   // dataUrl?: string;
@@ -63,6 +65,7 @@ export default function PixSheetSteps({
   onClose,
   modelId,
   modelName = "Modelo",
+  modelPhoto,
   // titleIntro,
   // subtitleIntro,
   // dataUrl,
@@ -193,13 +196,13 @@ export default function PixSheetSteps({
         <SheetContent
           side="bottom"
           className={clsx(
-            "z-[90999] flex min-h-1/2 w-[100vw] flex-col items-center justify-between gap-0 self-center rounded-t-4xl bg-white p-0 outline-none md:rounded-t-none md:border-0 md:bg-transparent",
+            "z-[90999] flex min-h-1/2 w-[100vw] flex-col items-center justify-between gap-0 self-center rounded-t-4xl bg-neutral-900 p-0 outline-none md:rounded-t-none md:border-0 md:bg-transparent",
           )}
-          overlayClass="bg-[#BC5DFF]/20 backdrop-blur-sm "
+          overlayClass="bg-[#E77988]/5 backdrop-blur-sm "
           onKeyDown={(e: React.KeyboardEvent) => e.key === "Enter" && next()}
         >
           {/* container "cartão" */}
-          <div className="flex h-full min-h-[40vh] w-full p-2 text-neutral-900 md:min-h-[50vh] md:rounded-t-4xl md:bg-white lg:w-[500px]">
+          <div className="flex h-full min-h-[40vh] w-full p-2 text-neutral-900 md:min-h-[50vh] md:rounded-t-4xl md:bg-neutral-900 lg:w-[500px]">
             <div className="flex w-full flex-col overflow-hidden rounded-2xl">
               {/* header */}
               <header className="relative flex items-center justify-between gap-3 px-4 py-3 sm:px-5 sm:py-4">
@@ -218,7 +221,7 @@ export default function PixSheetSteps({
                             src={"/fire.png"}
                             className="h-6 w-6"
                           />
-                          <div className="leading-tight text-black">
+                          <div className="leading-tight text-white">
                             <div className="t text-sm font-extrabold">
                               Apoie o criador de Conteúdos
                             </div>
@@ -301,21 +304,13 @@ export default function PixSheetSteps({
                     <div className="flex flex-col items-center gap-2">
                       <div className="h-28 w-28 min-w-28 overflow-hidden rounded-full border-4 border-white bg-red-500 shadow-xl">
                         <img
-                          src={
-                            modelName === "José"
-                              ? "/ze/photos/avt.png"
-                              : "/gab/avt.png"
-                          }
+                          src={modelPhoto}
                           alt="avatar"
                           className="h-full w-full object-cover"
                         />
                       </div>
                       <div className="flex flex-row items-center gap-2">
-                        <div className="font-extrabold">
-                          {modelName === "José"
-                            ? "@ze.rodrigues66"
-                            : "@gabi_ferreiraofc"}
-                        </div>
+                        <div className="font-extrabold">{modelName}</div>
                         <Image
                           src="/verify.png"
                           alt="gabi"
@@ -370,33 +365,42 @@ export default function PixSheetSteps({
                             key={p.id}
                             variants={itemVariants}
                             onClick={() => {
+                              if (selectedPlanId !== "") {
+                                setSelectedPlanId("");
+                                setPlanValue(0);
+                                return;
+                              }
                               setSelectedPlanId(p.id);
                               setPlanValue(p.value);
                             }}
                             className={clsx(
-                              "flex w-full items-center justify-between rounded-xl border px-3 py-3",
+                              "flex w-full items-center justify-between rounded-xl border-2 bg-transparent px-3 py-3 text-white",
                               selected
-                                ? "border-violet-500 bg-violet-50"
-                                : "border-neutral-200 bg-white",
+                                ? "border-[#E77988]"
+                                : "border-neutral-500",
                             )}
                           >
-                            <div className="flex items-center gap-3">
-                              <div className="relative flex items-center justify-center">
-                                {/* <AvatarGroup urls={p.avatars} /> */}
-                                {selected && (
-                                  <div className="absolute flex items-center justify-center rounded-full bg-white p-1">
-                                    <Check className="h-5 w-5 rounded-full text-emerald-500" />
-                                  </div>
-                                )}
-                              </div>
-                              <div className="text-left">
+                            <div className="flex w-full items-center justify-between gap-3">
+                              <div className="relative flex items-center gap-2">
+                                <div
+                                  className={cn(
+                                    "flex items-center justify-center rounded-full border-2 p-1",
+                                    selected
+                                      ? "border-[#E77988]"
+                                      : "border-neutral-500",
+                                  )}
+                                >
+                                  {selected ? (
+                                    <Check className="h-5 w-5 rounded-full text-[#E77988]" />
+                                  ) : (
+                                    <div className="h-5 w-5 rounded-full" />
+                                  )}
+                                </div>
                                 <div className="text-[15px] leading-tight font-extrabold">
                                   {p.priceLabel}
                                 </div>
-                                <div className="text-[12px] text-neutral-500">
-                                  {p.periodLabel}
-                                </div>
                               </div>
+                              <div className="text-[12px]">{p.periodLabel}</div>
                             </div>
                           </motion.button>
                         );
@@ -408,7 +412,7 @@ export default function PixSheetSteps({
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.2 }}
                       onClick={generatePix}
-                      className="mt-2 w-full rounded-xl bg-gradient-to-r from-violet-500 to-fuchsia-500 px-4 py-3 text-sm font-black text-white"
+                      className="mt-2 w-full rounded-xl bg-gradient-to-r from-[#B273DF] to-[#E77988] px-4 py-3 text-sm font-black text-white"
                     >
                       {loadingPix ? (
                         <Loader2 className="m-auto h-4 w-4 animate-spin" />

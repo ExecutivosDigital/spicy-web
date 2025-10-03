@@ -1,6 +1,7 @@
 import { MessageProps } from "@/@types/global";
 import { useChatContext } from "@/context/chatContext";
-import { ArrowLeft, CheckCheck, Download } from "lucide-react";
+import { ArrowLeft, Download } from "lucide-react";
+import moment from "moment";
 import { useCookies } from "next-client-cookies";
 import Image from "next/image";
 import { useState } from "react";
@@ -38,7 +39,7 @@ const Messages = ({ message, className }: Props) => {
       {entity !== "USER" ? (
         <>
           <div className="group mb-4 ml-2 flex max-w-[calc(100%-8px)] items-start justify-start space-x-2 lg:mb-2 xl:mb-4 xl:ml-[50px] xl:max-w-[calc(100%-50px)] rtl:space-x-reverse">
-            <div className="flex flex-col items-end gap-1 rounded-2xl rounded-bl-none bg-[#BC5DFF]/60 px-2 py-1 xl:px-3 xl:py-2">
+            <div className="flex flex-col items-end gap-1 rounded-2xl rounded-bl-none bg-[#E77988]/60 px-2 py-1 xl:px-3 xl:py-2">
               <div className="flex w-full items-center gap-2 text-end text-xs lg:text-[8px] xl:text-xs">
                 <span className="text-default-500">
                   <span>
@@ -151,19 +152,8 @@ const Messages = ({ message, className }: Props) => {
           </div>
         </>
       ) : (
-        <div className="group mb-4 flex max-w-[calc(100%-8px)] items-end justify-end space-x-2 lg:mb-2 xl:mb-4 xl:max-w-[calc(100%-50px)]">
-          <div className="flex flex-col items-end gap-1 rounded-2xl rounded-br-none bg-sky-500/20 px-3 py-2">
-            <div className="flex items-center justify-start gap-2 text-xs lg:text-[8px] xl:text-xs">
-              <span className="text-default-500">
-                {new Date(createdAt).toLocaleDateString("pt-BR", {
-                  day: "numeric",
-                  month: "numeric",
-                  hour: "numeric",
-                  minute: "numeric",
-                })}
-              </span>
-              <CheckCheck className="text-primary lg:h-3 lg:w-3 xl:h-5 xl:w-5" />
-            </div>
+        <div className="group mb-4 flex max-w-[calc(100%-8px)] flex-col items-end justify-end gap-1 lg:mb-2 xl:mb-4 xl:max-w-[calc(100%-50px)]">
+          <div className="flex min-w-10 justify-center gap-1 rounded-3xl rounded-br-none bg-gradient-to-r from-[#B273DF] to-[#E77988] p-2 shadow-sm">
             <div className="group flex items-center gap-1">
               {audioUrl ? (
                 <div className="relative z-[1] break-normal whitespace-pre-wrap">
@@ -246,6 +236,9 @@ const Messages = ({ message, className }: Props) => {
                 </div>
               )}
             </div>
+          </div>
+          <div className="flex items-center justify-start gap-2 text-xs lg:text-[8px] xl:text-xs">
+            {moment(createdAt).format("DD/MM/YY - HH:mm")}
           </div>
         </div>
       )}

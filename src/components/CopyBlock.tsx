@@ -12,7 +12,7 @@ export function CopyBlock({
   return (
     <>
       <div className="grid gap-2">
-        <label className="text-[12px] text-neutral-500 tracking-wide">
+        <label className="text-[12px] tracking-wide text-neutral-500">
           Código Pix (copia e cola)
         </label>
         <div className="relative">
@@ -28,7 +28,7 @@ export function CopyBlock({
           onClick={onCopy}
           className="rounded-xl bg-gradient-to-r from-violet-500 to-fuchsia-500 px-4 py-2 text-sm font-black text-white"
         >
-          {copied ? "Copiado ✓" : `Copiar Pix da ${modelName}`}
+          {copied ? "Copiado ✓" : `Copiar Pix`}
         </button>
       </div>
     </>

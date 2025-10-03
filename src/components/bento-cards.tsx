@@ -12,7 +12,7 @@ export function GiftsBento() {
     { id: "g8", emoji: "🌹", title: "Rosa", price: "R$ 6" },
   ];
   return (
-    <div className="min-h-[calc(100dvh-56px)] bg-white px-3 py-3 pb-20">
+    <div className="min-h-[calc(100dvh-56px)] px-3 py-3 pb-20">
       <div className="grid auto-rows-[112px] grid-cols-2 gap-3">
         {gifts.map((g, i) => (
           <motion.button

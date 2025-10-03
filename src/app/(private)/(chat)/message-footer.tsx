@@ -255,10 +255,7 @@ const MessageFooter = ({ onSend }: { onSend: () => void }) => {
   return (
     <>
       <div
-        className={`relative flex w-full items-end gap-1 border-t border-t-zinc-200 bg-zinc-400/10 px-2 py-2 lg:gap-2 lg:px-2 xl:gap-4 xl:px-4`}
-        style={{
-          boxSizing: "border-box",
-        }}
+        className={`relative flex w-full items-end gap-1 border-t border-t-neutral-500 bg-neutral-800 px-2 py-2 lg:gap-2 lg:px-2 xl:gap-4 xl:px-4`}
       >
         <>
           <DropdownMenu
@@ -270,10 +267,10 @@ const MessageFooter = ({ onSend }: { onSend: () => void }) => {
             modal={false}
           >
             <DropdownMenuTrigger asChild>
-              <button className="group relative flex h-10 w-10 min-w-10 cursor-pointer items-center justify-center rounded-full border border-zinc-300 p-2 hover:border-[#BC5DFF]/60 disabled:opacity-50 xl:h-10 xl:w-10">
+              <button className="group relative flex h-10 w-10 min-w-10 cursor-pointer items-center justify-center rounded-full border border-neutral-500 p-2 hover:border-[#E77988]/60 disabled:opacity-50 xl:h-10 xl:w-10">
                 <Icon
                   icon="tabler:file-filled"
-                  className="cursor-pointer text-xl text-zinc-300 group-hover:text-[#BC5DFF]/60"
+                  className="cursor-pointer text-xl text-neutral-500 group-hover:text-[#E77988]/60"
                 />
                 <input
                   type="file"
@@ -300,7 +297,7 @@ const MessageFooter = ({ onSend }: { onSend: () => void }) => {
             {file && fileType === "image" && (
               <DropdownMenuContent
                 align="start"
-                className="w-max min-w-max border-zinc-200 bg-white"
+                className="w-max min-w-max border-neutral-500 bg-neutral-800"
               >
                 <DropdownMenuItem className="w-max p-0">
                   <div className="relative flex w-full flex-col gap-1 rounded-2xl bg-transparent p-2">
@@ -322,7 +319,7 @@ const MessageFooter = ({ onSend }: { onSend: () => void }) => {
               <DropdownMenuContent
                 align="start"
                 side="top"
-                className="w-max min-w-max border-zinc-200 bg-white"
+                className="w-max min-w-max border-neutral-500 bg-neutral-800"
               >
                 <DropdownMenuItem className="w-max p-0">
                   <div className="relative flex w-full flex-col gap-1 rounded-2xl bg-transparent p-2">
@@ -359,10 +356,10 @@ const MessageFooter = ({ onSend }: { onSend: () => void }) => {
                       onClick={() => setFile(null)}
                       className="absolute top-0 right-0 text-red-500"
                     />
-                    <div className="mx-auto flex h-10 w-10 flex-col items-center justify-center gap-2 rounded-full border border-[#BC5DFF]/60">
+                    <div className="mx-auto flex h-10 w-10 flex-col items-center justify-center gap-2 rounded-full border border-[#E77988]/60">
                       <Icon
                         icon="tabler:file-filled"
-                        className="h-4 w-4 text-xl text-[#BC5DFF]/60"
+                        className="h-4 w-4 text-xl text-[#E77988]/60"
                       />
                     </div>
                     <span className="truncate text-xs">{file.name}</span>
@@ -376,7 +373,7 @@ const MessageFooter = ({ onSend }: { onSend: () => void }) => {
                   onChange={handleChange}
                   ref={textareaRef}
                   placeholder="Escreva sua mensagem..."
-                  className="no-scrollbar border-default-200 bg-background h-10 max-h-10 min-h-10 w-full rounded-full border border-zinc-300 p-1 px-3 pt-2 pl-3 text-base break-words outline-none placeholder:text-base focus:border-[#BC5DFF]/60 disabled:opacity-50 xl:h-10"
+                  className="no-scrollbar border-default-200 bg-background h-10 max-h-10 min-h-10 w-full rounded-full border border-neutral-500 p-1 px-3 pt-2 pl-3 text-base break-words outline-none placeholder:text-base focus:border-[#E77988]/60 disabled:opacity-50 xl:h-10"
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey) {
                       e.preventDefault();
@@ -404,8 +401,8 @@ const MessageFooter = ({ onSend }: { onSend: () => void }) => {
                     onOpenChange={setIsEmojiPopoverOpen}
                   >
                     <PopoverTrigger asChild>
-                      <span className="group flex h-10 w-10 min-w-10 cursor-pointer items-center justify-center rounded-full border border-zinc-300 hover:border-[#BC5DFF]/60 xl:h-10 xl:w-10">
-                        <Annoyed className="h-6 w-6 text-zinc-300 group-hover:text-[#BC5DFF]/60" />
+                      <span className="group flex h-10 w-10 min-w-10 cursor-pointer items-center justify-center rounded-full border border-neutral-500 hover:border-[#E77988]/60 xl:h-10 xl:w-10">
+                        <Annoyed className="h-6 w-6 text-neutral-500 group-hover:text-[#E77988]/60" />
                       </span>
                     </PopoverTrigger>
                     <PopoverContent
@@ -429,9 +426,9 @@ const MessageFooter = ({ onSend }: { onSend: () => void }) => {
                 <Button
                   onClick={HandleSend}
                   type="submit"
-                  className="group relative z-[99999] h-10 w-10 min-w-10 overflow-hidden rounded-full border border-zinc-300 p-0 xl:h-10 xl:w-10"
+                  className="group relative z-[99999] h-10 w-10 min-w-10 overflow-hidden rounded-full border border-[#E77988]/60 p-0 xl:h-10 xl:w-10"
                 >
-                  <div className="absolute flex h-full w-full cursor-pointer items-center justify-center rounded-lg bg-[#BC5DFF]/60 group-hover:bg-transparent">
+                  <div className="absolute flex h-full w-full cursor-pointer items-center justify-center rounded-lg bg-[#E77988]/60 group-hover:bg-transparent">
                     {isRecording ? (
                       <div className="absolute flex h-full w-full items-center justify-center gap-0.5">
                         <div className="animate-recording h-1.5 w-1.5 rounded-full bg-white delay-200"></div>
@@ -444,7 +441,7 @@ const MessageFooter = ({ onSend }: { onSend: () => void }) => {
                       <>
                         <Mic
                           className={cn(
-                            "absolute top-1/2 left-1/2 h-6 w-6 -translate-x-1/2 -translate-y-1/2 text-white transition duration-100 group-hover:text-[#BC5DFF]/60",
+                            "absolute top-1/2 left-1/2 h-6 w-6 -translate-x-1/2 -translate-y-1/2 text-white transition duration-100 group-hover:text-[#E77988]/60",
                             message.length === 0 && !file
                               ? "opacity-100"
                               : "translate-x-full opacity-0",
@@ -452,7 +449,7 @@ const MessageFooter = ({ onSend }: { onSend: () => void }) => {
                         />
                         <SendHorizontal
                           className={cn(
-                            "absolute top-1/2 left-1/2 h-6 w-6 -translate-x-1/2 -translate-y-1/2 text-white transition duration-100 group-hover:text-[#BC5DFF]/60",
+                            "absolute top-1/2 left-1/2 h-6 w-6 -translate-x-1/2 -translate-y-1/2 text-white transition duration-100 group-hover:text-[#E77988]/60",
                             message.length === 0 && !file
                               ? "opacity-0"
                               : "opacity-100",

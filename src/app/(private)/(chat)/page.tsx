@@ -147,7 +147,6 @@ const ChatPage = () => {
       `/signature/validation/${chat?.model.id}`,
       true,
     );
-    console.log("response: ", response);
     if (response.status === 403) {
       setOpenQrCode(true);
     }
@@ -362,7 +361,7 @@ const ChatPage = () => {
   const viewportRef = useRef<HTMLDivElement | null>(null);
 
   return (
-    <div className="flex h-screen flex-col pb-20 lg:gap-2 xl:gap-5 xl:pb-0 rtl:space-x-reverse">
+    <div className="flex h-screen flex-col bg-neutral-900 pb-20 text-white lg:gap-2 xl:gap-5 xl:pb-0 rtl:space-x-reverse">
       {isLg && showInfo && (
         <div
           className="bg-background/60 absolute inset-0 z-40 w-full flex-1 rounded-md backdrop-blur-sm backdrop-filter"
@@ -390,12 +389,12 @@ const ChatPage = () => {
                 "absolute top-0 z-[999] h-full w-80 max-w-[400px]": isLg,
                 "flex-none lg:max-w-[250px] lg:min-w-[250px] xl:max-w-[350px] xl:min-w-[350px]":
                   !isLg,
-                "left-screen bg-white": isLg && showContactSidebar,
+                "left-screen bg-neutral-900": isLg && showContactSidebar,
                 "-left-full": isLg && !showContactSidebar,
               })}
             >
-              <Card className="h-full rounded-none pb-0">
-                <div className="relative h-16 border-b border-neutral-100">
+              <Card className="h-full rounded-none border-r border-r-neutral-500 pb-0">
+                <div className="relative h-16 border-b border-neutral-500">
                   <ChevronLeft
                     className="absolute top-1/2 left-2 -translate-y-1/2 lg:hidden"
                     onClick={() => setShowContactSidebar(false)}
@@ -564,6 +563,7 @@ const ChatPage = () => {
           onClose={() => setOpenQrCode(false)}
           modelId={selectedChat.model.id}
           modelName={selectedChat?.model.name}
+          modelPhoto={selectedChat?.model.photoUrl}
         />
       )}
     </div>

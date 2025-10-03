@@ -20,8 +20,8 @@ const ContactList = ({
   return (
     <div
       className={cn(
-        "flex cursor-pointer border-l-2 border-transparent px-3 py-2 transition duration-150 hover:bg-[#BC5DFF]/20 lg:max-w-[250px] lg:min-w-[250px] lg:gap-2 lg:px-2 lg:py-1 xl:max-w-[350px] xl:min-w-[350px] xl:gap-4 xl:px-3 xl:py-2",
-        selectedChatId === id && "bg-[#BC5DFF]/20",
+        "flex cursor-pointer border-l-2 border-transparent px-3 py-2 transition duration-150 hover:bg-[#E77988]/20 lg:max-w-[250px] lg:min-w-[250px] lg:gap-2 lg:px-2 lg:py-1 xl:max-w-[350px] xl:min-w-[350px] xl:gap-4 xl:px-3 xl:py-2",
+        selectedChatId === id && "bg-[#E77988]/20",
         // {
         //   "lg:border-primary/70 lg:bg-default-200":
         //     id === (selectedChatId as any),
@@ -32,7 +32,9 @@ const ContactList = ({
       <div className="flex flex-1 items-center gap-2 xl:gap-3">
         <div className="relative inline-block lg:h-6 lg:w-6 xl:h-10 xl:w-10">
           <Avatar className="lg:h-6 lg:w-6 xl:h-10 xl:w-10">
-            {model.photoUrl && <AvatarImage src={model.photoUrl} />}
+            {model.photoUrl && (
+              <AvatarImage className="object-cover" src={model.photoUrl} />
+            )}
             <AvatarFallback className="uppercase">
               {model.name.slice(0, 2)}
             </AvatarFallback>

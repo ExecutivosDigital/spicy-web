@@ -23,6 +23,7 @@ interface ChatContextProps {
   setIsMessageLoading: (value: boolean) => void;
   paymentWebhookConfirmation: boolean;
   setUserId: (value: string | undefined) => void;
+  handleGetChats: () => Promise<void>;
 }
 
 const ChatContext = createContext<ChatContextProps | undefined>(undefined);
@@ -53,9 +54,8 @@ export const ChatContextProvider = ({ children }: ProviderProps) => {
 
   async function handleGetChats() {
     setIsChatsLoading(true);
-
     const connect = await GetAPI("/chat", true);
-
+    console.log("connect: ", connect);
     if (connect.status === 200) {
       setChats(connect.body.chats);
     }
@@ -65,11 +65,9 @@ export const ChatContextProvider = ({ children }: ProviderProps) => {
 
   async function handleGetChatMessages() {
     if (!selectedChatId) return;
-
     setIsMessageLoading(true);
-
     const connect = await GetAPI(`/message/${selectedChatId}`, true);
-
+    console.log("connect: ", connect);
     if (connect.status === 200) {
       setSelectedChatMessages(connect.body.messages);
     }
@@ -89,7 +87,6 @@ export const ChatContextProvider = ({ children }: ProviderProps) => {
       }
 
       socket.on("newMessage", (message: MessageProps) => {
-        console.log("entrou aqui");
         if (message.chatId === selectedChatId) {
           setSelectedChatMessages((prev) => [...prev, message]);
         }
@@ -142,6 +139,7 @@ export const ChatContextProvider = ({ children }: ProviderProps) => {
         setIsMessageLoading,
         paymentWebhookConfirmation,
         setUserId,
+        handleGetChats,
       }}
     >
       {children}
