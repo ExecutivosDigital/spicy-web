@@ -6,7 +6,7 @@ import { useChatContext } from "@/context/chatContext";
 import clsx from "clsx";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import React, { useEffect } from "react";
+import React from "react";
 import { Header } from "./header";
 
 export type GalleryItem = {
@@ -44,6 +44,7 @@ type Props = {
   inverse?: boolean;
   className?: string;
   setOpenQrCode: React.Dispatch<React.SetStateAction<boolean>>;
+  hasNotPayed: boolean;
 };
 
 /* ---------------- helpers de tipo/filtragem e paginação ---------------- */
@@ -141,11 +142,11 @@ function useVideoPoster(src: string | undefined) {
         return;
       }
 
-      // se já é uma imagem, só usa
-      if (!/\.(mp4|webm|ogg)$/i.test(src)) {
-        setPoster(src);
-        return;
-      }
+      // // se já é uma imagem, só usa
+      // if (!/\.(mp4|webm|ogg)$/i.test(src)) {
+      //   setPoster(src);
+      //   return;
+      // }
 
       try {
         const video = document.createElement("video");
@@ -217,10 +218,12 @@ function Card({
   item,
   className,
   setOpenQrCode,
+  hasNotPayed,
 }: {
   item: GalleryItem;
   className?: string;
   setOpenQrCode: React.Dispatch<React.SetStateAction<boolean>>;
+  hasNotPayed: boolean;
 }) {
   const isPlace = !!item.placeholder;
   const video = !isPlace && isVideo(item);
@@ -237,7 +240,7 @@ function Card({
         })}
         onClick={() => {
           if (isPlace) return;
-          if (item.locked && setOpenQrCode) {
+          if (item.locked && hasNotPayed && setOpenQrCode) {
             setOpenQrCode(true);
             return;
           }
@@ -250,7 +253,18 @@ function Card({
           {isPlace ? (
             <div className="h-full w-full bg-neutral-800/60" />
           ) : loading ? (
-            <div className="h-full w-full animate-pulse bg-neutral-800" />
+            <div className="h-full w-full animate-pulse bg-red-800" />
+          ) : video ? (
+            <video
+              src={item.src}
+              poster={cover ?? makePlaceholder()}
+              className="h-full w-full object-cover"
+              muted
+              playsInline
+              preload="metadata"
+              // se quiser permitir tocar direto aqui:
+              // controls
+            />
           ) : (
             <img
               src={cover ?? makePlaceholder()}
@@ -266,7 +280,7 @@ function Card({
             </div>
           ) : null}
 
-          {!isPlace && item.locked ? (
+          {!isPlace && item.locked && hasNotPayed ? (
             <div className="absolute inset-0 grid h-full w-full place-items-center rounded-2xl bg-[#E77988]/5 backdrop-blur-xl">
               <Image src="/lock.png" alt="lock" width={40} height={40} />
             </div>
@@ -284,6 +298,7 @@ export default function GalleryMosaic({
   inverse,
   className,
   setOpenQrCode,
+  hasNotPayed,
 }: Props) {
   const a = items[0];
   const b = items[1];
@@ -310,6 +325,7 @@ export default function GalleryMosaic({
                   key={`top-left-${i}`}
                   item={it}
                   className="h-[125px]"
+                  hasNotPayed={hasNotPayed}
                 />
               ) : null,
             )}
@@ -320,6 +336,7 @@ export default function GalleryMosaic({
               setOpenQrCode={setOpenQrCode}
               item={a}
               className="col-span-1 row-span-2 h-[262px]"
+              hasNotPayed={hasNotPayed}
             />
           )
         )}
@@ -330,6 +347,7 @@ export default function GalleryMosaic({
               setOpenQrCode={setOpenQrCode}
               item={c}
               className="col-span-1 row-span-2 h-[262px]"
+              hasNotPayed={hasNotPayed}
             />
           )
         ) : (
@@ -341,6 +359,7 @@ export default function GalleryMosaic({
                   key={`top-right-${i}`}
                   item={it}
                   className="h-[125px]"
+                  hasNotPayed={hasNotPayed}
                 />
               ) : null,
             )}
@@ -357,6 +376,7 @@ export default function GalleryMosaic({
               key={`bottom-${i}`}
               item={it}
               className="h-40"
+              hasNotPayed={hasNotPayed}
             />
           ) : null,
         )}
@@ -370,12 +390,12 @@ export default function GalleryMosaic({
 export function GalleryMosaicPager({
   setOpenQrCode,
   className,
-  handleVerify,
+  hasNotPayed,
 }: {
   /** 0: Tudo, 1: Fotos (desbloq), 2: Fotos (com dot = bloqueadas), 3: Vídeos (com dot) */
   className?: string;
   setOpenQrCode: React.Dispatch<React.SetStateAction<boolean>>;
-  handleVerify?: (chatId: string) => void;
+  hasNotPayed: boolean;
 }) {
   const { GetAPI } = useApiContext();
   const { selectedChat } = useChatContext();
@@ -437,12 +457,6 @@ export function GalleryMosaicPager({
   const filtered = applyFilter(allMediaItems, tabMap[0] ?? "all");
   const pages = chunkAndPad(filtered, 6);
 
-  useEffect(() => {
-    if (selectedChat) {
-      handleVerify?.(selectedChat.id);
-    }
-  }, [selectedChat]);
-
   return (
     <div className={className}>
       <Header />
@@ -453,6 +467,7 @@ export function GalleryMosaicPager({
           inverse={pIdx % 2 === 1}
           setOpenQrCode={setOpenQrCode}
           className="mb-6"
+          hasNotPayed={hasNotPayed}
         />
       ))}
     </div>

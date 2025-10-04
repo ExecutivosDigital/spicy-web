@@ -24,6 +24,9 @@ interface ChatContextProps {
   paymentWebhookConfirmation: boolean;
   setUserId: (value: string | undefined) => void;
   handleGetChats: () => Promise<void>;
+  handleVerify: () => Promise<void>;
+  isPaymentConfirmed: boolean;
+  setIsPaymentConfirmed: (value: boolean) => void;
 }
 
 const ChatContext = createContext<ChatContextProps | undefined>(undefined);
@@ -46,6 +49,7 @@ export const ChatContextProvider = ({ children }: ProviderProps) => {
   const [userId, setUserId] = useState(
     cookies.get(process.env.NEXT_PUBLIC_USER_ID as string),
   );
+  const [isPaymentConfirmed, setIsPaymentConfirmed] = useState(false);
 
   const [selectedChatMessages, setSelectedChatMessages] = useState<
     MessageProps[]
@@ -75,6 +79,26 @@ export const ChatContextProvider = ({ children }: ProviderProps) => {
     }
 
     setIsMessageLoading(false);
+  }
+
+  async function handleVerify() {
+    console.log("entrou aqui");
+
+    console.log("selectedChat: ", selectedChat);
+    if (!selectedChat) return;
+
+    const response = await GetAPI(
+      `/signature/validation/${selectedChat?.model.id}`,
+      true,
+    );
+
+    console.log(response);
+    if (response.status === 403) {
+      // setOpenQrCode(true);
+      setIsPaymentConfirmed(false);
+    } else {
+      setIsPaymentConfirmed(true);
+    }
   }
 
   useEffect(() => {
@@ -112,12 +136,14 @@ export const ChatContextProvider = ({ children }: ProviderProps) => {
 
       socket.on("payment", () => {
         setPaymentWebHookConfirmation(true);
+        setIsPaymentConfirmed(true);
       });
     }
   }, [socket, selectedChatId, userId]);
 
   useEffect(() => {
     handleGetChatMessages();
+    handleVerify();
   }, [selectedChatId]);
 
   useEffect(() => {
@@ -142,6 +168,9 @@ export const ChatContextProvider = ({ children }: ProviderProps) => {
         paymentWebhookConfirmation,
         setUserId,
         handleGetChats,
+        handleVerify,
+        isPaymentConfirmed,
+        setIsPaymentConfirmed,
       }}
     >
       {children}

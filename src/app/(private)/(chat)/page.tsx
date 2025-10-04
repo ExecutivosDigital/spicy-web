@@ -1,13 +1,12 @@
 "use client";
 import { MessageProps } from "@/@types/global";
+import PixSheetSteps from "@/components/PixSheetSteps";
 import { GiftsBento } from "@/components/bento-cards";
 import { GalleryMosaicPager } from "@/components/galery";
 import { Header } from "@/components/header";
-import PixSheetSteps from "@/components/PixSheetSteps";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useApiContext } from "@/context/ApiContext";
 import { useChatContext } from "@/context/chatContext";
 import { useMediaQuery } from "@/hook/use-media-query";
 import { cn } from "@/lib/utils";
@@ -38,11 +37,10 @@ const ChatPage = () => {
     chats,
     isChatsLoading,
     selectedChatId,
-    setSelectedChatId,
     selectedChatMessages,
     isMessageLoading,
-    setSelectedChat,
     selectedChat,
+    isPaymentConfirmed,
   } = useChatContext();
   const [page, setPage] = useState<0 | 1 | 2>(1);
   const pagesX = ["0%", "-33.3333%", "-66.6666%"];
@@ -51,7 +49,6 @@ const ChatPage = () => {
   const containerRef = useRef(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const [openQrCode, setOpenQrCode] = useState<boolean>(false);
-  const [hasNotPayed, setHasNotPayed] = useState<boolean>(true);
 
   const handleScrollToBottom = () => {
     setIsAutoScrollEnabled(true);
@@ -127,29 +124,9 @@ const ChatPage = () => {
   const [showContactSidebar, setShowContactSidebar] = useState<boolean>(false);
 
   const [showInfo, setShowInfo] = useState<boolean>(false);
-  const { GetAPI } = useApiContext();
-
-  async function handleVerify(chatId: string) {
-    const chat = chats.find((chat) => chat.id === chatId);
-
-    if (!chat) return;
-    const response = await GetAPI(
-      `/signature/validation/${chat?.model.id}`,
-      true,
-    );
-    if (response.status === 403) {
-      // setOpenQrCode(true);
-      setHasNotPayed(true);
-    } else {
-      setSelectedChat(chat);
-      setSelectedChatId(chatId);
-      setHasNotPayed(false);
-    }
-  }
 
   const openChat = (chatId: string) => {
     router.replace(`/?id=${chatId}`);
-    handleVerify(chatId);
     setShowInfo(false);
     setIsAutoScrollEnabled(true);
     setShowContactSidebar(false);
@@ -300,6 +277,8 @@ const ChatPage = () => {
   //   );
   // }
 
+  console.log(isPaymentConfirmed);
+
   return (
     <div className="flex h-screen flex-col gap-2 bg-neutral-900 pb-20 text-white xl:gap-5 xl:pb-0 rtl:space-x-reverse">
       {isLg && showInfo && (
@@ -385,7 +364,7 @@ const ChatPage = () => {
                     <Card className="relative flex h-full flex-col">
                       <Header />
                       <CardContent className="relative h-full overflow-y-auto p-2">
-                        {hasNotPayed && (
+                        {!isPaymentConfirmed && (
                           <div className="absolute top-0 left-0 z-[999999] h-full w-full bg-[#E77988]/5 backdrop-blur-2xl" />
                         )}
                         <div
@@ -457,13 +436,13 @@ const ChatPage = () => {
                       <CardFooter className="flex-none flex-col p-0">
                         <MessageFooter
                           onSend={() => {
-                            if (hasNotPayed) {
+                            if (!isPaymentConfirmed) {
                               return setOpenQrCode(true);
                             }
                             setIsAutoScrollEnabled(true);
                             handleScrollToBottom();
                           }}
-                          hasNotPayed={hasNotPayed}
+                          hasNotPayed={!isPaymentConfirmed}
                         />
                       </CardFooter>
                     </Card>
@@ -478,7 +457,7 @@ const ChatPage = () => {
           {/* 2 – Galeria */}
           <section className="w-[100%] overflow-y-auto">
             <GalleryMosaicPager
-              handleVerify={handleVerify}
+              hasNotPayed={!isPaymentConfirmed}
               setOpenQrCode={setOpenQrCode}
             />
           </section>
