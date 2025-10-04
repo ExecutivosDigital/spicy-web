@@ -17,7 +17,7 @@ export function CopyBlock({
           <textarea
             readOnly
             value={copyAndPaste || ""}
-            className="min-h-[92px] w-full resize-none rounded-xl border border-neutral-200 bg-neutral-50 px-3.5 py-3 text-[13px] leading-relaxed outline-none"
+            className="min-h-[92px] w-full resize-none rounded-xl border border-neutral-600 bg-neutral-800 px-3.5 py-3 text-[13px] leading-relaxed text-gray-100 outline-none"
           />
         </div>
       </div>

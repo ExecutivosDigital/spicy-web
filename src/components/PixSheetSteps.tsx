@@ -54,9 +54,30 @@ const plans: Plan[] = [
   {
     id: "1",
     priceLabel: "R$29,90",
-    periodLabel: "15 dias",
+    periodLabel: "Converse todos os dias",
     avatars: [],
     value: 29.9,
+  },
+  {
+    id: "2",
+    priceLabel: "R$49,90",
+    periodLabel: "Mostre seu apoio",
+    avatars: [],
+    value: 49.9,
+  },
+  {
+    id: "3",
+    priceLabel: "R$107,90",
+    periodLabel: "Fã incondicional",
+    avatars: [],
+    value: 107.9,
+  },
+  {
+    id: "3",
+    priceLabel: "R$197,90",
+    periodLabel: "Apoiador Master",
+    avatars: [],
+    value: 197.9,
   },
 ];
 
@@ -87,11 +108,11 @@ export default function PixSheetSteps({
   const [step, setStep] = React.useState<StepKey>("intro");
   const [showHeaderHero, setShowHeaderHero] = React.useState(false);
   const [plansReady, setPlansReady] = React.useState(false);
-  const [planValue, setPlanValue] = React.useState(0);
+  const [planValue, setPlanValue] = React.useState(29.9);
   const [localQrBase64, setLocalQrBase64] = React.useState<string>("");
   const [localPayload, setLocalPayload] = React.useState<string>("");
   const [loadingPix, setLoadingPix] = React.useState<boolean>(false);
-  const [selectedPlanId, setSelectedPlanId] = React.useState<string>("");
+  const [selectedPlanId, setSelectedPlanId] = React.useState<string>("1");
 
   const localDataUrl = localQrBase64
     ? `data:image/png;base64,${localQrBase64}`
@@ -280,19 +301,19 @@ export default function PixSheetSteps({
                       onCopy={handleCopyFallback}
                     />
 
-                    <div className="flex items-center justify-between gap-2 pt-1">
-                      <button
+                    <div className="flex items-center justify-center gap-2 pt-1">
+                      {/* <button
                         onClick={() => setStepSafe("plans")}
                         className="rounded-xl border border-neutral-200 bg-white px-4 py-2 text-sm font-semibold transition hover:bg-neutral-50"
                       >
                         Voltar
-                      </button>
-                      <button
-                        onClick={() => setStepSafe("qr_confirm")}
+                      </button> */}
+                      <div
+                        // onClick={() => setStepSafe("qr_confirm")}
                         className="rounded-xl bg-gradient-to-r from-[#B273DF] to-[#E77988] px-4 py-2 text-sm font-black text-white"
                       >
-                        Confirmar Pagamento
-                      </button>
+                        Aguarde enquanto confirmamos seu pagamento
+                      </div>
                     </div>
                   </>
                 )}
@@ -425,6 +446,9 @@ export default function PixSheetSteps({
                         ""
                       )}
                     </motion.button>
+                    <span className="w-full text-center text-[10px] text-gray-500">
+                      Todos os planos garantem acesso por 30 dias
+                    </span>
                   </>
                 )}
               </div>

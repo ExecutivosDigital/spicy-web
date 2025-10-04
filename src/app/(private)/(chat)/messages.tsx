@@ -26,7 +26,7 @@ const Messages = ({ message, className }: Props) => {
       {entity !== "USER" ? (
         <>
           <div className="group mb-4 ml-2 flex max-w-[calc(100%-8px)] flex-col items-start justify-start gap-1 space-x-2 lg:mb-2 xl:mb-4 xl:ml-[50px] xl:max-w-[calc(100%-50px)] rtl:space-x-reverse">
-            <div className="flex min-w-10 justify-center gap-1 rounded-3xl rounded-bl-none bg-gradient-to-r from-[#B273DF] to-[#E77988] p-2 shadow-sm">
+            <div className="flex min-w-10 justify-center gap-1 rounded-3xl rounded-bl-none bg-neutral-700 p-2 shadow-sm">
               <div className="flex items-center gap-1">
                 {fileUrl ? (
                   <div className="relative z-[1] break-normal whitespace-pre-wrap">
@@ -114,14 +114,14 @@ const Messages = ({ message, className }: Props) => {
                 <span>
                   {(selectedChat && selectedChat.model.name) || ""} {""}
                 </span>
-                {moment(createdAt).format("DD/MM/YY - HH:mm")}
+                {moment(createdAt).format("HH:mm")}
               </span>
             </div>
           </div>
         </>
       ) : (
         <div className="group mb-4 flex max-w-[calc(100%-8px)] flex-col items-end justify-end gap-1 lg:mb-2 xl:mb-4 xl:max-w-[calc(100%-50px)]">
-          <div className="flex min-w-10 justify-center gap-1 rounded-3xl rounded-br-none bg-neutral-800 p-2 shadow-sm">
+          <div className="flex min-w-10 justify-center gap-1 rounded-3xl rounded-br-none bg-gradient-to-r from-[#4945de] to-[#4945de] p-2 shadow-sm">
             <div className="group flex items-center gap-1">
               {audioUrl ? (
                 <div className="relative z-[1] break-normal whitespace-pre-wrap">
@@ -206,7 +206,7 @@ const Messages = ({ message, className }: Props) => {
             </div>
           </div>
           <div className="flex items-center justify-start gap-2 text-xs lg:text-[8px] xl:text-xs">
-            {moment(createdAt).format("DD/MM/YY - HH:mm")}
+            {moment(createdAt).format("HH:mm")}
           </div>
         </div>
       )}
