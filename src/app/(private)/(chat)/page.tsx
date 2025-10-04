@@ -12,7 +12,14 @@ import { useMediaQuery } from "@/hook/use-media-query";
 import { cn } from "@/lib/utils";
 import clsx from "clsx";
 import { motion } from "framer-motion";
-import { ArrowDown, ChevronLeft, ImageIcon, MessageCircle } from "lucide-react";
+import {
+  ArrowDown,
+  ChevronLeft,
+  ImageIcon,
+  MessageCircle,
+  X,
+} from "lucide-react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import Blank from "./blank";
@@ -42,7 +49,7 @@ const ChatPage = () => {
     selectedChat,
     isPaymentConfirmed,
   } = useChatContext();
-  const [page, setPage] = useState<0 | 1 | 2>(1);
+  const [page, setPage] = useState<0 | 1 | 2>(2);
   const pagesX = ["0%", "-33.3333%", "-66.6666%"];
   const initialPageRef = useRef(page);
   const lastMsgIdRef = useRef<string | null>(null);
@@ -277,7 +284,8 @@ const ChatPage = () => {
   //   );
   // }
 
-  console.log(isPaymentConfirmed);
+  const [isMediaOpen, setIsMediaOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<GalleryItem | null>(null);
 
   return (
     <div className="flex h-screen flex-col gap-2 bg-neutral-900 pb-20 text-white xl:gap-5 xl:pb-0 rtl:space-x-reverse">
@@ -459,11 +467,71 @@ const ChatPage = () => {
             <GalleryMosaicPager
               hasNotPayed={!isPaymentConfirmed}
               setOpenQrCode={setOpenQrCode}
+              setSelectedItem={setSelectedItem}
+              setIsMediaOpen={setIsMediaOpen}
             />
           </section>
         </motion.div>
       </div>
       <BottomBar />
+      {selectedItem && isMediaOpen && (
+        <div
+          onClick={() => {
+            setSelectedItem(null);
+            setIsMediaOpen(false);
+          }}
+          className="fixed top-0 left-0 z-[9999] flex h-full w-full bg-black/20 backdrop-blur-sm"
+        >
+          {selectedItem.mediaType === "image" ? (
+            <div
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+              }}
+              className="relative mx-auto mt-[calc(50vh-300px)] h-min max-h-[90vh] w-80 overflow-hidden rounded-lg object-contain xl:mt-[calc(50vh-400px)] xl:h-[80vh] xl:w-auto"
+            >
+              <X
+                className="absolute top-2 left-2 cursor-pointer"
+                onClick={() => {
+                  setSelectedItem(null);
+                  setIsMediaOpen(false);
+                }}
+              />
+              <Image
+                src={selectedItem.src}
+                alt={selectedItem.alt ?? ""}
+                quality={100}
+                width={1000}
+                height={1500}
+                className="h-full w-full"
+              />
+            </div>
+          ) : (
+            <div
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+              }}
+              className="relative mx-auto mt-[calc(50vh-300px)] h-min max-h-[90vh] w-80 overflow-hidden rounded-lg object-contain xl:mt-[calc(50vh-400px)] xl:h-[80vh] xl:w-auto"
+            >
+              <X
+                className="absolute top-2 left-2 cursor-pointer"
+                onClick={() => {
+                  setSelectedItem(null);
+                  setIsMediaOpen(false);
+                }}
+              />
+              <video
+                src={selectedItem.src}
+                controls
+                autoPlay
+                muted
+                className="h-full w-full"
+              />
+            </div>
+          )}
+        </div>
+      )}
       {/* <Lightbox
         open={lightboxOpen}
         images={lightboxItems}

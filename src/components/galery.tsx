@@ -1,12 +1,14 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useApiContext } from "@/context/ApiContext";
 import { useChatContext } from "@/context/chatContext";
 // components/GalleryMosaic.tsx
+import { cn } from "@/lib/utils";
 import clsx from "clsx";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Header } from "./header";
 
 export type GalleryItem = {
@@ -45,6 +47,8 @@ type Props = {
   className?: string;
   setOpenQrCode: React.Dispatch<React.SetStateAction<boolean>>;
   hasNotPayed: boolean;
+  setSelectedItem: React.Dispatch<React.SetStateAction<GalleryItem | null>>;
+  setIsMediaOpen: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 /* ---------------- helpers de tipo/filtragem e paginação ---------------- */
@@ -96,120 +100,72 @@ function isVideo(item: GalleryItem) {
   return /\.(mp4|webm|ogg)$/i.test(item?.src);
 }
 
-/** gera um placeholder simples via canvas (sempre disponível no cliente) */
-function makePlaceholder(w = 800, h = 450) {
-  if (typeof document === "undefined") {
-    // SSR fallback: 1x1 gif transparente
-    return "data:image/gif;base64,R0lGODlhAQABAAAAACw=";
-  }
-  const c = document.createElement("canvas");
-  c.width = w;
-  c.height = h;
-  const ctx = c.getContext("2d")!;
-  // fundo
-  ctx.fillStyle = "#111827"; // slate-900
-  ctx.fillRect(0, 0, w, h);
-  // ícone "play" decorativo
-  ctx.fillStyle = "rgba(255,255,255,0.85)";
-  const size = Math.min(w, h) * 0.22;
-  ctx.beginPath();
-  ctx.moveTo(w / 2 - size / 2, h / 2 - size / 1.5 / 2);
-  ctx.lineTo(w / 2 + size / 2, h / 2);
-  ctx.lineTo(w / 2 - size / 2, h / 2 + size / 1.5 / 2);
-  ctx.closePath();
-  ctx.fill();
-  // texto
-  ctx.font = `${Math.round(
-    h * 0.06,
-  )}px system-ui, -apple-system, Segoe UI, Roboto`;
-  ctx.fillStyle = "rgba(255,255,255,0.9)";
-  ctx.textAlign = "center";
-  ctx.fillText("vídeo", w / 2, h * 0.85);
-  return c.toDataURL("image/png");
-}
-
 /** Hook: gera poster client-side sem reproduzir o vídeo */
-function useVideoPoster(src: string | undefined) {
-  const [poster, setPoster] = React.useState<string | null>(null);
+function useVideoPoster(src: string, opts?: { time?: number }) {
+  const [poster, setPoster] = useState<string | null>(null);
+  const [error, setError] = useState<unknown>(null);
 
-  React.useEffect(() => {
-    let cancelled = false;
-    async function run() {
-      if (!src) return;
+  useEffect(() => {
+    if (!src) return;
+    let aborted = false;
 
-      // no SSR
-      if (typeof document === "undefined") {
-        return;
-      }
-
-      // // se já é uma imagem, só usa
-      // if (!/\.(mp4|webm|ogg)$/i.test(src)) {
-      //   setPoster(src);
-      //   return;
-      // }
-
+    const captureFrame = async () => {
       try {
-        const video = document.createElement("video");
-        video.crossOrigin = "anonymous";
-        video.preload = "metadata";
-        video.muted = true; // nunca vamos tocar
-        video.playsInline = true;
-        video.src = src;
+        const v = document.createElement("video");
+        v.crossOrigin = "anonymous"; // requires CORS on the server
+        v.preload = "auto"; // ensure data is actually fetched
+        v.src = src;
 
-        // aguarda metadados
-        await new Promise<void>((res, rej) => {
-          const t = setTimeout(() => rej(new Error("timeout metadata")), 8000);
-          video.onloadedmetadata = () => {
-            clearTimeout(t);
-            res();
-          };
-          video.onerror = () => {
-            clearTimeout(t);
-            rej(new Error("metadata error"));
-          };
+        // Wait for metadata so we have dimensions and duration
+        await new Promise<void>((resolve, reject) => {
+          const onLoaded = () => resolve();
+          const onErr = (e: any) => reject(e);
+          v.addEventListener("loadedmetadata", onLoaded, { once: true });
+          v.addEventListener("error", onErr, { once: true });
         });
+        if (aborted) return;
 
-        // posiciona ~0.1s para fugir de telas pretas
-        const target = Math.min(0.1, (video.duration || 1) - 0.05);
-        await new Promise<void>((res, rej) => {
-          const t = setTimeout(() => rej(new Error("timeout seeked")), 8000);
-          const onSeeked = () => {
-            clearTimeout(t);
-            res();
-          };
-          video.currentTime = target > 0 ? target : 0;
-          video.addEventListener("seeked", onSeeked, { once: true });
-          video.addEventListener(
-            "error",
-            () => {
-              clearTimeout(t);
-              rej(new Error("seek error"));
-            },
-            { once: true },
-          );
+        // Pick a safe time a bit into the video, but before the end
+        const t = Math.max(
+          0.1,
+          Math.min(opts?.time ?? 0.8, (v.duration || 1) - 0.2),
+        );
+        v.currentTime = t;
+
+        // Wait for the frame to actually be decoded
+        await new Promise<void>((resolve) => {
+          const done = () => resolve();
+
+          const rvfc = (v as any).requestVideoFrameCallback;
+          if (typeof rvfc === "function") {
+            rvfc.call(v, () => done());
+          } else {
+            v.addEventListener("seeked", done, { once: true });
+          }
         });
+        if (aborted) return;
 
+        // Now draw
         const canvas = document.createElement("canvas");
-        const w = video.videoWidth || 800;
-        const h = video.videoHeight || 450;
-        canvas.width = w;
-        canvas.height = h;
+        canvas.width = v.videoWidth || 1280;
+        canvas.height = v.videoHeight || 720;
         const ctx = canvas.getContext("2d");
-        if (!ctx) throw new Error("no ctx");
-        ctx.drawImage(video, 0, 0, w, h);
-        const data = canvas.toDataURL("image/jpeg", 0.85);
-        if (!cancelled) setPoster(data);
-      } catch {
-        if (!cancelled) setPoster(makePlaceholder());
-      }
-    }
-    run();
-    return () => {
-      cancelled = true;
-    };
-  }, [src]);
+        ctx?.drawImage(v, 0, 0, canvas.width, canvas.height);
 
-  return poster;
+        const dataUrl = canvas.toDataURL("image/jpeg", 0.8);
+        if (!aborted) setPoster(dataUrl);
+      } catch (e) {
+        if (!aborted) setError(e);
+      }
+    };
+
+    captureFrame();
+    return () => {
+      aborted = true;
+    };
+  }, [src, opts?.time]);
+
+  return { poster, error };
 }
 
 /* -------------------------------- Card -------------------------------- */
@@ -219,17 +175,19 @@ function Card({
   className,
   setOpenQrCode,
   hasNotPayed,
+  setSelectedItem,
+  setIsMediaOpen,
 }: {
   item: GalleryItem;
   className?: string;
   setOpenQrCode: React.Dispatch<React.SetStateAction<boolean>>;
   hasNotPayed: boolean;
+  setSelectedItem: React.Dispatch<React.SetStateAction<GalleryItem | null>>;
+  setIsMediaOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
   const isPlace = !!item.placeholder;
   const video = !isPlace && isVideo(item);
-  const autoPoster = useVideoPoster(video ? item.src : undefined);
-  const cover = video ? (item.poster ?? autoPoster) : item.src;
-  const loading = video && !cover;
+  const { poster } = useVideoPoster(item.src);
 
   return (
     <>
@@ -252,25 +210,31 @@ function Card({
         <div className="relative h-full w-full">
           {isPlace ? (
             <div className="h-full w-full bg-neutral-800/60" />
-          ) : loading ? (
-            <div className="h-full w-full animate-pulse bg-red-800" />
           ) : video ? (
             <video
               src={item.src}
-              poster={cover ?? makePlaceholder()}
-              className="h-full w-full object-cover"
+              className="aspect-video h-full w-full rounded-xl bg-neutral-900 object-cover"
               muted
               playsInline
               preload="metadata"
-              // se quiser permitir tocar direto aqui:
-              // controls
+              poster={poster ?? item.poster ?? undefined} // <- key line
+              onClick={() => {
+                setIsMediaOpen(true);
+                setSelectedItem(item);
+              }}
             />
           ) : (
             <img
-              src={cover ?? makePlaceholder()}
+              src={item.src}
               alt={item.alt ?? ""}
               className="h-full w-full object-cover"
               draggable={false}
+              onClick={() => {
+                if (!isPlace) {
+                  setIsMediaOpen(true);
+                  setSelectedItem(item);
+                }
+              }}
             />
           )}
 
@@ -299,6 +263,8 @@ export default function GalleryMosaic({
   className,
   setOpenQrCode,
   hasNotPayed,
+  setSelectedItem,
+  setIsMediaOpen,
 }: Props) {
   const a = items[0];
   const b = items[1];
@@ -326,6 +292,8 @@ export default function GalleryMosaic({
                   item={it}
                   className="h-[125px]"
                   hasNotPayed={hasNotPayed}
+                  setSelectedItem={setSelectedItem}
+                  setIsMediaOpen={setIsMediaOpen}
                 />
               ) : null,
             )}
@@ -337,6 +305,8 @@ export default function GalleryMosaic({
               item={a}
               className="col-span-1 row-span-2 h-[262px]"
               hasNotPayed={hasNotPayed}
+              setSelectedItem={setSelectedItem}
+              setIsMediaOpen={setIsMediaOpen}
             />
           )
         )}
@@ -348,6 +318,8 @@ export default function GalleryMosaic({
               item={c}
               className="col-span-1 row-span-2 h-[262px]"
               hasNotPayed={hasNotPayed}
+              setSelectedItem={setSelectedItem}
+              setIsMediaOpen={setIsMediaOpen}
             />
           )
         ) : (
@@ -360,6 +332,8 @@ export default function GalleryMosaic({
                   item={it}
                   className="h-[125px]"
                   hasNotPayed={hasNotPayed}
+                  setSelectedItem={setSelectedItem}
+                  setIsMediaOpen={setIsMediaOpen}
                 />
               ) : null,
             )}
@@ -377,6 +351,8 @@ export default function GalleryMosaic({
               item={it}
               className="h-40"
               hasNotPayed={hasNotPayed}
+              setSelectedItem={setSelectedItem}
+              setIsMediaOpen={setIsMediaOpen}
             />
           ) : null,
         )}
@@ -391,11 +367,15 @@ export function GalleryMosaicPager({
   setOpenQrCode,
   className,
   hasNotPayed,
+  setSelectedItem,
+  setIsMediaOpen,
 }: {
   /** 0: Tudo, 1: Fotos (desbloq), 2: Fotos (com dot = bloqueadas), 3: Vídeos (com dot) */
   className?: string;
   setOpenQrCode: React.Dispatch<React.SetStateAction<boolean>>;
   hasNotPayed: boolean;
+  setSelectedItem: React.Dispatch<React.SetStateAction<GalleryItem | null>>;
+  setIsMediaOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
   const { GetAPI } = useApiContext();
   const { selectedChat } = useChatContext();
@@ -458,7 +438,7 @@ export function GalleryMosaicPager({
   const pages = chunkAndPad(filtered, 6);
 
   return (
-    <div className={className}>
+    <div className={cn("relative", className)}>
       <Header />
       {pages.map((page, pIdx) => (
         <GalleryMosaic
@@ -468,6 +448,8 @@ export function GalleryMosaicPager({
           setOpenQrCode={setOpenQrCode}
           className="mb-6"
           hasNotPayed={hasNotPayed}
+          setSelectedItem={setSelectedItem}
+          setIsMediaOpen={setIsMediaOpen}
         />
       ))}
     </div>

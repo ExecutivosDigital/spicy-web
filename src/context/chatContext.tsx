@@ -82,9 +82,6 @@ export const ChatContextProvider = ({ children }: ProviderProps) => {
   }
 
   async function handleVerify() {
-    console.log("entrou aqui");
-
-    console.log("selectedChat: ", selectedChat);
     if (!selectedChat) return;
 
     const response = await GetAPI(
@@ -92,7 +89,6 @@ export const ChatContextProvider = ({ children }: ProviderProps) => {
       true,
     );
 
-    console.log(response);
     if (response.status === 403) {
       // setOpenQrCode(true);
       setIsPaymentConfirmed(false);
