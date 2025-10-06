@@ -26,6 +26,8 @@ export function Locked() {
   async function handleVerify() {
     if (!isChecked) return toast.error("Você precisa aceitar os termos");
     setIsVerifying(true);
+    console.log("phone: ", phone);
+
     const modelId = params.get("modelId");
     const response = await PostAPI("/user/auth", { phone, modelId }, false);
     if (response.status === 200) {
@@ -91,7 +93,7 @@ export function Locked() {
             <button
               onClick={() => {
                 if (!phone) return toast.error("Preencha o telefone");
-                if (phone.length < 15) return toast.error("Telefone inválido");
+                if (phone.length < 14) return toast.error("Telefone inválido");
                 handleVerify();
               }}
               disabled={isVerifying}
