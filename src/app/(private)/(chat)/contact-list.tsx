@@ -21,8 +21,8 @@ const ContactList = ({
   return (
     <div
       className={cn(
-        "flex cursor-pointer border-l-2 border-transparent px-3 py-2 transition duration-150 hover:bg-[#E77988]/20 lg:max-w-[250px] lg:min-w-[250px] lg:gap-2 lg:px-2 lg:py-1 xl:max-w-[350px] xl:min-w-[350px] xl:gap-4 xl:px-3 xl:py-2",
-        selectedChatId === id && "bg-[#E77988]/20",
+        "flex cursor-pointer border-l-2 border-transparent px-3 py-2 transition duration-150 hover:bg-[#ff0080]/20 lg:max-w-[250px] lg:min-w-[250px] lg:gap-2 lg:px-2 lg:py-1 xl:max-w-[350px] xl:min-w-[350px] xl:gap-4 xl:px-3 xl:py-2",
+        selectedChatId === id && "bg-[#ff0080]/20",
         // {
         //   "lg:border-primary/70 lg:bg-default-200":
         //     id === (selectedChatId as any),

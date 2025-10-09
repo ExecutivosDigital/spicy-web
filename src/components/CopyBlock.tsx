@@ -24,7 +24,7 @@ export function CopyBlock({
       <div className="flex items-center justify-end">
         <button
           onClick={onCopy}
-          className="rounded-xl bg-gradient-to-r from-[#B273DF] to-[#E77988] px-4 py-2 text-sm font-black text-white"
+          className="rounded-xl bg-gradient-to-r from-[#B273DF] to-[#ff0080] px-4 py-2 text-sm font-black text-white"
         >
           {copied ? "Copiado ✓" : `Copiar Pix`}
         </button>

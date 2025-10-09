@@ -9,7 +9,6 @@ import clsx from "clsx";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
-import { Header } from "./header";
 
 export type GalleryItem = {
   src: string;
@@ -245,7 +244,7 @@ function Card({
           ) : null}
 
           {!isPlace && item.locked && hasNotPayed ? (
-            <div className="absolute inset-0 grid h-full w-full place-items-center rounded-2xl bg-[#E77988]/5 backdrop-blur-xl">
+            <div className="absolute inset-0 grid h-full w-full place-items-center rounded-2xl bg-[#ff0080]/5 backdrop-blur-xl">
               <Image src="/lock.png" alt="lock" width={40} height={40} />
             </div>
           ) : null}
@@ -393,6 +392,7 @@ export function GalleryMosaicPager({
         GetAPI(`/photo/${selectedChat.model.id}`, true),
         GetAPI(`/video/${selectedChat.model.id}`, true),
       ]);
+      console.log(ph, vd);
       setMedia({
         photos: ph?.status === 200 ? ph.body.photos : [],
         videos: vd?.status === 200 ? vd.body.videos : [],
@@ -431,7 +431,6 @@ export function GalleryMosaicPager({
     1: "photos_unlocked",
     2: "videos",
   };
-
   // 3) use your existing helpers to filter and paginate into pages of 6
   const allMediaItems = React.useMemo(() => toGalleryItems(media), [media]);
   const filtered = applyFilter(allMediaItems, tabMap[0] ?? "all");
@@ -439,7 +438,6 @@ export function GalleryMosaicPager({
 
   return (
     <div className={cn("relative", className)}>
-      <Header />
       {pages.map((page, pIdx) => (
         <GalleryMosaic
           key={pIdx}

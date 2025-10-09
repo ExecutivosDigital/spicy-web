@@ -1,53 +1,49 @@
 export const gallery1 = [
   {
-    src: "/gab/photos/blur/18.png",
+    src: "/gab/photos/1.jpeg",
     alt: "Uma imagem de um monte",
-    locked: true,
+    locked: false,
   },
-  { src: "/gab/photos/1.jpeg", alt: "Uma imagem de uma praia", locked: false },
+  { src: "/gab/photos/2.jpeg", alt: "Uma imagem de uma praia", locked: false },
   {
-    src: "/gab/videos/free.mp4",
+    src: "/gab/photos/3.jpeg",
     alt: "Um vídeo de paisagens livres 1",
     locked: false,
   },
   { src: "/gab/photos/4.jpeg", alt: "Uma imagem de um lago", locked: false },
   {
-    src: "/gab/videos/free2.mp4",
+    src: "/gab/photos/5.jpeg",
     alt: "Um vídeo de paisagens livres 2",
     locked: false,
   },
   {
-    src: "/gab/photos/blur/23.png",
+    src: "/gab/photos/6.jpeg",
     alt: "Uma imagem de uma montanha",
     locked: true,
   },
 ];
 
 export const gallery2 = [
-  { src: "/gab/photos/2.jpeg", alt: "Uma imagem de um vulcão", locked: false },
   {
-    src: "/gab/photos/blur/19.png",
-    alt: "Uma imagem de um deserto",
-    locked: true,
+    src: "/gab/photos/1.jpeg",
+    alt: "Uma imagem de um monte",
+    locked: false,
   },
+  { src: "/gab/photos/2.jpeg", alt: "Uma imagem de uma praia", locked: false },
   {
-    src: "/gab/videos/free3.mp4",
-    alt: "Um vídeo de paisagens livres 3",
+    src: "/gab/photos/3.jpeg",
+    alt: "Um vídeo de paisagens livres 1",
+    locked: false,
+  },
+  { src: "/gab/photos/4.jpeg", alt: "Uma imagem de um lago", locked: false },
+  {
+    src: "/gab/photos/5.jpeg",
+    alt: "Um vídeo de paisagens livres 2",
     locked: false,
   },
   {
     src: "/gab/photos/6.jpeg",
-    alt: "Uma imagem de uma cachoeira",
-    locked: false,
-  },
-  {
-    src: "/gab/videos/free4.mp4",
-    alt: "Um vídeo de paisagens livres 4",
-    locked: false,
-  },
-  {
-    src: "/gab/photos/blur/22.png",
-    alt: "Uma imagem de um castelo",
+    alt: "Uma imagem de uma montanha",
     locked: true,
   },
 ];

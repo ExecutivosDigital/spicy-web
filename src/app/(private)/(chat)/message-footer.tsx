@@ -8,19 +8,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { useActionSheetsContext } from "@/context/actionSheetsContext";
 import { useApiContext } from "@/context/ApiContext";
 import { useChatContext } from "@/context/chatContext";
 import { cn } from "@/lib/utils";
-import data from "@emoji-mart/data";
-import i18n from "@emoji-mart/data/i18n/pt.json";
-import Picker from "@emoji-mart/react";
 import { Icon } from "@iconify/react";
-import { Annoyed, Loader2, Mic, SendHorizontal, X } from "lucide-react";
+import { Loader2, SendHorizontal, X } from "lucide-react";
 import Image from "next/image";
 import React, { useEffect, useRef, useState } from "react";
 import { twMerge } from "tailwind-merge";
@@ -82,10 +75,6 @@ const MessageFooter = ({
     setMessage(e.target.value);
     e.target.style.height = "auto"; // Reset the height to auto to adjust
     e.target.style.height = `${e.target.scrollHeight - 15}px`;
-  };
-
-  const handleSelectEmoji = (emoji: any) => {
-    setMessage(message + emoji.native);
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -244,13 +233,38 @@ const MessageFooter = ({
   useEffect(() => {
     openChat();
   }, [selectedChatId]);
-
+  const { openSheet } = useActionSheetsContext();
   return (
     <>
       <div
-        className={`relative flex w-full items-end gap-1 border-t border-t-neutral-500 bg-neutral-800 px-2 py-2 lg:gap-2 lg:px-2 xl:gap-4 xl:px-4`}
+        className={`relative flex w-[98%] items-end gap-1 rounded-lg border-t border-t-neutral-500 bg-gradient-to-br from-[#FF0080] to-[#7928CA] px-2 py-2 lg:gap-2 lg:px-2 xl:gap-4 xl:px-4`}
       >
         <>
+          <button
+            onClick={() => openSheet()}
+            className="group absolute -top-14 right-0 z-[9999] flex cursor-pointer items-center justify-center gap-2 rounded-full border border-[#E77988] bg-[#E77988]/20 from-[#FF0080]/20 to-[#7928CA]/20 p-2 text-sm backdrop-opacity-50 hover:border-[#ff0080]/60 disabled:opacity-50"
+          >
+            🌶️ Quero uma foto sua
+            {/* <input
+              type="file"
+              accept=".jpg, .jpeg, .png, .mp4, .webm"
+              className="absolute top-0 left-0 h-full w-full cursor-pointer rounded-full opacity-0"
+              onChange={(e) => {
+                const files = e.target.files;
+
+                if (files && files.length > 0) {
+                  if (files[0].type.startsWith("image/")) {
+                    setFileType("image");
+                  } else if (files[0].type.startsWith("video/")) {
+                    setFileType("video");
+                  } else {
+                    return;
+                  }
+                  setFile(files[0]);
+                }
+              }}
+            /> */}
+          </button>
           <DropdownMenu
             open={
               (file && fileType === "image") || (file && fileType === "video")
@@ -260,11 +274,15 @@ const MessageFooter = ({
             modal={false}
           >
             <DropdownMenuTrigger asChild>
-              <button className="group relative flex h-10 w-10 min-w-10 cursor-pointer items-center justify-center rounded-full border border-neutral-500 p-2 hover:border-[#E77988]/60 disabled:opacity-50 xl:h-10 xl:w-10">
-                <Icon
-                  icon="tabler:file-filled"
-                  className="cursor-pointer text-xl text-neutral-500 group-hover:text-[#E77988]/60"
+              <button className="group absolute -top-14 left-0 z-[9999] flex cursor-pointer items-center justify-center gap-2 rounded-full border border-[#ff0080] bg-gradient-to-br from-[#FF0080]/20 to-[#7928CA]/20 p-2 text-sm backdrop-opacity-50 hover:border-[#ff0080]/60 disabled:opacity-50">
+                <Image
+                  alt="x"
+                  width={50}
+                  height={50}
+                  src={"/image.png"}
+                  className="h-4 w-4"
                 />
+                Enviar Foto/Video
                 <input
                   type="file"
                   accept=".jpg, .jpeg, .png, .mp4, .webm"
@@ -349,10 +367,10 @@ const MessageFooter = ({
                       onClick={() => setFile(null)}
                       className="absolute top-0 right-0 text-red-500"
                     />
-                    <div className="mx-auto flex h-10 w-10 flex-col items-center justify-center gap-2 rounded-full border border-[#E77988]/60">
+                    <div className="mx-auto flex h-10 w-10 flex-col items-center justify-center gap-2 rounded-full border border-[#ff0080]/60">
                       <Icon
                         icon="tabler:file-filled"
-                        className="h-4 w-4 text-xl text-[#E77988]/60"
+                        className="h-4 w-4 text-xl text-[#ff0080]/60"
                       />
                     </div>
                     <span className="truncate text-xs">{file.name}</span>
@@ -360,13 +378,13 @@ const MessageFooter = ({
                 </div>
               )}
 
-              <div className="relative flex w-full items-center gap-1 xl:gap-2">
+              <div className="relative flex w-full items-center gap-1 rounded-md bg-neutral-900 xl:gap-2">
                 <textarea
                   value={message}
                   onChange={handleChange}
                   ref={textareaRef}
                   placeholder="Escreva sua mensagem..."
-                  className="no-scrollbar border-default-200 bg-background h-10 max-h-10 min-h-10 w-full rounded-full border border-neutral-500 p-1 px-3 pt-2 pl-3 text-base break-words outline-none placeholder:text-base focus:border-[#E77988]/60 disabled:opacity-50 xl:h-10"
+                  className="no-scrollbar h-10 max-h-10 min-h-10 w-full p-1 px-3 pt-2 pl-3 text-base break-words outline-none placeholder:text-base focus:border-[#ff0080]/60 disabled:opacity-50 xl:h-10"
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey) {
                       e.preventDefault();
@@ -381,47 +399,21 @@ const MessageFooter = ({
                   }}
                 />
 
-                {fileType === "audio" && file ? (
+                {fileType === "audio" && file && (
                   <button
                     onClick={HandleCancelAudio}
                     className="flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-red-500/10 transition duration-100 hover:scale-[1.05] hover:bg-red-500/20 xl:h-8 xl:w-8 ltr:right-12 rtl:left-12"
                   >
                     <X className="h-6 w-6 text-red-500" />
                   </button>
-                ) : (
-                  <Popover
-                    open={isEmojiPopoverOpen}
-                    onOpenChange={setIsEmojiPopoverOpen}
-                  >
-                    <PopoverTrigger asChild>
-                      <span className="group flex h-10 w-10 min-w-10 cursor-pointer items-center justify-center rounded-full border border-neutral-500 hover:border-[#E77988]/60 xl:h-10 xl:w-10">
-                        <Annoyed className="h-6 w-6 text-neutral-500 group-hover:text-[#E77988]/60" />
-                      </span>
-                    </PopoverTrigger>
-                    <PopoverContent
-                      side="top"
-                      align="end"
-                      className="bottom-0 w-fit border-none p-0 shadow-none ltr:-left-[110px] rtl:left-5"
-                    >
-                      <Picker
-                        data={data}
-                        onEmojiSelect={(e: any) => {
-                          handleSelectEmoji(e);
-                          setIsEmojiPopoverOpen(false);
-                        }}
-                        theme="light"
-                        i18n={i18n}
-                      />
-                    </PopoverContent>
-                  </Popover>
                 )}
                 {isRecording && <span>({elapsedTime})</span>}
                 <Button
                   onClick={HandleSend}
                   type="submit"
-                  className="group relative z-[99999] h-10 w-10 min-w-10 overflow-hidden rounded-full border border-[#E77988]/60 p-0 xl:h-10 xl:w-10"
+                  className="group relative z-[99999] h-10 w-10 min-w-10 overflow-hidden rounded-l-md border-[#ff0080]/60 bg-gradient-to-br from-[#FF0080] to-[#7928CA] p-0 xl:h-10 xl:w-10"
                 >
-                  <div className="absolute flex h-full w-full cursor-pointer items-center justify-center rounded-lg bg-[#E77988]/60 group-hover:bg-transparent">
+                  <div className="absolute flex h-full w-full cursor-pointer items-center justify-center group-hover:bg-transparent">
                     {isRecording ? (
                       <div className="absolute flex h-full w-full items-center justify-center gap-0.5">
                         <div className="animate-recording h-1.5 w-1.5 rounded-full bg-white delay-200"></div>
@@ -432,9 +424,13 @@ const MessageFooter = ({
                       <Loader2 className="m-auto h-4 w-4 animate-spin" />
                     ) : (
                       <>
-                        <Mic
+                        <Image
+                          src="/record.png"
+                          alt="rec"
+                          width={24}
+                          height={24}
                           className={cn(
-                            "absolute top-1/2 left-1/2 h-6 w-6 -translate-x-1/2 -translate-y-1/2 text-white transition duration-100 group-hover:text-[#E77988]/60",
+                            "absolute top-1/2 left-1/2 h-6 w-6 -translate-x-1/2 -translate-y-1/2 text-white opacity-100 transition duration-100 group-hover:text-[#ff0080]/60",
                             message.length === 0 && !file
                               ? "opacity-100"
                               : "translate-x-full opacity-0",
@@ -442,7 +438,7 @@ const MessageFooter = ({
                         />
                         <SendHorizontal
                           className={cn(
-                            "absolute top-1/2 left-1/2 h-6 w-6 -translate-x-1/2 -translate-y-1/2 text-white transition duration-100 group-hover:text-[#E77988]/60",
+                            "absolute top-1/2 left-1/2 h-6 w-6 -translate-x-1/2 -translate-y-1/2 text-white transition duration-100 group-hover:text-[#ff0080]/60",
                             message.length === 0 && !file
                               ? "opacity-0"
                               : "opacity-100",

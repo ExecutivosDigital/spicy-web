@@ -1,29 +1,15 @@
 "use client";
 import { MessageProps } from "@/@types/global";
 import PixSheetSteps from "@/components/PixSheetSteps";
-import { GiftsBento } from "@/components/bento-cards";
-import { GalleryMosaicPager } from "@/components/galery";
 import { Header } from "@/components/header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { useChatContext } from "@/context/chatContext";
 import { useMediaQuery } from "@/hook/use-media-query";
-import { cn } from "@/lib/utils";
-import clsx from "clsx";
-import { motion } from "framer-motion";
-import {
-  ArrowDown,
-  ChevronLeft,
-  ImageIcon,
-  MessageCircle,
-  X,
-} from "lucide-react";
+import { ArrowDown, X } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import Blank from "./blank";
-import ContactList from "./contact-list";
 import EmptyMessage from "./empty-message";
 import MessageFooter from "./message-footer";
 import Messages from "./messages";
@@ -187,35 +173,6 @@ const ChatPage = () => {
   //   });
   // }
 
-  function BottomBar() {
-    return (
-      <nav className="w-full">
-        <div className="mx-auto max-w-md px-3 pb-[env(safe-area-inset-bottom)]">
-          <div className="flex h-12 items-stretch justify-around rounded-2xl border border-neutral-500 bg-neutral-800 shadow-lg">
-            {[
-              // { i: 0, label: "Presentes", Icon: LayoutGrid },
-              { i: 1, label: "Chat", Icon: MessageCircle },
-              { i: 2, label: "Galeria", Icon: ImageIcon },
-            ].map(({ i, label, Icon }) => (
-              <button
-                key={i}
-                onClick={() => setPage(i as 0 | 1 | 2)}
-                className={clsx(
-                  "flex flex-1 cursor-pointer items-center justify-center gap-1 text-[12px] font-semibold",
-                  page === i ? "text-[#E77988]" : "text-neutral-500",
-                )}
-                aria-label={label}
-              >
-                <Icon className="h-5 w-5" />
-                <span className="hidden sm:inline">{label}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-      </nav>
-    );
-  }
-
   /* ========================= Chat ========================= */
   // function Bubble({ msg }: { msg: ChatMessage }) {
   //   const mine = msg.sender === "me";
@@ -288,192 +245,101 @@ const ChatPage = () => {
   const [selectedItem, setSelectedItem] = useState<GalleryItem | null>(null);
 
   return (
-    <div className="flex h-screen flex-col gap-2 bg-neutral-900 pb-20 text-white xl:gap-5 xl:pb-0 rtl:space-x-reverse">
-      {isLg && showInfo && (
-        <div
-          className="bg-background/60 absolute inset-0 z-40 w-full flex-1 rounded-md backdrop-blur-sm backdrop-filter"
-          onClick={() => setShowInfo(false)}
-        ></div>
-      )}
-      <div className="relative flex-1 overflow-hidden">
-        <motion.div
-          className="flex h-full w-[300vw]"
-          initial={false}
-          style={{ x: pagesX[initialPageRef.current] }} // render in the right spot
-          animate={{ x: pagesX[page] }} // animate only on later changes
-          transition={{ type: "spring", damping: 30, stiffness: 250 }}
-        >
-          {/* 0 – Bento gifts */}
-          <section className="w-[100%] overflow-y-auto">
-            <GiftsBento />
-          </section>
+    <div className="flex h-screen justify-center gap-2 bg-neutral-900 text-white xl:gap-5 rtl:space-x-reverse">
+      <div className="relative max-w-[540px] flex-1 overflow-hidden pb-4 md:rounded-md md:border md:px-4">
+        <section className="relative flex h-[calc(100%-90px)] w-[100%] overflow-hidden">
+          {/* <Chat /> */}
 
-          {/* 1 – Chat */}
-          <section className="relative flex w-[100%] overflow-hidden">
-            {/* <Chat /> */}
-            <div
-              className={cn("flex-none transition-all duration-150", {
-                "absolute top-0 z-[999] h-full w-80 max-w-[400px]": isLg,
-                "flex-none lg:max-w-[250px] lg:min-w-[250px] xl:max-w-[350px] xl:min-w-[350px]":
-                  !isLg,
-                "left-screen bg-neutral-900": isLg && showContactSidebar,
-                "-left-full": isLg && !showContactSidebar,
-              })}
-            >
-              <Card className="h-full rounded-none border-r border-r-neutral-500 pb-0">
-                <div className="relative h-16 border-b border-neutral-500">
-                  <ChevronLeft
-                    className="absolute top-1/2 left-2 -translate-y-1/2 lg:hidden"
-                    onClick={() => setShowContactSidebar(false)}
-                  />
-                  <span className="flex h-full items-center justify-center text-sm font-semibold xl:text-lg">
-                    Mensagens
-                  </span>
-                </div>
-                <CardContent className="w-full p-0 lg:h-[calc(100%-130px)] xl:h-[calc(100%-180px)]">
-                  <div className="flex h-full flex-col">
-                    <span className="ml-2 font-semibold text-zinc-400 lg:text-[7px] xl:text-xs">
-                      Conversas Gerais
-                    </span>
-                    <ScrollArea className="w-full">
-                      {isChatsLoading ? (
-                        <div
-                          className={cn(
-                            "flex h-14 animate-pulse cursor-pointer border-l-2 border-transparent bg-neutral-800 px-3 py-2 transition duration-150 lg:max-w-[250px] lg:min-w-[250px] lg:gap-2 lg:px-2 lg:py-1 xl:max-w-[350px] xl:min-w-[350px] xl:gap-4 xl:px-3 xl:py-2",
-                          )}
-                        />
-                      ) : chats.length !== 0 ? (
-                        chats.map((chat) => (
-                          <>
-                            <ContactList
-                              key={chat.id}
-                              contact={chat}
-                              openChat={openChat}
-                            />
-                          </>
-                        ))
-                      ) : (
-                        <div className="mt-[50%] w-full text-center">
-                          <span className="w-full text-center font-medium italic">
-                            Nenhuma conversa encontrada <br /> com os filtros
-                            selecionados
-                          </span>
-                        </div>
-                      )}
-                    </ScrollArea>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-            {selectedChatId ? (
+          <div className="flex-1">
+            <div className="flex h-full space-x-5 lg:space-x-2 xl:space-x-5 rtl:space-x-reverse">
               <div className="flex-1">
-                <div className="flex h-full space-x-5 lg:space-x-2 xl:space-x-5 rtl:space-x-reverse">
-                  <div className="flex-1">
-                    <Card className="relative flex h-full flex-col">
-                      <Header />
-                      <CardContent className="relative h-full overflow-y-auto p-2">
-                        {!isPaymentConfirmed && (
-                          <div className="absolute top-0 left-0 z-[999999] h-full w-full bg-[#E77988]/5 backdrop-blur-2xl" />
-                        )}
-                        <div
-                          className="flex h-full w-full flex-col overflow-y-auto py-4 lg:py-2 xl:py-4"
-                          ref={containerRef}
-                        >
-                          {isMessageLoading ? (
-                            <>
-                              {Array.from({ length: 3 }).map((_, index) => (
-                                <div key={index}>
-                                  <div className="group mb-4 flex max-w-[calc(100%-8px)] animate-pulse flex-col items-end justify-end gap-1 text-transparent lg:mb-2 xl:mb-4 xl:max-w-[calc(100%-50px)]">
-                                    <div className="flex w-60 min-w-10 justify-center gap-1 rounded-3xl rounded-br-none bg-neutral-800 p-2 shadow-sm">
-                                      <div className="group flex items-center gap-1">
-                                        <div className="relative z-[1] break-normal whitespace-pre-wrap">
-                                          .
-                                        </div>
-                                      </div>
-                                    </div>
-                                    <div className="flex items-center justify-start gap-2 text-xs lg:text-[8px] xl:text-xs">
+                <Card className="relative flex h-full flex-col">
+                  <Header />
+                  <CardContent className="relative h-full overflow-y-auto p-2">
+                    <div
+                      className="flex h-full w-full flex-col overflow-y-auto py-4 lg:py-2 xl:py-4"
+                      ref={containerRef}
+                    >
+                      {isMessageLoading ? (
+                        <>
+                          {Array.from({ length: 3 }).map((_, index) => (
+                            <div key={index}>
+                              <div className="group mb-4 flex max-w-[calc(100%-8px)] animate-pulse flex-col items-end justify-end gap-1 text-transparent lg:mb-2 xl:mb-4 xl:max-w-[calc(100%-50px)]">
+                                <div className="flex w-60 min-w-10 justify-center gap-1 rounded-3xl rounded-br-none bg-neutral-800 p-2 shadow-sm">
+                                  <div className="group flex items-center gap-1">
+                                    <div className="relative z-[1] break-normal whitespace-pre-wrap">
                                       .
                                     </div>
                                   </div>
-                                  <div className="group mb-4 ml-2 flex max-w-[calc(100%-8px)] animate-pulse flex-col items-start justify-start gap-1 space-x-2 text-transparent lg:mb-2 xl:mb-4 xl:ml-[50px] xl:max-w-[calc(100%-50px)] rtl:space-x-reverse">
-                                    <div className="flex w-60 min-w-10 justify-center gap-1 rounded-3xl rounded-bl-none bg-neutral-800 p-2 shadow-sm">
-                                      <div className="flex items-center gap-1">
-                                        .
-                                      </div>
-                                    </div>
-                                    <div className="flex w-full items-center gap-2 text-end text-xs lg:text-[8px] xl:text-xs">
-                                      <span className="text-default-500">
-                                        <span>.</span>.
-                                      </span>
-                                    </div>
+                                </div>
+                                <div className="flex items-center justify-start gap-2 text-xs lg:text-[8px] xl:text-xs">
+                                  .
+                                </div>
+                              </div>
+                              <div className="group mb-4 ml-2 flex max-w-[calc(100%-8px)] animate-pulse flex-col items-start justify-start gap-1 space-x-2 text-transparent lg:mb-2 xl:mb-4 xl:ml-[50px] xl:max-w-[calc(100%-50px)] rtl:space-x-reverse">
+                                <div className="flex w-60 min-w-10 justify-center gap-1 rounded-3xl rounded-bl-none bg-neutral-800 p-2 shadow-sm">
+                                  <div className="flex items-center gap-1">
+                                    .
                                   </div>
                                 </div>
-                              ))}
-                            </>
+                                <div className="flex w-full items-center gap-2 text-end text-xs lg:text-[8px] xl:text-xs">
+                                  <span className="text-default-500">
+                                    <span>.</span>.
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </>
+                      ) : (
+                        <>
+                          {isMessageLoading ? (
+                            <EmptyMessage />
                           ) : (
-                            <>
-                              {isMessageLoading ? (
-                                <EmptyMessage />
-                              ) : (
-                                selectedChatMessages.map(
-                                  (message: MessageProps, i: number) => (
-                                    <Messages
-                                      key={`message-list-${i}-${message.id}`}
-                                      message={message}
-                                    />
-                                  ),
-                                )
-                              )}
-                              <div ref={bottomRef} />
-                            </>
+                            selectedChatMessages.map(
+                              (message: MessageProps, i: number) => (
+                                <Messages
+                                  key={`message-list-${i}-${message.id}`}
+                                  message={message}
+                                />
+                              ),
+                            )
                           )}
-                        </div>
-                        {!isAutoScrollEnabled &&
-                          !isMessageLoading &&
-                          selectedChatMessages.length !== 0 && (
-                            <Button
-                              onClick={handleScrollToBottom}
-                              size="icon"
-                              variant="outline"
-                              className="absolute right-1/2 bottom-4 z-[100]"
-                            >
-                              <ArrowDown />
-                            </Button>
-                          )}
-                      </CardContent>
-                      <CardFooter className="flex-none flex-col p-0">
-                        <MessageFooter
-                          onSend={() => {
-                            if (!isPaymentConfirmed) {
-                              return setOpenQrCode(true);
-                            }
-                            setIsAutoScrollEnabled(true);
-                            handleScrollToBottom();
-                          }}
-                          hasNotPayed={!isPaymentConfirmed}
-                        />
-                      </CardFooter>
-                    </Card>
-                  </div>
-                </div>
+                          <div ref={bottomRef} />
+                        </>
+                      )}
+                    </div>
+                    {!isAutoScrollEnabled &&
+                      !isMessageLoading &&
+                      selectedChatMessages.length !== 0 && (
+                        <Button
+                          onClick={handleScrollToBottom}
+                          size="icon"
+                          variant="outline"
+                          className="absolute right-1/2 bottom-4 z-[100]"
+                        >
+                          <ArrowDown />
+                        </Button>
+                      )}
+                  </CardContent>
+                  <CardFooter className="flex-none flex-col p-0">
+                    <MessageFooter
+                      onSend={() => {
+                        if (!isPaymentConfirmed) {
+                          return setOpenQrCode(true);
+                        }
+                        setIsAutoScrollEnabled(true);
+                        handleScrollToBottom();
+                      }}
+                      hasNotPayed={!isPaymentConfirmed}
+                    />
+                  </CardFooter>
+                </Card>
               </div>
-            ) : (
-              <Blank mblChatHandler={() => setShowContactSidebar(true)} />
-            )}
-          </section>
-
-          {/* 2 – Galeria */}
-          <section className="w-[100%] overflow-y-auto">
-            <GalleryMosaicPager
-              hasNotPayed={!isPaymentConfirmed}
-              setOpenQrCode={setOpenQrCode}
-              setSelectedItem={setSelectedItem}
-              setIsMediaOpen={setIsMediaOpen}
-            />
-          </section>
-        </motion.div>
+            </div>
+          </div>
+        </section>
       </div>
-      <BottomBar />
       {selectedItem && isMediaOpen && (
         <div
           onClick={() => {

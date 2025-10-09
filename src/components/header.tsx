@@ -24,7 +24,7 @@ export function Header() {
         <div className="flex items-center gap-3 px-4 py-3">
           <div className="relative">
             <img
-              src={selectedChat?.model.photoUrl}
+              src={"/gab/photos/profile.png"}
               alt="Gabi"
               className="h-10 w-10 rounded-full object-cover"
             />
@@ -33,7 +33,7 @@ export function Header() {
           <div className="flex-1 leading-tight">
             <div className="flex items-center gap-2">
               <span className="text-[15px] font-extrabold">
-                {selectedChat?.model.name}
+                Gabriela Ferreira
               </span>
               <Image
                 src="/verify.png"
@@ -47,9 +47,9 @@ export function Header() {
           <div className="items-center gap-1 text-neutral-400 sm:flex">
             <button
               onClick={() => setOpenQrCode(true)}
-              className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-[#E77988] p-2 text-sm"
+              className="group flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-[#ff0080] p-2 text-sm transition-all duration-300 hover:scale-105"
             >
-              <Heart />
+              <Heart className="text-[#ff0080] transition-all duration-300 group-hover:fill-red-500 group-hover:text-red-500" />
               Enviar Presente
             </button>
           </div>

@@ -1,4 +1,5 @@
-import { Locked } from "@/components/locked";
+import { Footer } from "@/components/footer";
+import { PaymentSheet } from "@/components/paymentSheet";
 import { ContextProviders } from "@/context/ContextProviders";
 import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
@@ -25,7 +26,9 @@ export default function RootLayout({
     <html lang="pt-BR">
       <body className={`${poppins.variable}`}>
         <ContextProviders>
-          {children} <Locked />
+          {children}
+          <Footer />
+          <PaymentSheet />
           <Toaster
             position="top-center"
             toastOptions={{ duration: 5000, className: "z-[1000000]" }}
