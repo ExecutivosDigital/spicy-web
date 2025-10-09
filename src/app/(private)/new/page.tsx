@@ -4,6 +4,7 @@ import { Lightbox } from "@/components/light-box";
 import { gallery1, gallery2 } from "@/components/midia";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
 type TabKey = "tudo" | "fotos" | "videos";
@@ -72,6 +73,7 @@ const SpicyScreen = () => {
     () => filterByTab(allItems, tabMap[selectedTab] ?? "all"),
     [allItems, selectedTab],
   );
+  const router = useRouter();
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
 
@@ -87,7 +89,7 @@ const SpicyScreen = () => {
     [filtered, tabMap],
   );
   return (
-    <div className="flex h-screen justify-center gap-2 bg-neutral-900 p-2 text-white xl:gap-5 rtl:space-x-reverse">
+    <div className="flex h-full justify-center gap-2 bg-neutral-900 p-2 text-white xl:gap-5 rtl:space-x-reverse">
       <div className="relative max-w-[540px] flex-1 overflow-auto pb-4 md:rounded-md md:border md:px-4">
         {/* header */}
         <header className="flex items-center justify-between pt-4">
@@ -141,11 +143,11 @@ const SpicyScreen = () => {
                   "bg-gradient-to-br from-[#FF0080] to-[#7928CA]",
               )}
             >
-              Iniciar Conversa
+              Galeria de Conteúdo
             </button>
             <button
               onClick={() => {
-                setSelectedTab(1);
+                router.push("/new");
               }}
               className={cn(
                 `rounded-lg border border-[#FF0080] px-3 py-2 text-sm text-white transition-all duration-300`,
@@ -153,7 +155,7 @@ const SpicyScreen = () => {
                   "bg-gradient-to-br from-[#FF0080] to-[#7928CA]",
               )}
             >
-              Galeria de Conteúdo
+              Iniciar Conversa
             </button>
           </div>
         </section>
@@ -187,7 +189,7 @@ const SpicyScreen = () => {
           </button>
         </div>
         <GalleryMosaicPager
-          items={allItems}
+          items={gallery1}
           selectedTab={secondTabSelected}
           onItemClick={(globalIndex: number, _item: any) => {
             // índice já é relativo ao filtrado; a Lightbox usa a mesma coleção `filtered`

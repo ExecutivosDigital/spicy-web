@@ -26,8 +26,10 @@ export default function RootLayout({
     <html lang="pt-BR">
       <body className={`${poppins.variable}`}>
         <ContextProviders>
-          {children}
-          <Footer />
+          <div className="flex h-screen flex-1 flex-col overflow-hidden bg-neutral-900">
+            {children}
+            <Footer />
+          </div>
           <PaymentSheet />
           <Toaster
             position="top-center"

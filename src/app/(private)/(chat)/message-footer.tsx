@@ -13,7 +13,7 @@ import { useApiContext } from "@/context/ApiContext";
 import { useChatContext } from "@/context/chatContext";
 import { cn } from "@/lib/utils";
 import { Icon } from "@iconify/react";
-import { Loader2, SendHorizontal, X } from "lucide-react";
+import { Loader2, SendHorizontal, Square, X } from "lucide-react";
 import Image from "next/image";
 import React, { useEffect, useRef, useState } from "react";
 import { twMerge } from "tailwind-merge";
@@ -402,7 +402,7 @@ const MessageFooter = ({
                 {fileType === "audio" && file && (
                   <button
                     onClick={HandleCancelAudio}
-                    className="flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-red-500/10 transition duration-100 hover:scale-[1.05] hover:bg-red-500/20 xl:h-8 xl:w-8 ltr:right-12 rtl:left-12"
+                    className="mr-2 flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-red-500/10 transition duration-100 hover:scale-[1.05] hover:bg-red-500/20 xl:h-8 xl:w-8 ltr:right-12 rtl:left-12"
                   >
                     <X className="h-6 w-6 text-red-500" />
                   </button>
@@ -415,11 +415,16 @@ const MessageFooter = ({
                 >
                   <div className="absolute flex h-full w-full cursor-pointer items-center justify-center group-hover:bg-transparent">
                     {isRecording ? (
-                      <div className="absolute flex h-full w-full items-center justify-center gap-0.5">
-                        <div className="animate-recording h-1.5 w-1.5 rounded-full bg-white delay-200"></div>
-                        <div className="animate-recording h-1.5 w-1.5 rounded-full bg-white delay-100"></div>
-                        <div className="animate-recording h-1.5 w-1.5 rounded-full bg-white"></div>
-                      </div>
+                      <Square
+                        width={24}
+                        height={24}
+                        className={cn(
+                          "absolute top-1/2 left-1/2 h-6 w-6 -translate-x-1/2 -translate-y-1/2 animate-pulse text-white opacity-100 transition duration-100 group-hover:text-[#ff0080]/60",
+                          message.length === 0 && !file
+                            ? "opacity-100"
+                            : "translate-x-full opacity-0",
+                        )}
+                      />
                     ) : isSendingMessage ? (
                       <Loader2 className="m-auto h-4 w-4 animate-spin" />
                     ) : (

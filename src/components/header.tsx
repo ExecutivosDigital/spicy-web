@@ -1,7 +1,6 @@
 "use client";
 import { ChatProps } from "@/@types/global";
 import { useChatContext } from "@/context/chatContext";
-import { Heart } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import PixSheetSteps from "./PixSheetSteps";
@@ -47,10 +46,16 @@ export function Header() {
           <div className="items-center gap-1 text-neutral-400 sm:flex">
             <button
               onClick={() => setOpenQrCode(true)}
-              className="group flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-[#ff0080] p-2 text-sm transition-all duration-300 hover:scale-105"
+              className="group flex cursor-pointer flex-row items-center justify-center gap-2 rounded-lg border border-[#ff0080] p-2 text-sm text-white transition-all duration-300 hover:scale-105"
             >
-              <Heart className="text-[#ff0080] transition-all duration-300 group-hover:fill-red-500 group-hover:text-red-500" />
-              Enviar Presente
+              <Image
+                src="/galery.png"
+                alt="verificada"
+                width={18}
+                height={18}
+              />
+              {/* <Heart className="text-[#ff0080] transition-all duration-300 group-hover:fill-red-500 group-hover:text-red-500" /> */}
+              Galeria
             </button>
           </div>
         </div>

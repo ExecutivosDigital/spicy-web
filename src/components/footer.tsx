@@ -34,7 +34,7 @@ export function Footer() {
     );
   }
   return (
-    <footer className="fixed right-0 bottom-0 left-0">
+    <footer className="left-0 flex w-full px-4">
       <div className="mx-auto w-full max-w-[520px]">
         <div className="mb-2 flex items-center justify-between rounded-2xl bg-gradient-to-br from-[#FF0080] to-[#7928CA] px-8 py-3 text-xs text-white/80">
           {[

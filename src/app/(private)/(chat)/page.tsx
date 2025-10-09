@@ -245,14 +245,14 @@ const ChatPage = () => {
   const [selectedItem, setSelectedItem] = useState<GalleryItem | null>(null);
 
   return (
-    <div className="flex h-screen justify-center gap-2 bg-neutral-900 text-white xl:gap-5 rtl:space-x-reverse">
-      <div className="relative max-w-[540px] flex-1 overflow-hidden pb-4 md:rounded-md md:border md:px-4">
-        <section className="relative flex h-[calc(100%-90px)] w-[100%] overflow-hidden">
+    <div className="flex flex-1 justify-center gap-2 text-white xl:gap-5 rtl:space-x-reverse">
+      <div className="relative h-full max-w-[540px] flex-1 overflow-hidden pb-4 md:rounded-md md:border md:px-4">
+        <section className="relative flex h-full w-[100%] flex-1 overflow-hidden">
           {/* <Chat /> */}
 
-          <div className="flex-1">
-            <div className="flex h-full space-x-5 lg:space-x-2 xl:space-x-5 rtl:space-x-reverse">
-              <div className="flex-1">
+          <div className="flex h-full w-full flex-1">
+            <div className="flex h-full flex-1 space-x-5 lg:space-x-2 xl:space-x-5 rtl:space-x-reverse">
+              <div className="h-full flex-1">
                 <Card className="relative flex h-full flex-col">
                   <Header />
                   <CardContent className="relative h-full overflow-y-auto p-2">
