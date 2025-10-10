@@ -340,6 +340,7 @@ const ChatPage = () => {
           </div>
         </section>
       </div>
+
       {selectedItem && isMediaOpen && (
         <div
           onClick={() => {
@@ -398,6 +399,7 @@ const ChatPage = () => {
           )}
         </div>
       )}
+
       {/* <Lightbox
         open={lightboxOpen}
         images={lightboxItems}
@@ -406,6 +408,7 @@ const ChatPage = () => {
         setIndex={(i: number) => setLightboxIndex(i)}
         setOpenQrCode={() => console.log(false)}
       /> */}
+
       {selectedChat && openQrCode && (
         <PixSheetSteps
           open={openQrCode}

@@ -1,12 +1,17 @@
+"use client";
+
 import { cn } from "@/lib/utils";
 import * as SheetPrimitive from "@radix-ui/react-dialog";
 import { cva, type VariantProps } from "class-variance-authority";
+import { X } from "lucide-react";
 import * as React from "react";
 
+// -------------------------
+// Core Sheet (Radix Dialog)
+// -------------------------
+
 const Sheet = SheetPrimitive.Root;
-
 const SheetTrigger = SheetPrimitive.Trigger;
-
 const SheetClose = SheetPrimitive.Close;
 
 const SheetPortal = ({ ...props }) => <SheetPrimitive.Portal {...props} />;
@@ -18,7 +23,7 @@ const SheetOverlay = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <SheetPrimitive.Overlay
     className={cn(
-      "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-[100] bg-red-500 backdrop-blur-sm",
+      "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-[999]",
       className,
     )}
     {...props}
@@ -28,16 +33,18 @@ const SheetOverlay = React.forwardRef<
 SheetOverlay.displayName = SheetPrimitive.Overlay.displayName;
 
 const sheetVariants = cva(
-  "fixed  gap-4 bg-card p-6 z-[110] shadow-lg transition ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:duration-300 data-[state=open]:duration-500",
+  // NOTE: remove fixed heights; let it be auto and cap with max-h
+  "fixed z-[999] gap-4 bg-card p-1 shadow-lg rounded-t-[60px] transition ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:duration-300 data-[state=open]:duration-500 overflow-hidden",
   {
     variants: {
       side: {
         top: "inset-x-0 top-0 border-b data-[state=closed]:slide-out-to-top data-[state=open]:slide-in-from-top",
         bottom:
-          "inset-x-0 bottom-0 border-t data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom",
+          // key bit: width full, height auto, with a viewport cap and natural growth
+          "inset-x-0 bottom-0 w-full border-t p-1 pt-4 data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom h-auto max-h-[98svh] md:max-h-[85vh]",
         left: "inset-y-0 left-0 h-full w-3/4 border-r data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left max-w-sm",
         right:
-          "inset-y-0 right-0 h-full w-3/4  border-l data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right max-w-[600px]",
+          "inset-y-0 right-0 h-full w-3/4 border-l data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right max-w-sm",
       },
     },
     defaultVariants: {
@@ -53,22 +60,50 @@ interface SheetContentProps
   onClose?: () => void;
   closeIcon?: React.ReactNode;
 }
+
 const SheetContent = React.forwardRef<
   React.ElementRef<typeof SheetPrimitive.Content>,
   SheetContentProps
->(({ side = "right", className, children, overlayClass, ...props }, ref) => (
-  <SheetPortal>
-    <SheetOverlay className={cn(overlayClass)} />
-    <SheetPrimitive.Title />
-    <SheetPrimitive.Content
-      ref={ref}
-      className={cn(sheetVariants({ side }), className)}
-      {...props}
-    >
-      {children}
-    </SheetPrimitive.Content>
-  </SheetPortal>
-));
+>(
+  (
+    {
+      side = "right",
+      className,
+      children,
+      onClose,
+      overlayClass,
+      closeIcon = <X className="h-6 w-6" />,
+      ...props
+    },
+    ref,
+  ) => (
+    <SheetPortal>
+      <SheetOverlay className={cn(overlayClass)} />
+      <SheetTitle />
+      <SheetPrimitive.Content
+        ref={ref}
+        // important: allow the content to scroll if it exceeds the cap
+        className={cn(sheetVariants({ side }), "overflow-auto", className)}
+        {...props}
+      >
+        {children}
+        {onClose ? (
+          <button
+            onClick={onClose}
+            type="button"
+            className="data-[state=open]:bg-secondary absolute top-6 right-6 rounded-sm opacity-70 ring-offset-[#FF0080] transition-opacity hover:opacity-100 focus:outline-none disabled:pointer-events-none"
+          >
+            {closeIcon}
+          </button>
+        ) : (
+          <SheetPrimitive.Close className="focus:ring-ring data-[state=open]:bg-secondary absolute top-6 right-6 rounded-full from-[#FF0080] to-[#7928CA] text-white ring-offset-[#FF0080] transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:pointer-events-none">
+            {closeIcon}
+          </SheetPrimitive.Close>
+        )}
+      </SheetPrimitive.Content>
+    </SheetPortal>
+  ),
+);
 SheetContent.displayName = SheetPrimitive.Content.displayName;
 
 const SheetHeader = ({

@@ -2,19 +2,12 @@
 import { GalleryMosaicPager } from "@/components/galery";
 import { Lightbox } from "@/components/light-box";
 import { gallery1, gallery2 } from "@/components/midia";
+import { useActionSheetsContext } from "@/context/actionSheetsContext";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
-type TabKey = "tudo" | "fotos" | "videos";
-
-type MediaItem = {
-  id: string;
-  kind: "foto" | "video";
-  locked?: boolean;
-  span?: "wide" | "tall" | "square";
-};
 export type GalleryItem = {
   src: string;
   alt?: string;
@@ -25,21 +18,16 @@ export type GalleryItem = {
   placeholder?: boolean;
 };
 const SpicyScreen = () => {
-  const [tab, setTab] = useState<TabKey>("tudo");
+  const { openSheet, setCurrent } = useActionSheetsContext();
 
-  const items: MediaItem[] = useMemo(
-    () => [
-      { id: "1", kind: "foto", span: "tall" },
-      { id: "2", kind: "foto", span: "square" },
-      { id: "3", kind: "foto", span: "square" },
-      { id: "4", kind: "foto", span: "square" },
-      { id: "5", kind: "foto", locked: true, span: "square" },
-      { id: "6", kind: "video", locked: true, span: "square" },
-      { id: "7", kind: "video", span: "wide" },
-      { id: "8", kind: "foto", span: "square" },
-    ],
-    [],
-  );
+  type IconProps = { route: string; className?: string };
+
+  type ButtonProps = {
+    route: string;
+    className?: string;
+    icon: React.ComponentType<IconProps>; // << aceita className
+    label: string;
+  };
   function isVideoItem(it: GalleryItem) {
     if (it.mediaType) return it.mediaType === "video";
     return /\.(mp4|webm|ogg)$/i.test(it.src);
@@ -88,8 +76,35 @@ const SpicyScreen = () => {
       })),
     [filtered, tabMap],
   );
+  const pathname = usePathname();
+
+  function HomeIcon({ route, className }: IconProps) {
+    const isActive = pathname === route;
+    return (
+      <Image
+        src={isActive ? "/heart-pink.png" : "/heart.png"}
+        alt="heart"
+        width={20}
+        height={20}
+        className={cn("h-5 w-5", className)}
+      />
+    );
+  }
+
+  function GridIcon({ route, className }: IconProps) {
+    const isActive = pathname === route;
+    return (
+      <Image
+        src={isActive ? "/gallery-pink.png" : "/galery.png"}
+        alt="gallery"
+        width={20}
+        height={20}
+        className={cn("h-5 w-5", className)}
+      />
+    );
+  }
   return (
-    <div className="flex h-full justify-center gap-2 bg-neutral-900 p-2 text-white xl:gap-5 rtl:space-x-reverse">
+    <div className="flex h-full justify-center gap-2 bg-neutral-900 p-2 text-white md:pb-0 xl:gap-5 rtl:space-x-reverse">
       <div className="relative max-w-[540px] flex-1 overflow-auto pb-4 md:rounded-md md:border md:px-4">
         {/* header */}
         <header className="flex items-center justify-between pt-4">
@@ -99,10 +114,20 @@ const SpicyScreen = () => {
             {/* <span className="text-xl font-semibold">Spicy.ai</span> */}
           </div>
           <div className="flex items-center gap-2">
-            <button className="rounded-md border border-[#FF0080] bg-gradient-to-br from-[#FF0080]/20 to-[#7928CA]/20 px-3 py-1.5 text-xs hover:bg-[#e24c69]">
+            <button
+              onClick={() => {
+                setCurrent("register"), openSheet();
+              }}
+              className="rounded-md border border-[#FF0080] bg-gradient-to-br from-[#FF0080]/20 to-[#7928CA]/20 px-3 py-1.5 text-xs hover:bg-[#e24c69]"
+            >
               Registro Grátis
             </button>
-            <button className="rounded-md border border-[#FF0080] px-3 py-1.5 text-xs">
+            <button
+              onClick={() => {
+                setCurrent("password"), openSheet();
+              }}
+              className="rounded-md border border-[#FF0080] px-3 py-1.5 text-xs"
+            >
               Login
             </button>
           </div>
@@ -135,34 +160,39 @@ const SpicyScreen = () => {
           <div className="mt-3 flex w-full justify-center gap-2">
             <button
               onClick={() => {
+                router.push("/chat");
+              }}
+              className={cn(
+                `flex cursor-pointer flex-row items-center gap-2 rounded-lg border border-[#FF0080] from-[#FF0080] to-[#7928CA] px-3 py-2 text-sm text-white transition-all duration-700 hover:scale-[1.01] hover:bg-[#FF0080]`,
+              )}
+            >
+              <Image
+                src="/heart.png"
+                alt="heart"
+                width={20}
+                height={20}
+                className=""
+              />
+              Iniciar Conversa
+            </button>
+            <button
+              onClick={() => {
                 setSelectedTab(0);
               }}
               className={cn(
-                `rounded-lg border border-[#FF0080] px-3 py-2 text-sm text-white transition-all duration-300`,
+                `rounded-lg px-3 py-2 text-sm text-white transition-all duration-300`,
                 selectedTab === 0 &&
                   "bg-gradient-to-br from-[#FF0080] to-[#7928CA]",
               )}
             >
               Galeria de Conteúdo
             </button>
-            <button
-              onClick={() => {
-                router.push("/new");
-              }}
-              className={cn(
-                `rounded-lg border border-[#FF0080] px-3 py-2 text-sm text-white transition-all duration-300`,
-                selectedTab === 1 &&
-                  "bg-gradient-to-br from-[#FF0080] to-[#7928CA]",
-              )}
-            >
-              Iniciar Conversa
-            </button>
           </div>
         </section>
         <div className="mt-4 flex w-full items-center justify-center gap-4">
           <button
             className={cn(
-              "text-sm font-semibold",
+              "cursor-pointer font-semibold",
               secondTabSelected === 0 && "border-b border-[#FF0080]",
             )}
             onClick={() => setSecondTabSelected(0)}
@@ -171,20 +201,34 @@ const SpicyScreen = () => {
           </button>
           <button
             className={cn(
-              "text-sm font-semibold",
+              "relative flex items-center gap-2 pr-2 font-semibold",
               secondTabSelected === 1 && "border-b border-[#FF0080]",
             )}
             onClick={() => setSecondTabSelected(1)}
           >
-            Imagens
+            <Image
+              alt="mg"
+              src="/fire.png"
+              width={20}
+              height={20}
+              className="absolute -top-1 -right-2 h-3 w-3"
+            />
+            Fotos
           </button>
           <button
             className={cn(
-              "text-sm font-semibold",
+              "relative flex items-center gap-2 pr-2 font-semibold",
               secondTabSelected === 2 && "border-b border-[#FF0080]",
             )}
             onClick={() => setSecondTabSelected(2)}
           >
+            <Image
+              alt="mg"
+              src="/fire.png"
+              width={20}
+              height={20}
+              className="absolute -top-1 -right-2 h-3 w-3"
+            />
             Videos
           </button>
         </div>
@@ -245,8 +289,57 @@ const SpicyScreen = () => {
           setIndex={(i: number) => setLightboxIndex(i)}
           setOpenQrCode={() => console.log(false)}
         />
+
         {/* bottom nav */}
       </div>
+      <footer className="fixed -bottom-1 hidden w-full items-center justify-center self-center px-1 md:flex md:w-max md:px-4">
+        <div className="w-full md:max-w-[520px] md:min-w-[400px]">
+          <div className="mb-2 flex items-center justify-center gap-16 rounded-t-3xl bg-gradient-to-br from-[#FF0080] to-[#7928CA] px-8 py-2 text-xs text-white/80">
+            {[
+              { label: "Chat", icon: HomeIcon, route: "/chat" },
+              { label: "Galeria", icon: GridIcon, route: "/" },
+              // { label: "Perfil", icon: UserIcon as unknown as React.ComponentType<IconProps>, route: "/chat" },
+            ].map((it: ButtonProps, idx) => (
+              <button
+                key={idx}
+                onClick={() => (window.location.href = it.route)}
+                className={cn(
+                  "flex w-20 flex-col items-center justify-center gap-1 py-1 hover:text-white",
+                  pathname === it.route &&
+                    "rounded-lg bg-white px-4 text-[#FF0080]",
+                )}
+              >
+                <it.icon route={it.route} className="h-5 w-5" />
+                {it.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </footer>
+      <footer className="fixed right-0 bottom-1 flex items-center justify-center self-center px-1 md:hidden md:w-max md:px-4">
+        <div className="w-full md:max-w-[520px] md:min-w-[400px]">
+          <div className="mb-2 flex flex-col items-center justify-center gap-2 rounded-l-3xl bg-gradient-to-br from-[#FF0080] to-[#7928CA] px-2 py-2 text-xs text-white/80">
+            {[
+              { label: "Chat", icon: HomeIcon, route: "/chat" },
+              { label: "Galeria", icon: GridIcon, route: "/" },
+              // { label: "Perfil", icon: UserIcon as unknown as React.ComponentType<IconProps>, route: "/chat" },
+            ].map((it: ButtonProps, idx) => (
+              <button
+                key={idx}
+                onClick={() => (window.location.href = it.route)}
+                className={cn(
+                  "flex flex-col items-center justify-center gap-1 px-2 py-2 text-[10px] font-bold hover:text-white",
+                  pathname === it.route &&
+                    "rounded-full bg-white text-[#FF0080]",
+                )}
+              >
+                <it.icon route={it.route} className="h-5 w-5" />
+                {it.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };

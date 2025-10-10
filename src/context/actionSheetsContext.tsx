@@ -1,11 +1,23 @@
 "use client";
 import { createContext, useContext, useState } from "react";
+
+export type StepKey =
+  | "email"
+  | "password"
+  | "plans"
+  | "cpf"
+  | "pix"
+  | "register"
+  | "success";
 interface ActionSheetsContextProps {
   open: boolean;
   firstOpenSheet: boolean;
   openSheet: () => void;
   closeSheet: () => void;
+  current: StepKey;
+  setCurrent: React.Dispatch<React.SetStateAction<StepKey>>;
 }
+
 export const ActionSheetsContext = createContext<
   ActionSheetsContextProps | undefined
 >(undefined);
@@ -17,6 +29,7 @@ export const ActionSheetsProvider = ({
 }) => {
   const [open, setOpen] = useState(false);
   const [firstOpenSheet, setFirstOpenSheet] = useState(true);
+  const [current, setCurrent] = useState<StepKey>("email");
 
   const openSheet = () => {
     setOpen(true);
@@ -27,7 +40,14 @@ export const ActionSheetsProvider = ({
 
   return (
     <ActionSheetsContext.Provider
-      value={{ open, firstOpenSheet, openSheet, closeSheet }}
+      value={{
+        open,
+        firstOpenSheet,
+        openSheet,
+        closeSheet,
+        current,
+        setCurrent,
+      }}
     >
       {children}
     </ActionSheetsContext.Provider>

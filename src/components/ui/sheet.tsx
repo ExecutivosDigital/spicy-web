@@ -65,7 +65,7 @@ const SheetContent = React.forwardRef<
       children,
       onClose,
       overlayClass,
-      closeIcon = <X className="h-4 w-4" />,
+      closeIcon = <X className="h-6 w-6" />,
       ...props
     },
     ref,
@@ -82,14 +82,13 @@ const SheetContent = React.forwardRef<
           <button
             onClick={onClose}
             type="button"
-            className="ring-offset-background data-[state=open]:bg-secondary absolute top-4 right-4 rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:outline-none disabled:pointer-events-none"
+            className="data-[state=open]:bg-secondary absolute top-4 right-4 rounded-sm opacity-70 ring-offset-[#FF0080] transition-opacity hover:opacity-100 focus:outline-none disabled:pointer-events-none"
           >
             {closeIcon}
           </button>
         ) : (
-          <SheetPrimitive.Close className="ring-offset-background focus:ring-ring data-[state=open]:bg-secondary absolute top-4 right-4 rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:pointer-events-none">
+          <SheetPrimitive.Close className="focus:ring-ring data-[state=open]:bg-secondary absolute top-2 right-2 rounded-full bg-gradient-to-br from-[#FF0080] to-[#7928CA] opacity-70 ring-offset-[#FF0080] transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:pointer-events-none">
             {closeIcon}
-            <span className="sr-only">Close</span>
           </SheetPrimitive.Close>
         )}
       </SheetPrimitive.Content>

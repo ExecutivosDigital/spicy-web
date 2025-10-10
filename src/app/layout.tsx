@@ -1,4 +1,3 @@
-import { Footer } from "@/components/footer";
 import { PaymentSheet } from "@/components/paymentSheet";
 import { ContextProviders } from "@/context/ContextProviders";
 import type { Metadata } from "next";
@@ -26,11 +25,10 @@ export default function RootLayout({
     <html lang="pt-BR">
       <body className={`${poppins.variable}`}>
         <ContextProviders>
-          <div className="flex h-screen flex-1 flex-col overflow-hidden bg-neutral-900">
+          <div className="flex h-[100svh] flex-1 flex-col overflow-hidden bg-neutral-900">
             {children}
-            <Footer />
+            <PaymentSheet />
           </div>
-          <PaymentSheet />
           <Toaster
             position="top-center"
             toastOptions={{ duration: 5000, className: "z-[1000000]" }}

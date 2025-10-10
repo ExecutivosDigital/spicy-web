@@ -1,26 +1,74 @@
 "use client";
 import { ChatProps } from "@/@types/global";
 import { useChatContext } from "@/context/chatContext";
+import { cn } from "@/lib/utils";
 import Image from "next/image";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import PixSheetSteps from "./PixSheetSteps";
+type IconProps = { route: string; className?: string };
 
+type ButtonProps = {
+  route: string;
+  className?: string;
+  icon: React.ComponentType<IconProps>; // << aceita className
+  label: string;
+};
 export function Header() {
   const { chats, selectedChatId } = useChatContext();
   const [openQrCode, setOpenQrCode] = useState<boolean>(false);
   const [selectedChat, setSelectedChat] = useState<ChatProps | null>(null);
-
+  const router = useRouter();
   useEffect(() => {
     const chat = chats.find((chat) => chat.id === selectedChatId);
     if (chat) {
       setSelectedChat(chat);
     }
   }, [chats, selectedChatId]);
+  type IconProps = { route: string; className?: string };
 
+  type ButtonProps = {
+    route: string;
+    className?: string;
+    icon: React.ComponentType<IconProps>; // << aceita className
+    label: string;
+  };
+  const pathname = usePathname();
+  function HomeIcon({ route, className }: IconProps) {
+    const isActive = pathname === route;
+    return (
+      <Image
+        src={isActive ? "/heart-pink.png" : "/heart.png"}
+        alt="heart"
+        width={20}
+        height={20}
+        className={cn("h-5 w-5", className)}
+      />
+    );
+  }
+
+  function GridIcon({ route, className }: IconProps) {
+    const isActive = pathname === route;
+    return (
+      <Image
+        src={isActive ? "/gallery-pink.png" : "/galery.png"}
+        alt="gallery"
+        width={20}
+        height={20}
+        className={cn("h-5 w-5", className)}
+      />
+    );
+  }
   return (
     <>
-      <header className="sticky top-0 z-20 h-16 min-h-16 border-b border-neutral-500 backdrop-blur-sm">
-        <div className="flex items-center gap-3 px-4 py-3">
+      <header className="sticky top-0 z-20 flex flex-col justify-between border-b border-neutral-500/20 py-1 backdrop-blur-sm">
+        <button
+          onClick={() => router.push("/")}
+          className="ml-4 self-start rounded-md bg-white px-4 text-sm text-[#FF0080]"
+        >
+          Voltar
+        </button>
+        <div className="flex flex-1 items-center gap-3 px-4 py-3 pt-0">
           <div className="relative">
             <img
               src={"/gab/photos/profile.png"}
@@ -44,19 +92,26 @@ export function Header() {
             <div className="text-[12px] text-neutral-500">online agora</div>
           </div>
           <div className="items-center gap-1 text-neutral-400 sm:flex">
-            <button
-              onClick={() => setOpenQrCode(true)}
-              className="group flex cursor-pointer flex-row items-center justify-center gap-2 rounded-lg border border-[#ff0080] p-2 text-sm text-white transition-all duration-300 hover:scale-105"
-            >
-              <Image
-                src="/galery.png"
-                alt="verificada"
-                width={18}
-                height={18}
-              />
-              {/* <Heart className="text-[#ff0080] transition-all duration-300 group-hover:fill-red-500 group-hover:text-red-500" /> */}
-              Galeria
-            </button>
+            <div className="flex items-center justify-center gap-2 rounded-l-3xl bg-gradient-to-br from-[#FF0080] to-[#7928CA] px-2 py-2 text-xs text-white/80 opacity-100">
+              {[
+                { label: "Chat", icon: HomeIcon, route: "/chat" },
+                { label: "Galeria", icon: GridIcon, route: "/" },
+                // { label: "Perfil", icon: UserIcon as unknown as React.ComponentType<IconProps>, route: "/chat" },
+              ].map((it: ButtonProps, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => (window.location.href = it.route)}
+                  className={cn(
+                    "flex flex-col items-center justify-center gap-1 px-2.5 py-1 hover:text-white",
+                    pathname === it.route &&
+                      "rounded-full bg-white text-[#FF0080]",
+                  )}
+                >
+                  <it.icon route={it.route} className="h-5 w-5" />
+                  {it.label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </header>

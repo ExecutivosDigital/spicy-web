@@ -378,13 +378,13 @@ const MessageFooter = ({
                 </div>
               )}
 
-              <div className="relative flex w-full items-center gap-1 rounded-md bg-neutral-900 xl:gap-2">
+              <div className="relative flex w-full items-center gap-1 rounded-md xl:gap-2">
                 <textarea
                   value={message}
                   onChange={handleChange}
                   ref={textareaRef}
                   placeholder="Escreva sua mensagem..."
-                  className="no-scrollbar h-10 max-h-10 min-h-10 w-full p-1 px-3 pt-2 pl-3 text-base break-words outline-none placeholder:text-base focus:border-[#ff0080]/60 disabled:opacity-50 xl:h-10"
+                  className="no-scrollbar h-10 max-h-10 min-h-10 w-full rounded-lg bg-neutral-900 p-1 px-3 pt-2 pl-3 text-base break-words outline-none placeholder:text-base focus:border-[#ff0080]/60 disabled:opacity-50 xl:h-10"
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey) {
                       e.preventDefault();
@@ -411,7 +411,7 @@ const MessageFooter = ({
                 <Button
                   onClick={HandleSend}
                   type="submit"
-                  className="group relative z-[99999] h-10 w-10 min-w-10 overflow-hidden rounded-l-md border-[#ff0080]/60 bg-gradient-to-br from-[#FF0080] to-[#7928CA] p-0 xl:h-10 xl:w-10"
+                  className="group relative z-[99999] h-10 w-10 min-w-10 overflow-hidden rounded-l-md border-[#ff0080]/60 p-0 xl:h-10 xl:w-10"
                 >
                   <div className="absolute flex h-full w-full cursor-pointer items-center justify-center group-hover:bg-transparent">
                     {isRecording ? (

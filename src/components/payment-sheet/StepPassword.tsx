@@ -1,25 +1,41 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { maskPhone } from "@/utils/masks";
+import Image from "next/image";
 import { useState } from "react";
-import { TextField } from "./ui";
+import { GradientButton, TextField } from "./ui";
 
 export function StepPassword({
+  phone,
+  setPhone,
   onNext,
 }: {
-  onNext: (password: string) => void;
+  phone: string;
+  onNext: (email: string) => void;
+  setPhone: React.Dispatch<React.SetStateAction<string>>;
 }) {
   const [pwd, setPwd] = useState("");
-  const [phone, setPhone] = useState<string>("");
   const [isChecked, setIsChecked] = useState<boolean>(false);
   return (
     <div className="space-y-4">
+      <div className="relative m-4 overflow-hidden rounded-2xl bg-[#2A2A2E]">
+        {/* Give the banner a predictable but responsive height */}
+        <div className="aspect-[16/6]">
+          <Image
+            src="/gab/photos/7.jpeg"
+            alt="Gabriela"
+            fill
+            className="rounded-3xl object-cover"
+          />
+        </div>
+      </div>
       <h2 className="text-center text-lg font-semibold">Digite sua senha</h2>
       <p className="text-sm text-white/70">Seu WhatsApp:</p>
       <TextField
         type="phone"
         placeholder="(00) 00000-0000"
-        value={phone}
+        value={maskPhone(phone)}
         onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
           setPhone(e.target.value)
         }
@@ -28,9 +44,9 @@ export function StepPassword({
       <TextField
         type="password"
         placeholder="****"
-        value={phone}
+        value={pwd}
         onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-          setPhone(e.target.value)
+          setPwd(e.target.value)
         }
       />
       <div className="flex w-full flex-row items-center gap-2">
@@ -45,6 +61,9 @@ export function StepPassword({
         </button>
         <span className="text-xs">Salvar Informações</span>
       </div>
+      <GradientButton onClick={() => onNext("password")}>
+        Avançar
+      </GradientButton>
     </div>
   );
 }

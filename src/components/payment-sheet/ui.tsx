@@ -29,7 +29,7 @@ export function TextField({
   return (
     <input
       className={cn(
-        "w-full rounded-lg border border-white/10 bg-[#0f0f0f] px-4 py-3 text-sm text-white",
+        "w-full rounded-lg border border-white/10 bg-[#0f0f0f] px-4 py-3 text-base text-white",
         "placeholder:text-white/40 focus:ring-2 focus:ring-pink-500/40 focus:outline-none",
         className,
       )}
