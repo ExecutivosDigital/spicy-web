@@ -1,8 +1,9 @@
 "use client";
 
+import { useApiContext } from "@/context/ApiContext";
 import { cn } from "@/lib/utils";
 import Image, { StaticImageData } from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { GradientButton } from "./ui";
 import plan1Img from "/public/gab/photos/11.jpeg";
 import plan2Img from "/public/gab/photos/12.jpeg";
@@ -43,7 +44,14 @@ export function StepPlans({
   onNext: (planId: string) => void;
 }) {
   const [selected, setSelected] = useState<string | undefined>(selectedId);
-
+  const { GetAPI } = useApiContext();
+  async function handleGetPlans() {
+    const response = await GetAPI(`/signature-plan`, true);
+    console.log("responseVerify", response);
+  }
+  useEffect(() => {
+    handleGetPlans();
+  }, []);
   return (
     <div className="space-y-4">
       <div className="relative m-4 overflow-hidden rounded-2xl bg-[#2A2A2E]">

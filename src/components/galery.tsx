@@ -412,6 +412,7 @@ export function GalleryMosaicPager({
         GetAPI(`/photo/${id}`, true),
         GetAPI(`/video/${id}`, true),
       ]);
+      console.log("media", ph, vd);
       setMedia({
         photos: ph?.status === 200 ? ph.body.photos : [],
         videos: vd?.status === 200 ? vd.body.videos : [],

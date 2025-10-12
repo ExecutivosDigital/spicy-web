@@ -74,8 +74,9 @@ export function StepPassword({ phone, setPhone, onNext }: Props) {
     try {
       setIsLoading(true);
       const Payload = { phone: digitsPhone, password: pwd, modelId: id };
+      console.log("Payload", Payload);
       const response = await PostAPI("user/auth", Payload, false);
-      console.log("response", response);
+      console.log("response1", response);
       if (response.status !== 200) {
         return;
       }

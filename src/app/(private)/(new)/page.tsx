@@ -70,7 +70,7 @@ const SpicyScreen = () => {
 
   return (
     <div className="flex h-full justify-center gap-2 bg-neutral-900 p-2 text-white xl:gap-5 rtl:space-x-reverse">
-      <div className="relative max-w-[540px] flex-1 overflow-auto pb-4 md:rounded-md md:border md:px-4 md:pb-20">
+      <div className="custom-scrollbar relative max-w-[540px] flex-1 overflow-auto pb-4 md:rounded-md md:border md:px-4 md:pb-20">
         {/* header */}
         <header className="flex items-center justify-between pt-4">
           <div className="flex items-center gap-2">
