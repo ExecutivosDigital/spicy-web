@@ -15,7 +15,7 @@ type ButtonProps = {
   label: string;
 };
 export function Header() {
-  const { chats, selectedChatId } = useChatContext();
+  const { chats, selectedChatId, modelId, modelProfile } = useChatContext();
   const [openQrCode, setOpenQrCode] = useState<boolean>(false);
   const [selectedChat, setSelectedChat] = useState<ChatProps | null>(null);
   const router = useRouter();
@@ -62,16 +62,12 @@ export function Header() {
   return (
     <>
       <header className="sticky top-0 z-20 flex flex-col justify-between border-b border-neutral-500/20 py-1 backdrop-blur-sm">
-        {/* <button
-          onClick={() => router.push("/")}
-          className="ml-4 self-start rounded-md bg-white px-4 text-sm text-[#FF0080]"
-        >
-          Voltar
-        </button> */}
         <div className="flex flex-1 items-center gap-3 px-4 py-3 pt-0">
           <div className="relative">
             <img
-              src={"/gab/photos/profile.png"}
+              src={
+                modelProfile ? modelProfile.photoUrl : "/gab/photos/profile.png"
+              }
               alt="Gabi"
               className="h-10 w-10 rounded-full object-cover"
             />
@@ -80,7 +76,7 @@ export function Header() {
           <div className="flex-1 leading-tight">
             <div className="flex items-center gap-2">
               <span className="text-[15px] font-extrabold">
-                Gabriela Ferreira
+                {modelProfile && modelProfile.name}
               </span>
               <Image
                 src="/verify.png"
@@ -92,10 +88,10 @@ export function Header() {
             <div className="text-[12px] text-neutral-500">online agora</div>
           </div>
           <div className="items-center gap-1 text-neutral-400 sm:flex">
-            <div className="flex items-center justify-center gap-2 rounded-l-3xl bg-gradient-to-br from-[#FF0080] to-[#7928CA] px-2 py-2 text-xs text-white/80 opacity-100">
+            <div className="flex items-center justify-center gap-2 rounded-full bg-gradient-to-br from-[#FF0080] to-[#7928CA] px-2 py-2 text-xs text-white/80 opacity-100">
               {[
-                { label: "Chat", icon: HomeIcon, route: "/chat" },
-                { label: "Galeria", icon: GridIcon, route: "/" },
+                // { label: "Chat", icon: HomeIcon, route: `/${modelId}/chat` },
+                { label: "Galeria", icon: GridIcon, route: `/${modelId}` },
                 // { label: "Perfil", icon: UserIcon as unknown as React.ComponentType<IconProps>, route: "/chat" },
               ].map((it: ButtonProps, idx) => (
                 <button

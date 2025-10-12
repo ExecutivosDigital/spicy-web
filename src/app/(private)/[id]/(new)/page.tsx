@@ -1,11 +1,13 @@
 "use client";
-import { GalleryMosaicPager, GalleryItem as GMItem } from "@/components/galery";
+import { GalleryItem as GMItem, GalleryMosaicPager } from "@/components/galery";
 import { Lightbox } from "@/components/light-box";
+import { useApiContext } from "@/context/ApiContext";
 import { useActionSheetsContext } from "@/context/actionSheetsContext";
+import { useChatContext } from "@/context/chatContext";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import React, { useState } from "react";
+import React, { use, useEffect, useState } from "react";
 
 /** tipo que a Lightbox espera */
 type MediaItem = {
@@ -15,10 +17,20 @@ type MediaItem = {
   mediaType?: "image" | "video";
 };
 
-const SpicyScreen = () => {
+const SpicyScreen = ({ params }: { params: Promise<{ id: string }> }) => {
+  const { id } = use(params);
   const { openSheet, setCurrent } = useActionSheetsContext();
+  const { userProfile, modelProfile, isPaymentConfirmed, modelId, setModelId } =
+    useChatContext();
+  const { token } = useApiContext();
   const router = useRouter();
   const pathname = usePathname();
+
+  useEffect(() => {
+    if (id) {
+      setModelId(id);
+    }
+  }, [id]);
 
   type IconProps = { route: string; className?: string };
   type ButtonProps = {
@@ -81,17 +93,24 @@ const SpicyScreen = () => {
               onClick={() => {
                 setCurrent("register"), openSheet();
               }}
-              className="rounded-md border border-[#FF0080] bg-gradient-to-br from-[#FF0080]/20 to-[#7928CA]/20 px-3 py-1.5 text-xs hover:bg-[#e24c69]"
+              className={cn(
+                "rounded-md border border-[#FF0080] bg-gradient-to-br from-[#FF0080]/20 to-[#7928CA]/20 px-3 py-1.5 text-xs hover:bg-[#e24c69]",
+                token && "hidden",
+              )}
             >
               Registro Grátis
             </button>
             <button
               onClick={() => {
-                setCurrent("password"), openSheet();
+                if (userProfile) {
+                  setCurrent("plans"), openSheet();
+                } else {
+                  setCurrent("password"), openSheet();
+                }
               }}
               className="rounded-md border border-[#FF0080] px-3 py-1.5 text-xs"
             >
-              Login
+              {isPaymentConfirmed ? "Enviar mimo" : token ? "Assinar" : "Login"}
             </button>
           </div>
         </header>
@@ -101,11 +120,11 @@ const SpicyScreen = () => {
           <div className="relative h-32 overflow-hidden rounded-2xl bg-[#2A2A2E]">
             <div className="absolute inset-0 flex items-center justify-center">
               <Image
-                src="/banner1.png"
+                src={(modelProfile && modelProfile.photoUrl) || "/default.png"}
                 alt="Gabriela"
                 width={10000}
                 height={10000}
-                className="h-[100%] w-[100%] rounded-xl bg-white"
+                className="h-[100%] w-[100%] rounded-xl bg-white object-cover"
               />
             </div>
 
@@ -116,14 +135,13 @@ const SpicyScreen = () => {
           </div>
 
           <p className="mt-3 text-center text-sm text-white/90">
-            Oie... Gabi aqui cheia de responsabilidades! Entre aulas, estágio e
-            consultas, aceito aquele pix carinhoso 😘💸
+            {modelProfile && modelProfile.bio}
           </p>
 
           <div className="mt-3 flex w-full justify-center gap-2">
             <button
               onClick={() => {
-                router.push("/chat");
+                router.push(`/${modelId}/chat`);
               }}
               className={cn(
                 `flex cursor-pointer flex-row items-center gap-2 rounded-lg border border-[#FF0080] from-[#FF0080] to-[#7928CA] px-3 py-2 text-sm text-white transition-all duration-700 hover:scale-[1.01] hover:bg-[#FF0080]`,
@@ -151,8 +169,6 @@ const SpicyScreen = () => {
         {/* Pager -> abre lightbox com lista filtrada + índice absoluto */}
         <GalleryMosaicPager
           setOpenQrCode={setOpenQrCode}
-          hasNotPayed={true}
-          // retrocompat: não usaremos esses dois abaixo, mas mantidos por tipo:
           setSelectedItem={() => {}}
           setIsMediaOpen={() => {}}
           onOpenLightbox={(items, index) => {
@@ -180,8 +196,8 @@ const SpicyScreen = () => {
         <div className="w-full md:max-w-[520px] md:min-w-[400px]">
           <div className="mb-2 flex items-center justify-center gap-16 rounded-t-3xl bg-gradient-to-br from-[#FF0080] to-[#7928CA] px-8 py-2 text-xs text-white/80">
             {[
-              { label: "Chat", icon: HomeIcon, route: "/chat" },
-              { label: "Galeria", icon: GridIcon, route: "/" },
+              { label: "Chat", icon: HomeIcon, route: `/${modelId}/chat` },
+              { label: "Galeria", icon: GridIcon, route: `/${modelId}` },
             ].map((it: ButtonProps, idx) => (
               <button
                 key={idx}
@@ -205,8 +221,8 @@ const SpicyScreen = () => {
         <div className="w-full md:max-w-[520px] md:min-w-[400px]">
           <div className="mb-2 flex flex-col items-center justify-center gap-2 rounded-l-3xl bg-gradient-to-br from-[#FF0080] to-[#7928CA] px-2 py-2 text-xs text-white/80">
             {[
-              { label: "Chat", icon: HomeIcon, route: "/chat" },
-              { label: "Galeria", icon: GridIcon, route: "/" },
+              { label: "Chat", icon: HomeIcon, route: `/${modelId}/chat` },
+              { label: "Galeria", icon: GridIcon, route: `/${modelId}` },
             ].map((it: ButtonProps, idx) => (
               <button
                 key={idx}

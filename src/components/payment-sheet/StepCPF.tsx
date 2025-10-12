@@ -1,5 +1,7 @@
 "use client";
 
+import { useApiContext } from "@/context/ApiContext";
+import { maskCpfCnpj } from "@/utils/masks";
 import Image from "next/image";
 import { useState } from "react";
 import { GradientButton, TextField } from "./ui";
@@ -16,6 +18,26 @@ export function StepCPF({
   onNext: (cpf: string) => void;
 }) {
   const [cpf, setCpf] = useState(onlyDigits(initialCPF ?? ""));
+  const [isUpdating, setIsUpdating] = useState(false);
+  const { PutAPI } = useApiContext();
+
+  async function handleUpdateProfile() {
+    setIsUpdating(true);
+    try {
+      const response = await PutAPI("/user/profile", { cpfCnpj: cpf }, true);
+      if (response.status === 200) {
+        onNext(cpf);
+      } else {
+        console.error("Failed to update CPF:", response);
+        // Optionally, show an error message to the user
+      }
+    } catch (error) {
+      console.error("Error updating CPF:", error);
+      // Optionally, show an error message to the user
+    } finally {
+      setIsUpdating(false);
+    }
+  }
 
   return (
     <div className="space-y-4">
@@ -40,10 +62,12 @@ export function StepCPF({
       <TextField
         inputMode="numeric"
         placeholder="00000000000"
-        value={cpf}
+        value={maskCpfCnpj(cpf)}
         onChange={(e) => setCpf(onlyDigits(e.target.value))}
       />
-      <GradientButton onClick={() => onNext("pix")}>Avançar</GradientButton>
+      <GradientButton disabled={isUpdating} onClick={handleUpdateProfile}>
+        {isUpdating ? "Atualizando..." : "Avançar"}
+      </GradientButton>
       <p className="text-center text-[10px] text-white/50">
         Suas informações são utilizadas somente para gerar o pix
       </p>

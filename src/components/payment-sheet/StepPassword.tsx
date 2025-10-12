@@ -1,13 +1,15 @@
 "use client";
 
 import { useApiContext } from "@/context/ApiContext";
+import { useActionSheetsContext } from "@/context/actionSheetsContext";
 import { useChatContext } from "@/context/chatContext";
 import { cn } from "@/lib/utils";
 import { maskPhone } from "@/utils/masks";
 import { useCookies } from "next-client-cookies";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
+import toast from "react-hot-toast";
 import { z } from "zod";
 import { GradientButton, TextField } from "./ui";
 type Props = {
@@ -21,8 +23,8 @@ const loginSchema = z.object({
     .string()
     // valida o número cru, só dígitos (11 dígitos no BR com DDD)
     .transform((v) => v.replace(/\D/g, ""))
-    .refine((v) => v.length === 11, {
-      message: "Informe um número válido com DDD (11 dígitos).",
+    .refine((v) => v.length === 10, {
+      message: "Informe um número válido com DDD (10 dígitos).",
     }),
   password: z
     .string()
@@ -34,6 +36,7 @@ export function StepPassword({ phone, setPhone, onNext }: Props) {
   const searchParams = useSearchParams();
   const modelId = searchParams.get("id") ?? undefined;
   const { setToken } = useApiContext();
+  const { setCurrent } = useActionSheetsContext();
   const { PostAPI, GetAPI } = useApiContext();
   const cookies = useCookies();
   const [password, setPassword] = useState("");
@@ -45,12 +48,6 @@ export function StepPassword({ phone, setPhone, onNext }: Props) {
     password?: string;
     general?: string;
   }>({});
-  async function handleVerify() {
-    const response = await GetAPI(`/signature-plan`, true);
-    console.log("responseVerify", response);
-  }
-  const maskedPhone = useMemo(() => maskPhone(phone), [phone]);
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setErrors({});
@@ -74,14 +71,11 @@ export function StepPassword({ phone, setPhone, onNext }: Props) {
     try {
       setIsLoading(true);
       const Payload = { phone: digitsPhone, password: pwd, modelId: id };
-      console.log("Payload", Payload);
       const response = await PostAPI("user/auth", Payload, false);
-      console.log("response1", response);
       if (response.status !== 200) {
-        return;
+        return toast.error("Verifique os dados inseridos e tente novamente");
       }
       if (response.status === 200) {
-        handleVerify();
         cookies.set(
           process.env.NEXT_PUBLIC_USER_TOKEN as string,
           response.body.accessToken,
@@ -109,9 +103,6 @@ export function StepPassword({ phone, setPhone, onNext }: Props) {
     }
   }
 
-  useEffect(() => {
-    handleVerify();
-  }, []);
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="relative m-4 overflow-hidden rounded-2xl bg-[#2A2A2E]">
@@ -138,7 +129,8 @@ export function StepPassword({ phone, setPhone, onNext }: Props) {
       <TextField
         type="tel"
         placeholder="(00) 00000-0000"
-        value={maskedPhone}
+        maxLength={15}
+        value={maskPhone(phone)}
         onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
           setPhone(e.target.value)
         }
@@ -167,7 +159,7 @@ export function StepPassword({ phone, setPhone, onNext }: Props) {
           {errors.password}
         </span>
       )}
-
+      {/* 
       <div className="flex w-full flex-row items-center gap-2">
         <button
           type="button"
@@ -182,15 +174,24 @@ export function StepPassword({ phone, setPhone, onNext }: Props) {
           {isChecked && "✓"}
         </button>
         <span className="text-xs">Salvar Informações</span>
-      </div>
+      </div> */}
 
-      <GradientButton
-        type="submit"
-        disabled={isLoading}
-        className={cn(isLoading && "opacity-80")}
-      >
-        {isLoading ? "Entrando..." : "Avançar"}
-      </GradientButton>
+      <div className="flex w-full items-center gap-2">
+        <GradientButton
+          disabled={isLoading}
+          onClick={() => setCurrent("register")}
+          className={cn(isLoading && "opacity-80")}
+        >
+          {isLoading ? "Entrando..." : "Cadastrar"}
+        </GradientButton>
+        <GradientButton
+          type="submit"
+          disabled={isLoading}
+          className={cn(isLoading && "opacity-80")}
+        >
+          {isLoading ? "Entrando..." : "Avançar"}
+        </GradientButton>
+      </div>
     </form>
   );
 }

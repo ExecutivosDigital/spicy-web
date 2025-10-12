@@ -1,7 +1,13 @@
 "use client";
 
-import { ChatProps, MessageProps } from "@/@types/global";
+import {
+  ChatProps,
+  MessageProps,
+  ModelProps,
+  UserProps,
+} from "@/@types/global";
 import { useCookies } from "next-client-cookies";
+import { useSearchParams } from "next/navigation";
 import { createContext, useContext, useEffect, useState } from "react";
 import { Socket, io } from "socket.io-client";
 import { useApiContext } from "./ApiContext";
@@ -27,6 +33,10 @@ interface ChatContextProps {
   handleVerify: () => Promise<void>;
   isPaymentConfirmed: boolean;
   setIsPaymentConfirmed: (value: boolean) => void;
+  userProfile: UserProps | null;
+  modelId: string | undefined;
+  modelProfile: ModelProps | null;
+  setModelId: React.Dispatch<React.SetStateAction<string | undefined>>;
 }
 
 const ChatContext = createContext<ChatContextProps | undefined>(undefined);
@@ -39,6 +49,11 @@ export const ChatContextProvider = ({ children }: ProviderProps) => {
   const { GetAPI, token } = useApiContext();
   const cookies = useCookies();
 
+  const params = useSearchParams();
+
+  const [modelId, setModelId] = useState<string | undefined>();
+  const [modelProfile, setModelProfile] = useState<ModelProps | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProps | null>(null);
   const [isChatsLoading, setIsChatsLoading] = useState(false);
   const [chats, setChats] = useState<ChatProps[]>([]);
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
@@ -59,7 +74,6 @@ export const ChatContextProvider = ({ children }: ProviderProps) => {
   async function handleGetChats() {
     setIsChatsLoading(true);
     const connect = await GetAPI("/chat", true);
-    console.log("connect GetChats", connect);
     if (connect.status === 200) {
       setChats(connect.body.chats);
       if (connect.body.chats.length > 0) {
@@ -71,11 +85,30 @@ export const ChatContextProvider = ({ children }: ProviderProps) => {
     setIsChatsLoading(false);
   }
 
+  async function profile() {
+    const connect = await GetAPI("/user/profile", true);
+    if (connect.status === 200) {
+      setUserProfile(connect.body.user);
+    }
+  }
+
+  async function getModelProfile() {
+    if (!modelId) return;
+    const connect = await GetAPI(`/model/profile/${modelId}`, true);
+    console.log(connect);
+    if (connect.status === 200) {
+      setModelProfile(connect.body.model);
+    }
+  }
+
+  useEffect(() => {
+    getModelProfile();
+  }, [modelId]);
+
   async function handleGetChatMessages() {
     if (!selectedChatId) return;
     setIsMessageLoading(true);
     const connect = await GetAPI(`/message/${selectedChatId}`, true);
-    console.log("connect GetChatMessages", connect);
     if (connect.status === 200) {
       setSelectedChatMessages(connect.body.messages);
     }
@@ -87,14 +120,14 @@ export const ChatContextProvider = ({ children }: ProviderProps) => {
     if (!selectedChat) return;
 
     const response = await GetAPI(
-      `/signature/validation/${selectedChat?.model.id}`,
+      `/user-signature/validation/${selectedChat?.model.id}`,
       true,
     );
-    console.log("response validation", response);
+
     if (response.status === 403) {
       // setOpenQrCode(true);
       setIsPaymentConfirmed(false);
-    } else {
+    } else if (response.status === 200) {
       setIsPaymentConfirmed(true);
     }
   }
@@ -132,20 +165,22 @@ export const ChatContextProvider = ({ children }: ProviderProps) => {
       });
 
       socket.on("payment", () => {
+        console.log("entou aqui");
         setPaymentWebHookConfirmation(true);
         setIsPaymentConfirmed(true);
       });
     }
-  }, [socket, selectedChatId, userId]);
+  }, [socket, selectedChatId, userId, modelId]);
 
   useEffect(() => {
     handleGetChatMessages();
     handleVerify();
-  }, [selectedChatId]);
+  }, [selectedChatId, modelId]);
 
   useEffect(() => {
     handleGetChats();
-  }, [token]);
+    profile();
+  }, [token, modelId]);
 
   return (
     <ChatContext.Provider
@@ -168,6 +203,10 @@ export const ChatContextProvider = ({ children }: ProviderProps) => {
         handleVerify,
         isPaymentConfirmed,
         setIsPaymentConfirmed,
+        userProfile,
+        modelId,
+        modelProfile,
+        setModelId,
       }}
     >
       {children}

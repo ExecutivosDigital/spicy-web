@@ -1,6 +1,9 @@
 "use client";
 
 import { useApiContext } from "@/context/ApiContext";
+import { useChatContext } from "@/context/chatContext";
+import { maskPhone } from "@/utils/masks";
+import { useCookies } from "next-client-cookies";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
@@ -27,6 +30,11 @@ export type RegisterData = {
 };
 
 export default function RegisterCard({ onNext }: { onNext: () => void }) {
+  const cookies = useCookies();
+  const { setToken } = useApiContext();
+  const { GetAPI } = useApiContext();
+  const { handleGetChats, setUserId, handleVerify } = useChatContext();
+
   const [nome, setNome] = useState("");
   const [telefone, setTelefone] = useState("");
   const [senha, setSenha] = useState("");
@@ -53,8 +61,6 @@ export default function RegisterCard({ onNext }: { onNext: () => void }) {
   const errors = useMemo(() => {
     const e: Partial<Record<keyof RegisterData, string>> = {};
     if (!nome.trim()) e.nome = "Informe seu nome";
-    if (!/\(\d{2}\) \d{5}-\d{4}$/.test(telefoneFormatado))
-      e.telefone = "Telefone inválido";
     if (senha.length < 4) e.senha = "Mínimo 4 caracteres";
     if (!aceitouTermos) e.aceitouTermos = "É necessário aceitar os termos";
     return e;
@@ -68,7 +74,6 @@ export default function RegisterCard({ onNext }: { onNext: () => void }) {
     if (invalid) return;
     try {
       setLoading(true);
-      console.log("id", id);
       const response = await PostAPI(
         "user/register",
         { name: nome, password: senha, phone: telefoneFormatado, modelId: id },
@@ -76,14 +81,24 @@ export default function RegisterCard({ onNext }: { onNext: () => void }) {
       );
       if (response.status === 200) {
         toast.success("Registrado com sucesso!");
+        handleVerify();
+        cookies.set(
+          process.env.NEXT_PUBLIC_USER_TOKEN as string,
+          response.body.accessToken,
+        );
+        cookies.set(
+          process.env.NEXT_PUBLIC_USER_ID as string,
+          response.body.userId,
+        );
+        setToken(response.body.accessToken);
+        setUserId(response.body.userId);
+        handleGetChats();
         onNext();
-        console.log(response);
       } else if (response.status === 409) {
         toast.error("Telefone ja cadastrado");
       } else {
         toast.error("Erro ao registrar");
       }
-      console.log(response);
     } finally {
       setLoading(false);
     }
@@ -153,7 +168,7 @@ export default function RegisterCard({ onNext }: { onNext: () => void }) {
         <GradientInput>
           <input
             type="tel"
-            value={telefoneFormatado}
+            value={maskPhone(telefone)}
             onChange={(e) => setTelefone(e.target.value)}
             onBlur={() => setTocado((t) => ({ ...t, telefone: true }))}
             inputMode="numeric"

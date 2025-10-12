@@ -6,10 +6,9 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useActionSheetsContext } from "@/context/actionSheetsContext";
 import { useApiContext } from "@/context/ApiContext";
+import { useActionSheetsContext } from "@/context/actionSheetsContext";
 import { useChatContext } from "@/context/chatContext";
 import { cn } from "@/lib/utils";
 import { Icon } from "@iconify/react";
@@ -20,14 +19,15 @@ import { twMerge } from "tailwind-merge";
 import fixWebmDuration from "webm-duration-fix";
 import { AudioPlayer } from "./AudioPlayer";
 
-const MessageFooter = ({
-  onSend,
-  hasNotPayed,
-}: {
-  onSend: () => void;
-  hasNotPayed: boolean;
-}) => {
-  const { selectedChatId, setSelectedChatMessages } = useChatContext();
+const MessageFooter = ({ onSend }: { onSend: () => void }) => {
+  const {
+    selectedChatId,
+    setSelectedChatMessages,
+    isPaymentConfirmed,
+    userProfile,
+  } = useChatContext();
+
+  const { setCurrent, openSheet } = useActionSheetsContext();
 
   const { PostAPI } = useApiContext();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -36,7 +36,6 @@ const MessageFooter = ({
   const [file, setFile] = useState<File | null>(null);
   const [elapsedTime, setElapsedTime] = useState("00:00");
   const [isSendingMessage, setIsSendingMessage] = useState(false);
-  const [isEmojiPopoverOpen, setIsEmojiPopoverOpen] = useState(false);
   const [recordStartTime, setRecordStartTime] = useState<number | null>(null);
   const [fileType, setFileType] = useState<
     "file" | "audio" | "image" | "video" | null
@@ -46,8 +45,18 @@ const MessageFooter = ({
   );
   const [isRecording, setIsRecording] = useState(false);
 
+  function notPayed() {
+    if (!userProfile) {
+      setCurrent("password");
+      openSheet();
+    } else {
+      setCurrent("plans");
+      openSheet();
+    }
+  }
+
   const handleSendMessage = async (message: string) => {
-    if (hasNotPayed) return onSend();
+    if (!isPaymentConfirmed) return notPayed();
     if (!selectedChatId || !message) return;
 
     const connect = await PostAPI(
@@ -80,8 +89,8 @@ const MessageFooter = ({
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     handleSendMessage(message);
-    if (!hasNotPayed) {
-      setMessage("");
+    if (!isPaymentConfirmed) {
+      notPayed();
     }
   };
   const startRecording = async () => {
@@ -148,8 +157,8 @@ const MessageFooter = ({
       }
     } else if (message.length !== 0 && !file) {
       handleSendMessage(message);
-      if (!hasNotPayed) {
-        return setMessage("");
+      if (!isPaymentConfirmed) {
+        return notPayed();
       }
     } else if (message.length === 0 && file) {
       return handleSendFile();
@@ -193,7 +202,7 @@ const MessageFooter = ({
   }, []);
 
   async function handleSendFile() {
-    if (hasNotPayed) return onSend();
+    if (!isPaymentConfirmed) return notPayed();
     setIsSendingMessage(true);
     if (file) {
       const uploadFormData = new FormData();
@@ -233,7 +242,6 @@ const MessageFooter = ({
   useEffect(() => {
     openChat();
   }, [selectedChatId]);
-  const { openSheet } = useActionSheetsContext();
   return (
     <>
       <div
@@ -255,7 +263,7 @@ const MessageFooter = ({
             }
             modal={false}
           >
-            <DropdownMenuTrigger asChild>
+            {/* <DropdownMenuTrigger asChild>
               <div className="absolute -top-14 left-0 rounded-full bg-neutral-900">
                 <button className="group z-[9999] flex cursor-pointer items-center justify-center gap-2 rounded-full border border-[#ff0080] bg-gradient-to-br from-[#FF0080]/20 to-[#7928CA]/20 p-2 text-sm backdrop-opacity-50 hover:border-[#ff0080]/60 disabled:opacity-50">
                   <Image
@@ -287,7 +295,7 @@ const MessageFooter = ({
                   />
                 </button>
               </div>
-            </DropdownMenuTrigger>
+            </DropdownMenuTrigger> */}
 
             {file && fileType === "image" && (
               <DropdownMenuContent

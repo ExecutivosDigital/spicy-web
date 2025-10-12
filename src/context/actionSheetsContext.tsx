@@ -16,6 +16,8 @@ interface ActionSheetsContextProps {
   closeSheet: () => void;
   current: StepKey;
   setCurrent: React.Dispatch<React.SetStateAction<StepKey>>;
+  selectedPlan: string | undefined;
+  setSelectedPlan: React.Dispatch<React.SetStateAction<string | undefined>>;
 }
 
 export const ActionSheetsContext = createContext<
@@ -29,7 +31,8 @@ export const ActionSheetsProvider = ({
 }) => {
   const [open, setOpen] = useState(false);
   const [firstOpenSheet, setFirstOpenSheet] = useState(true);
-  const [current, setCurrent] = useState<StepKey>("email");
+  const [current, setCurrent] = useState<StepKey>("plans");
+  const [selectedPlan, setSelectedPlan] = useState<string | undefined>();
 
   const openSheet = () => {
     setOpen(true);
@@ -47,6 +50,8 @@ export const ActionSheetsProvider = ({
         closeSheet,
         current,
         setCurrent,
+        selectedPlan,
+        setSelectedPlan,
       }}
     >
       {children}

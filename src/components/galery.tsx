@@ -7,7 +7,6 @@ import { cn } from "@/lib/utils";
 import clsx from "clsx";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { useSearchParams } from "next/navigation";
 import React from "react";
 
 export type GalleryItem = {
@@ -158,7 +157,6 @@ function Card({
   item,
   className,
   setOpenQrCode,
-  hasNotPayed,
   setSelectedItem,
   setIsMediaOpen,
   onClick,
@@ -166,7 +164,6 @@ function Card({
   item: GalleryItem;
   className?: string;
   setOpenQrCode: React.Dispatch<React.SetStateAction<boolean>>;
-  hasNotPayed: boolean;
   setSelectedItem: React.Dispatch<React.SetStateAction<GalleryItem | null>>;
   setIsMediaOpen: React.Dispatch<React.SetStateAction<boolean>>;
   onClick?: () => void; // novo
@@ -174,6 +171,7 @@ function Card({
   const isPlace = !!item.placeholder;
   const video = !isPlace && isVideo(item);
   const { poster } = useVideoPoster(item.src);
+  const { isPaymentConfirmed } = useChatContext();
 
   return (
     <>
@@ -184,7 +182,7 @@ function Card({
         })}
         onClick={() => {
           if (isPlace) return;
-          if (item.locked && hasNotPayed && setOpenQrCode) {
+          if (item.locked && !isPaymentConfirmed && setOpenQrCode) {
             setOpenQrCode(true);
             return;
           }
@@ -227,7 +225,7 @@ function Card({
             </div>
           ) : null}
 
-          {!isPlace && item.locked && hasNotPayed ? (
+          {!isPlace && item.locked && !isPaymentConfirmed ? (
             <div className="absolute inset-0 grid h-full w-full place-items-center rounded-2xl bg-[#E77988]/5 backdrop-blur-xl">
               <Image src="/lock.png" alt="lock" width={40} height={40} />
             </div>
@@ -245,7 +243,6 @@ type MosaicProps = {
   inverse?: boolean;
   className?: string;
   setOpenQrCode: React.Dispatch<React.SetStateAction<boolean>>;
-  hasNotPayed: boolean;
   setSelectedItem: React.Dispatch<React.SetStateAction<GalleryItem | null>>;
   setIsMediaOpen: React.Dispatch<React.SetStateAction<boolean>>;
   /** índice base do page atual (multiplo de 6) */
@@ -259,7 +256,6 @@ export default function GalleryMosaic({
   inverse,
   className,
   setOpenQrCode,
-  hasNotPayed,
   setSelectedItem,
   setIsMediaOpen,
   baseIndex = 0,
@@ -298,7 +294,6 @@ export default function GalleryMosaic({
                   key={`top-left-${i}`}
                   item={it}
                   className="h-[125px]"
-                  hasNotPayed={hasNotPayed}
                   setSelectedItem={setSelectedItem}
                   setIsMediaOpen={setIsMediaOpen}
                   onClick={handle(i, it)}
@@ -312,7 +307,6 @@ export default function GalleryMosaic({
               setOpenQrCode={setOpenQrCode}
               item={a}
               className="col-span-1 row-span-2 h-[262px]"
-              hasNotPayed={hasNotPayed}
               setSelectedItem={setSelectedItem}
               setIsMediaOpen={setIsMediaOpen}
               onClick={handle(0, a)}
@@ -326,7 +320,6 @@ export default function GalleryMosaic({
               setOpenQrCode={setOpenQrCode}
               item={c}
               className="col-span-1 row-span-2 h-[262px]"
-              hasNotPayed={hasNotPayed}
               setSelectedItem={setSelectedItem}
               setIsMediaOpen={setIsMediaOpen}
               onClick={handle(2, c)}
@@ -341,7 +334,6 @@ export default function GalleryMosaic({
                   key={`top-right-${i}`}
                   item={it}
                   className="h-[125px]"
-                  hasNotPayed={hasNotPayed}
                   setSelectedItem={setSelectedItem}
                   setIsMediaOpen={setIsMediaOpen}
                   onClick={handle(i + 1, it)}
@@ -361,7 +353,6 @@ export default function GalleryMosaic({
               key={`bottom-${i}`}
               item={it}
               className="h-40"
-              hasNotPayed={hasNotPayed}
               setSelectedItem={setSelectedItem}
               setIsMediaOpen={setIsMediaOpen}
               onClick={handle(i + 3, it)}
@@ -378,7 +369,6 @@ export default function GalleryMosaic({
 export function GalleryMosaicPager({
   setOpenQrCode,
   className,
-  hasNotPayed,
   setSelectedItem,
   setIsMediaOpen,
   /** novo: abrir lightbox (array + índice) */
@@ -387,13 +377,12 @@ export function GalleryMosaicPager({
   /** 0: Tudo, 1: Fotos (desbloq), 2: Vídeos */
   className?: string;
   setOpenQrCode: React.Dispatch<React.SetStateAction<boolean>>;
-  hasNotPayed: boolean;
   setSelectedItem: React.Dispatch<React.SetStateAction<GalleryItem | null>>;
   setIsMediaOpen: React.Dispatch<React.SetStateAction<boolean>>;
   onOpenLightbox?: (items: GalleryItem[], index: number) => void;
 }) {
   const { GetAPI } = useApiContext();
-  const { selectedChat } = useChatContext();
+  const { modelId } = useChatContext();
 
   // estado para o tab atual
   const [secondTabSelected, setSecondTabSelected] = React.useState<number>(0);
@@ -403,22 +392,22 @@ export function GalleryMosaicPager({
     videos: [],
   });
 
-  const id = useSearchParams().get("id");
-
   // load from API
   React.useEffect(() => {
     (async () => {
       const [ph, vd] = await Promise.all([
-        GetAPI(`/photo/${id}`, true),
-        GetAPI(`/video/${id}`, true),
+        GetAPI(`/photo/${modelId}`, false),
+        GetAPI(`/video/${modelId}`, false),
       ]);
-      console.log("media", ph, vd);
+
+      console.log(ph, vd);
+
       setMedia({
         photos: ph?.status === 200 ? ph.body.photos : [],
         videos: vd?.status === 200 ? vd.body.videos : [],
       });
     })();
-  }, [GetAPI, selectedChat, id]);
+  }, [GetAPI, modelId]);
 
   // MediaProps -> GalleryItem[]
   function toGalleryItems(m: MediaProps): GalleryItem[] {
@@ -532,7 +521,6 @@ export function GalleryMosaicPager({
           inverse={pIdx % 2 === 1}
           setOpenQrCode={setOpenQrCode}
           className="mb-6"
-          hasNotPayed={hasNotPayed}
           setSelectedItem={setSelectedItem}
           setIsMediaOpen={setIsMediaOpen}
           baseIndex={pIdx * 6}

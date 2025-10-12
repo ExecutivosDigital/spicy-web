@@ -1,6 +1,5 @@
 "use client";
 import { MessageProps } from "@/@types/global";
-import PixSheetSteps from "@/components/PixSheetSteps";
 import { Header } from "@/components/header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
@@ -9,7 +8,7 @@ import { useMediaQuery } from "@/hook/use-media-query";
 import { ArrowDown, X } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import EmptyMessage from "./empty-message";
 import MessageFooter from "./message-footer";
 import Messages from "./messages";
@@ -24,34 +23,30 @@ export type GalleryItem = {
   placeholder?: boolean;
 };
 
-const ChatPage = () => {
+const ChatPage = ({ params }: { params: Promise<{ id: string }> }) => {
   const router = useRouter();
+  const { id } = use(params);
+
   const {
-    chats,
-    isChatsLoading,
     selectedChatId,
     selectedChatMessages,
     isMessageLoading,
     selectedChat,
     isPaymentConfirmed,
+    setModelId,
   } = useChatContext();
-  console.groupCollapsed("ChatPage");
-  console.log("chats", chats);
-  console.log("isChatsLoading", isChatsLoading);
-  console.log("selectedChatId", selectedChatId);
-  console.log("selectedChatMessages", selectedChatMessages);
-  console.log("isMessageLoading", isMessageLoading);
-  console.log("selectedChat", selectedChat);
-  console.log("isPaymentConfirmed", isPaymentConfirmed);
-  console.groupEnd();
 
   const [page, setPage] = useState<0 | 1 | 2>(2);
-  const pagesX = ["0%", "-33.3333%", "-66.6666%"];
-  const initialPageRef = useRef(page);
   const lastMsgIdRef = useRef<string | null>(null);
   const containerRef = useRef(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const [openQrCode, setOpenQrCode] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (id) {
+      setModelId(id);
+    }
+  }, [id]);
 
   const handleScrollToBottom = () => {
     setIsAutoScrollEnabled(true);
@@ -303,7 +298,8 @@ const ChatPage = () => {
                         </>
                       ) : (
                         <>
-                          {isMessageLoading ? (
+                          {isMessageLoading ||
+                          selectedChatMessages.length === 0 ? (
                             <EmptyMessage />
                           ) : (
                             selectedChatMessages.map(
@@ -335,13 +331,9 @@ const ChatPage = () => {
                   <CardFooter className="flex-none flex-col p-0">
                     <MessageFooter
                       onSend={() => {
-                        if (!isPaymentConfirmed) {
-                          return setOpenQrCode(true);
-                        }
                         setIsAutoScrollEnabled(true);
                         handleScrollToBottom();
                       }}
-                      hasNotPayed={!isPaymentConfirmed}
                     />
                   </CardFooter>
                 </Card>
@@ -418,16 +410,6 @@ const ChatPage = () => {
         setIndex={(i: number) => setLightboxIndex(i)}
         setOpenQrCode={() => console.log(false)}
       /> */}
-
-      {selectedChat && openQrCode && (
-        <PixSheetSteps
-          open={openQrCode}
-          onClose={() => setOpenQrCode(false)}
-          modelId={selectedChat.model.id}
-          modelName={selectedChat?.model.name}
-          modelPhoto={selectedChat?.model.photoUrl}
-        />
-      )}
     </div>
   );
 };

@@ -1,14 +1,13 @@
 "use client";
 import { StepKey, useActionSheetsContext } from "@/context/actionSheetsContext";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useState } from "react";
 import { StepCPF } from "./payment-sheet/StepCPF";
-import { StepEmail } from "./payment-sheet/StepEmail";
 import { StepPassword } from "./payment-sheet/StepPassword";
 import { StepPix } from "./payment-sheet/StepPix";
 // remove .tsx in import path
 import { cn } from "@/lib/utils";
 import { ArrowLeft } from "lucide-react";
-import { StepPlans } from "./payment-sheet/StepPlans.tsx";
+import { StepPlans } from "./payment-sheet/StepPlans";
 import RegisterCard from "./payment-sheet/StepRegister";
 import { StepSuccess } from "./payment-sheet/StepSuccess";
 import { Sheet, SheetContent } from "./sheet";
@@ -36,21 +35,6 @@ export function PaymentSheet() {
   const { open, closeSheet, current, setCurrent } = useActionSheetsContext();
   const [data, setData] = useState<PaymentData>({});
 
-  const index = useMemo(() => ORDER.indexOf(current), [current]);
-  const total = ORDER.length;
-
-  const goNext = useCallback(
-    (patch?: Partial<PaymentData>) => {
-      setData((d) => ({ ...d, ...patch }));
-      setCurrent((prev) => {
-        const i = ORDER.indexOf(prev);
-        return ORDER[Math.min(i + 1, ORDER.length - 1)];
-      });
-      if (current === "success") closeSheet();
-    },
-    [closeSheet, current, setCurrent],
-  );
-
   const goBack = useCallback(() => {
     setCurrent((prev) => {
       const i = ORDER.indexOf(prev);
@@ -64,7 +48,6 @@ export function PaymentSheet() {
     closeSheet();
   }, [closeSheet, setCurrent]);
 
-  const handleNext = useCallback(() => goNext(), [goNext]);
   const [phone, setPhone] = useState<string>("");
   return (
     <Sheet open={open} onOpenChange={resetAndClose}>
@@ -77,11 +60,9 @@ export function PaymentSheet() {
           "border border-[#FF0080]/20 border-b-transparent",
         )}
       >
-        {/* Content wrapper uses natural height; no forced h/min-h */}
         <div className={cn("flex flex-col")}>
           {/* Banner */}
 
-          {/* Scrollable body: it only scrolls when content exceeds max-h cap of the sheet */}
           <div className="overflow-visible px-5 pt-2 pb-4">
             {current !== "success" &&
               current !== "email" &&
@@ -93,48 +74,25 @@ export function PaymentSheet() {
                   <ArrowLeft className="h-6 w-6" />
                 </button>
               )}
-
-            {current === "email" && (
-              <StepEmail
-                phone={phone}
-                setPhone={setPhone}
-                initialEmail={data.email}
-                onNext={(email) => goNext({ email })}
-              />
-            )}
             {current === "password" && (
               <StepPassword
                 phone={phone}
                 setPhone={setPhone}
-                onNext={(password) => goNext({ password })}
+                onNext={closeSheet}
               />
             )}
-            {current === "plans" && (
-              <StepPlans
-                selectedId={"m1"}
-                onNext={(planId) => goNext({ planId })}
-              />
-            )}
+            {current === "plans" && <StepPlans />}
             {current === "register" && (
               <RegisterCard onNext={() => setCurrent("plans")} />
             )}
             {current === "cpf" && (
-              <StepCPF
-                initialCPF={data.cpf}
-                onNext={(cpf) => goNext({ cpf })}
-              />
+              <StepCPF initialCPF={data.cpf} onNext={() => setCurrent("pix")} />
             )}
             {current === "pix" && (
-              <StepPix
-                email={data.email!}
-                planId={data.planId!}
-                onPaid={(pixCode) => goNext({ pixCode })}
-              />
+              <StepPix onPaid={() => setCurrent("success")} />
             )}
             {current === "success" && <StepSuccess onClose={resetAndClose} />}
           </div>
-
-          {/* Sticky footer button: always visible without forcing the sheet height */}
         </div>
       </SheetContent>
     </Sheet>
