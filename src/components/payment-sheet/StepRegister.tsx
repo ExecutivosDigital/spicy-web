@@ -2,7 +2,9 @@
 
 import { useApiContext } from "@/context/ApiContext";
 import Image from "next/image";
+import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
+import toast from "react-hot-toast";
 
 /**
  * RegisterCard
@@ -24,18 +26,14 @@ export type RegisterData = {
   aceitouTermos: boolean;
 };
 
-export default function RegisterCard({
-  onNext,
-}: {
-  onNext: (register: string) => void;
-}) {
+export default function RegisterCard({ onNext }: { onNext: () => void }) {
   const [nome, setNome] = useState("");
   const [telefone, setTelefone] = useState("");
   const [senha, setSenha] = useState("");
   const [aceitouTermos, setAceitouTermos] = useState(false);
   const [loading, setLoading] = useState(false);
   const [tocado, setTocado] = useState<{ [k: string]: boolean }>({});
-
+  const id = useSearchParams().get("id");
   // helpers ————————————————————————————————————————
   const telMask = (v: string) => {
     // remove tudo que não é dígito
@@ -70,11 +68,21 @@ export default function RegisterCard({
     if (invalid) return;
     try {
       setLoading(true);
+      console.log("id", id);
       const response = await PostAPI(
-        "/user/auth",
-        { nome, telefone: telefoneFormatado, senha, aceitouTermos },
+        "user/register",
+        { name: nome, password: senha, phone: telefoneFormatado, modelId: id },
         false,
       );
+      if (response.status === 200) {
+        toast.success("Registrado com sucesso!");
+        onNext();
+        console.log(response);
+      } else if (response.status === 409) {
+        toast.error("Telefone ja cadastrado");
+      } else {
+        toast.error("Erro ao registrar");
+      }
       console.log(response);
     } finally {
       setLoading(false);

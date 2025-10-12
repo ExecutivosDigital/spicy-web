@@ -59,6 +59,7 @@ export const ChatContextProvider = ({ children }: ProviderProps) => {
   async function handleGetChats() {
     setIsChatsLoading(true);
     const connect = await GetAPI("/chat", true);
+    console.log("connect GetChats", connect);
     if (connect.status === 200) {
       setChats(connect.body.chats);
       if (connect.body.chats.length > 0) {
@@ -74,6 +75,7 @@ export const ChatContextProvider = ({ children }: ProviderProps) => {
     if (!selectedChatId) return;
     setIsMessageLoading(true);
     const connect = await GetAPI(`/message/${selectedChatId}`, true);
+    console.log("connect GetChatMessages", connect);
     if (connect.status === 200) {
       setSelectedChatMessages(connect.body.messages);
     }
@@ -88,7 +90,7 @@ export const ChatContextProvider = ({ children }: ProviderProps) => {
       `/signature/validation/${selectedChat?.model.id}`,
       true,
     );
-
+    console.log("response validation", response);
     if (response.status === 403) {
       // setOpenQrCode(true);
       setIsPaymentConfirmed(false);
@@ -107,7 +109,6 @@ export const ChatContextProvider = ({ children }: ProviderProps) => {
       if (userId) {
         socket.emit("connectRoom", userId);
       }
-
       socket.on("newMessage", (message: MessageProps) => {
         if (message.chatId === selectedChatId) {
           setSelectedChatMessages((prev) => [...prev, message]);

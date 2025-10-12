@@ -62,12 +62,12 @@ export function Header() {
   return (
     <>
       <header className="sticky top-0 z-20 flex flex-col justify-between border-b border-neutral-500/20 py-1 backdrop-blur-sm">
-        <button
+        {/* <button
           onClick={() => router.push("/")}
           className="ml-4 self-start rounded-md bg-white px-4 text-sm text-[#FF0080]"
         >
           Voltar
-        </button>
+        </button> */}
         <div className="flex flex-1 items-center gap-3 px-4 py-3 pt-0">
           <div className="relative">
             <img
@@ -104,7 +104,7 @@ export function Header() {
                   className={cn(
                     "flex flex-col items-center justify-center gap-1 px-2.5 py-1 hover:text-white",
                     pathname === it.route &&
-                      "rounded-full bg-white text-[#FF0080]",
+                      "cursor-pointer rounded-full bg-white text-[#FF0080]",
                   )}
                 >
                   <it.icon route={it.route} className="h-5 w-5" />

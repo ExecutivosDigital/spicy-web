@@ -240,31 +240,13 @@ const MessageFooter = ({
         className={`relative flex w-[98%] items-end gap-1 rounded-lg border-t border-t-neutral-500 bg-gradient-to-br from-[#FF0080] to-[#7928CA] px-2 py-2 lg:gap-2 lg:px-2 xl:gap-4 xl:px-4`}
       >
         <>
-          <button
+          {/* <button
             onClick={() => openSheet()}
             className="group absolute -top-14 right-0 z-[9999] flex cursor-pointer items-center justify-center gap-2 rounded-full border border-[#E77988] bg-[#E77988]/20 from-[#FF0080]/20 to-[#7928CA]/20 p-2 text-sm backdrop-opacity-50 hover:border-[#ff0080]/60 disabled:opacity-50"
           >
             🌶️ Quero uma foto sua
-            {/* <input
-              type="file"
-              accept=".jpg, .jpeg, .png, .mp4, .webm"
-              className="absolute top-0 left-0 h-full w-full cursor-pointer rounded-full opacity-0"
-              onChange={(e) => {
-                const files = e.target.files;
-
-                if (files && files.length > 0) {
-                  if (files[0].type.startsWith("image/")) {
-                    setFileType("image");
-                  } else if (files[0].type.startsWith("video/")) {
-                    setFileType("video");
-                  } else {
-                    return;
-                  }
-                  setFile(files[0]);
-                }
-              }}
-            /> */}
-          </button>
+           
+          </button> */}
           <DropdownMenu
             open={
               (file && fileType === "image") || (file && fileType === "video")
@@ -274,35 +256,37 @@ const MessageFooter = ({
             modal={false}
           >
             <DropdownMenuTrigger asChild>
-              <button className="group absolute -top-14 left-0 z-[9999] flex cursor-pointer items-center justify-center gap-2 rounded-full border border-[#ff0080] bg-gradient-to-br from-[#FF0080]/20 to-[#7928CA]/20 p-2 text-sm backdrop-opacity-50 hover:border-[#ff0080]/60 disabled:opacity-50">
-                <Image
-                  alt="x"
-                  width={50}
-                  height={50}
-                  src={"/image.png"}
-                  className="h-4 w-4"
-                />
-                Enviar Foto/Video
-                <input
-                  type="file"
-                  accept=".jpg, .jpeg, .png, .mp4, .webm"
-                  className="absolute top-0 left-0 h-full w-full cursor-pointer rounded-full opacity-0"
-                  onChange={(e) => {
-                    const files = e.target.files;
+              <div className="absolute -top-14 left-0 rounded-full bg-neutral-900">
+                <button className="group z-[9999] flex cursor-pointer items-center justify-center gap-2 rounded-full border border-[#ff0080] bg-gradient-to-br from-[#FF0080]/20 to-[#7928CA]/20 p-2 text-sm backdrop-opacity-50 hover:border-[#ff0080]/60 disabled:opacity-50">
+                  <Image
+                    alt="x"
+                    width={50}
+                    height={50}
+                    src={"/image.png"}
+                    className="h-4 w-4"
+                  />
+                  Enviar Foto/Video
+                  <input
+                    type="file"
+                    accept=".jpg, .jpeg, .png, .mp4, .webm"
+                    className="absolute top-0 left-0 h-full w-full cursor-pointer rounded-full opacity-0"
+                    onChange={(e) => {
+                      const files = e.target.files;
 
-                    if (files && files.length > 0) {
-                      if (files[0].type.startsWith("image/")) {
-                        setFileType("image");
-                      } else if (files[0].type.startsWith("video/")) {
-                        setFileType("video");
-                      } else {
-                        return;
+                      if (files && files.length > 0) {
+                        if (files[0].type.startsWith("image/")) {
+                          setFileType("image");
+                        } else if (files[0].type.startsWith("video/")) {
+                          setFileType("video");
+                        } else {
+                          return;
+                        }
+                        setFile(files[0]);
                       }
-                      setFile(files[0]);
-                    }
-                  }}
-                />
-              </button>
+                    }}
+                  />
+                </button>
+              </div>
             </DropdownMenuTrigger>
 
             {file && fileType === "image" && (

@@ -69,6 +69,7 @@ export function PaymentSheet() {
   return (
     <Sheet open={open} onOpenChange={resetAndClose}>
       <SheetContent
+        overlayClass="bg-black/40 backdrop-blur"
         side="bottom"
         className={cn(
           // auto height; cap to viewport; enable scroll if needed
@@ -87,7 +88,7 @@ export function PaymentSheet() {
               current !== "password" && (
                 <button
                   onClick={goBack}
-                  className="focus:ring-ring data-[state=open]:bg-secondary absolute top-4 left-2 opacity-70 ring-offset-[#FF0080] transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:pointer-events-none"
+                  className="focus:ring-ring data-[state=open]:bg-secondary absolute top-6 left-5 opacity-70 ring-offset-[#FF0080] transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:pointer-events-none"
                 >
                   <ArrowLeft className="h-6 w-6" />
                 </button>
@@ -115,7 +116,7 @@ export function PaymentSheet() {
               />
             )}
             {current === "register" && (
-              <RegisterCard onNext={(register) => goNext({ register })} />
+              <RegisterCard onNext={() => setCurrent("plans")} />
             )}
             {current === "cpf" && (
               <StepCPF

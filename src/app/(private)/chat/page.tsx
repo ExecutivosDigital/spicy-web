@@ -35,6 +35,16 @@ const ChatPage = () => {
     selectedChat,
     isPaymentConfirmed,
   } = useChatContext();
+  console.groupCollapsed("ChatPage");
+  console.log("chats", chats);
+  console.log("isChatsLoading", isChatsLoading);
+  console.log("selectedChatId", selectedChatId);
+  console.log("selectedChatMessages", selectedChatMessages);
+  console.log("isMessageLoading", isMessageLoading);
+  console.log("selectedChat", selectedChat);
+  console.log("isPaymentConfirmed", isPaymentConfirmed);
+  console.groupEnd();
+
   const [page, setPage] = useState<0 | 1 | 2>(2);
   const pagesX = ["0%", "-33.3333%", "-66.6666%"];
   const initialPageRef = useRef(page);
@@ -247,7 +257,7 @@ const ChatPage = () => {
   return (
     <div className="flex flex-1 justify-center gap-2 text-white xl:gap-5 rtl:space-x-reverse">
       <div className="relative h-full max-w-[540px] flex-1 overflow-hidden pb-4 md:rounded-md md:border md:px-4">
-        <section className="relative flex h-full w-[100%] flex-1 overflow-hidden">
+        <section className="relative flex h-full max-h-screen w-[100%] flex-1 overflow-hidden">
           {/* <Chat /> */}
 
           <div className="flex h-full w-full flex-1">
@@ -255,9 +265,9 @@ const ChatPage = () => {
               <div className="h-full flex-1">
                 <Card className="relative flex h-full flex-col">
                   <Header />
-                  <CardContent className="relative h-full overflow-y-auto p-2">
+                  <CardContent className="custom-scrollbar relative flex-1 overflow-y-auto p-2 pb-8">
                     <div
-                      className="flex h-full w-full flex-col overflow-y-auto py-4 lg:py-2 xl:py-4"
+                      className="custom-scrollbar flex w-full flex-1 flex-col overflow-y-auto py-4 lg:py-2 xl:py-4"
                       ref={containerRef}
                     >
                       {isMessageLoading ? (

@@ -48,7 +48,8 @@
     "tailwind-merge": "^3.0.2",
     "tailwindcss-animate": "^1.0.7",
     "uuid": "^11.1.0",
-    "webm-duration-fix": "^1.0.4"
+    "webm-duration-fix": "^1.0.4",
+    "zod": "^4.1.12"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.8.0",

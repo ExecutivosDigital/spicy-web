@@ -3,12 +3,12 @@
 
 import { useApiContext } from "@/context/ApiContext";
 import { useChatContext } from "@/context/chatContext";
-// components/GalleryMosaic.tsx
 import { cn } from "@/lib/utils";
 import clsx from "clsx";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import React, { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import React from "react";
 
 export type GalleryItem = {
   src: string;
@@ -39,16 +39,6 @@ interface MediaProps {
   photos: PhotoProps[];
   videos: VideoProps[];
 }
-
-type Props = {
-  items: GalleryItem[];
-  inverse?: boolean;
-  className?: string;
-  setOpenQrCode: React.Dispatch<React.SetStateAction<boolean>>;
-  hasNotPayed: boolean;
-  setSelectedItem: React.Dispatch<React.SetStateAction<GalleryItem | null>>;
-  setIsMediaOpen: React.Dispatch<React.SetStateAction<boolean>>;
-};
 
 /* ---------------- helpers de tipo/filtragem e paginação ---------------- */
 
@@ -101,21 +91,20 @@ function isVideo(item: GalleryItem) {
 
 /** Hook: gera poster client-side sem reproduzir o vídeo */
 function useVideoPoster(src: string, opts?: { time?: number }) {
-  const [poster, setPoster] = useState<string | null>(null);
-  const [error, setError] = useState<unknown>(null);
+  const [poster, setPoster] = React.useState<string | null>(null);
+  const [error, setError] = React.useState<unknown>(null);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (!src) return;
     let aborted = false;
 
     const captureFrame = async () => {
       try {
         const v = document.createElement("video");
-        v.crossOrigin = "anonymous"; // requires CORS on the server
-        v.preload = "auto"; // ensure data is actually fetched
+        v.crossOrigin = "anonymous";
+        v.preload = "auto";
         v.src = src;
 
-        // Wait for metadata so we have dimensions and duration
         await new Promise<void>((resolve, reject) => {
           const onLoaded = () => resolve();
           const onErr = (e: any) => reject(e);
@@ -124,17 +113,14 @@ function useVideoPoster(src: string, opts?: { time?: number }) {
         });
         if (aborted) return;
 
-        // Pick a safe time a bit into the video, but before the end
         const t = Math.max(
           0.1,
           Math.min(opts?.time ?? 0.8, (v.duration || 1) - 0.2),
         );
         v.currentTime = t;
 
-        // Wait for the frame to actually be decoded
         await new Promise<void>((resolve) => {
           const done = () => resolve();
-
           const rvfc = (v as any).requestVideoFrameCallback;
           if (typeof rvfc === "function") {
             rvfc.call(v, () => done());
@@ -144,7 +130,6 @@ function useVideoPoster(src: string, opts?: { time?: number }) {
         });
         if (aborted) return;
 
-        // Now draw
         const canvas = document.createElement("canvas");
         canvas.width = v.videoWidth || 1280;
         canvas.height = v.videoHeight || 720;
@@ -176,6 +161,7 @@ function Card({
   hasNotPayed,
   setSelectedItem,
   setIsMediaOpen,
+  onClick,
 }: {
   item: GalleryItem;
   className?: string;
@@ -183,6 +169,7 @@ function Card({
   hasNotPayed: boolean;
   setSelectedItem: React.Dispatch<React.SetStateAction<GalleryItem | null>>;
   setIsMediaOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  onClick?: () => void; // novo
 }) {
   const isPlace = !!item.placeholder;
   const video = !isPlace && isVideo(item);
@@ -201,6 +188,13 @@ function Card({
             setOpenQrCode(true);
             return;
           }
+          if (onClick) {
+            onClick();
+          } else {
+            // fallback retrocompatível
+            setIsMediaOpen(true);
+            setSelectedItem(item);
+          }
         }}
         role="button"
         aria-disabled={isPlace || item.locked}
@@ -216,11 +210,7 @@ function Card({
               muted
               playsInline
               preload="metadata"
-              poster={poster ?? item.poster ?? undefined} // <- key line
-              onClick={() => {
-                setIsMediaOpen(true);
-                setSelectedItem(item);
-              }}
+              poster={poster ?? item.poster ?? undefined}
             />
           ) : (
             <img
@@ -228,12 +218,6 @@ function Card({
               alt={item.alt ?? ""}
               className="h-full w-full object-cover"
               draggable={false}
-              onClick={() => {
-                if (!isPlace) {
-                  setIsMediaOpen(true);
-                  setSelectedItem(item);
-                }
-              }}
             />
           )}
 
@@ -244,7 +228,7 @@ function Card({
           ) : null}
 
           {!isPlace && item.locked && hasNotPayed ? (
-            <div className="absolute inset-0 grid h-full w-full place-items-center rounded-2xl bg-[#ff0080]/5 backdrop-blur-xl">
+            <div className="absolute inset-0 grid h-full w-full place-items-center rounded-2xl bg-[#E77988]/5 backdrop-blur-xl">
               <Image src="/lock.png" alt="lock" width={40} height={40} />
             </div>
           ) : null}
@@ -256,6 +240,20 @@ function Card({
 
 /* ------------------------------ Mosaico ------------------------------ */
 
+type MosaicProps = {
+  items: GalleryItem[];
+  inverse?: boolean;
+  className?: string;
+  setOpenQrCode: React.Dispatch<React.SetStateAction<boolean>>;
+  hasNotPayed: boolean;
+  setSelectedItem: React.Dispatch<React.SetStateAction<GalleryItem | null>>;
+  setIsMediaOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  /** índice base do page atual (multiplo de 6) */
+  baseIndex?: number;
+  /** callback com índice absoluto no array filtrado */
+  onCardClickAt?: (absIndex: number, item: GalleryItem) => void;
+};
+
 export default function GalleryMosaic({
   items,
   inverse,
@@ -264,13 +262,23 @@ export default function GalleryMosaic({
   hasNotPayed,
   setSelectedItem,
   setIsMediaOpen,
-}: Props) {
+  baseIndex = 0,
+  onCardClickAt,
+}: MosaicProps) {
   const a = items[0];
   const b = items[1];
   const c = items[2];
   const d = items[3];
   const e = items[4];
   const f = items[5];
+
+  // helper para construir onClick com índice absoluto
+  const handle = (localIndex: number, it?: GalleryItem) =>
+    it
+      ? () => {
+          if (onCardClickAt) onCardClickAt(baseIndex + localIndex, it);
+        }
+      : undefined;
 
   return (
     <section
@@ -293,6 +301,7 @@ export default function GalleryMosaic({
                   hasNotPayed={hasNotPayed}
                   setSelectedItem={setSelectedItem}
                   setIsMediaOpen={setIsMediaOpen}
+                  onClick={handle(i, it)}
                 />
               ) : null,
             )}
@@ -306,6 +315,7 @@ export default function GalleryMosaic({
               hasNotPayed={hasNotPayed}
               setSelectedItem={setSelectedItem}
               setIsMediaOpen={setIsMediaOpen}
+              onClick={handle(0, a)}
             />
           )
         )}
@@ -319,6 +329,7 @@ export default function GalleryMosaic({
               hasNotPayed={hasNotPayed}
               setSelectedItem={setSelectedItem}
               setIsMediaOpen={setIsMediaOpen}
+              onClick={handle(2, c)}
             />
           )
         ) : (
@@ -333,6 +344,7 @@ export default function GalleryMosaic({
                   hasNotPayed={hasNotPayed}
                   setSelectedItem={setSelectedItem}
                   setIsMediaOpen={setIsMediaOpen}
+                  onClick={handle(i + 1, it)}
                 />
               ) : null,
             )}
@@ -352,6 +364,7 @@ export default function GalleryMosaic({
               hasNotPayed={hasNotPayed}
               setSelectedItem={setSelectedItem}
               setIsMediaOpen={setIsMediaOpen}
+              onClick={handle(i + 3, it)}
             />
           ) : null,
         )}
@@ -368,54 +381,60 @@ export function GalleryMosaicPager({
   hasNotPayed,
   setSelectedItem,
   setIsMediaOpen,
+  /** novo: abrir lightbox (array + índice) */
+  onOpenLightbox,
 }: {
-  /** 0: Tudo, 1: Fotos (desbloq), 2: Fotos (com dot = bloqueadas), 3: Vídeos (com dot) */
+  /** 0: Tudo, 1: Fotos (desbloq), 2: Vídeos */
   className?: string;
   setOpenQrCode: React.Dispatch<React.SetStateAction<boolean>>;
   hasNotPayed: boolean;
   setSelectedItem: React.Dispatch<React.SetStateAction<GalleryItem | null>>;
   setIsMediaOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  onOpenLightbox?: (items: GalleryItem[], index: number) => void;
 }) {
   const { GetAPI } = useApiContext();
   const { selectedChat } = useChatContext();
+
+  // estado para o tab atual
+  const [secondTabSelected, setSecondTabSelected] = React.useState<number>(0);
 
   const [media, setMedia] = React.useState<MediaProps>({
     photos: [],
     videos: [],
   });
 
-  // 1) load from your API
+  const id = useSearchParams().get("id");
+
+  // load from API
   React.useEffect(() => {
-    if (!selectedChat) return;
     (async () => {
       const [ph, vd] = await Promise.all([
-        GetAPI(`/photo/${selectedChat.model.id}`, true),
-        GetAPI(`/video/${selectedChat.model.id}`, true),
+        GetAPI(`/photo/${id}`, true),
+        GetAPI(`/video/${id}`, true),
       ]);
-      console.log(ph, vd);
       setMedia({
         photos: ph?.status === 200 ? ph.body.photos : [],
         videos: vd?.status === 200 ? vd.body.videos : [],
       });
     })();
-  }, [GetAPI, selectedChat]);
+  }, [GetAPI, selectedChat, id]);
 
-  // 2) turn MediaProps -> GalleryItem[]
+  // MediaProps -> GalleryItem[]
   function toGalleryItems(m: MediaProps): GalleryItem[] {
     const photos: GalleryItem[] = m.photos.map((p) => ({
       src: p.photoUrl,
       alt: "photo",
-      locked: !p.isFreeAvailable, // locked overlay when free=false
+      locked: !p.isFreeAvailable,
       mediaType: "image",
     }));
     const videos: GalleryItem[] = m.videos.map((v) => ({
       src: v.videoUrl,
       alt: "video",
       locked: !v.isFreeAvailable,
-      mediaType: "video", // tells the UI it's a video
+      mediaType: "video",
     }));
 
-    // optional: interleave so the grid alternates photo/video instead of blocks
+    // interleave opcional
     const out: GalleryItem[] = [];
     let i = 0,
       j = 0;
@@ -426,18 +445,85 @@ export function GalleryMosaicPager({
     return out;
   }
 
+  // 0 -> all | 1 -> photos_unlocked | 2 -> videos
   const tabMap: Record<number, TabKey> = {
     0: "all",
     1: "photos_unlocked",
     2: "videos",
   };
-  // 3) use your existing helpers to filter and paginate into pages of 6
+
+  // filtra e pagina
   const allMediaItems = React.useMemo(() => toGalleryItems(media), [media]);
-  const filtered = applyFilter(allMediaItems, tabMap[0] ?? "all");
-  const pages = chunkAndPad(filtered, 6);
+  const tabKey = tabMap[secondTabSelected] ?? "all";
+  const filtered = React.useMemo(
+    () => applyFilter(allMediaItems, tabKey),
+    [allMediaItems, tabKey],
+  );
+  const pages = React.useMemo(() => chunkAndPad(filtered, 6), [filtered]);
+
+  // handler central de clique no card
+  const handleOpen = React.useCallback(
+    (absIndex: number, item: GalleryItem) => {
+      if (onOpenLightbox) {
+        onOpenLightbox(filtered, absIndex);
+      } else {
+        // fallback antigo
+        setSelectedItem(item);
+        setIsMediaOpen(true);
+      }
+    },
+    [filtered, onOpenLightbox, setIsMediaOpen, setSelectedItem],
+  );
 
   return (
     <div className={cn("relative", className)}>
+      <div className="mt-4 flex w-full items-center justify-center gap-4">
+        <button
+          type="button"
+          className={cn(
+            "cursor-pointer font-semibold",
+            secondTabSelected === 0 && "border-b border-[#FF0080]",
+          )}
+          onClick={() => setSecondTabSelected(0)}
+        >
+          Tudo
+        </button>
+        <button
+          type="button"
+          className={cn(
+            "relative flex items-center gap-2 pr-2 font-semibold",
+            secondTabSelected === 1 && "border-b border-[#FF0080]",
+          )}
+          onClick={() => setSecondTabSelected(1)}
+        >
+          <Image
+            alt="mg"
+            src="/fire.png"
+            width={20}
+            height={20}
+            className="absolute -top-1 -right-2 h-3 w-3"
+          />
+          Fotos
+        </button>
+        <button
+          type="button"
+          className={cn(
+            "relative flex items-center gap-2 pr-2 font-semibold",
+            secondTabSelected === 2 && "border-b border-[#FF0080]",
+          )}
+          onClick={() => setSecondTabSelected(2)}
+        >
+          <Image
+            alt="mg"
+            src="/fire.png"
+            width={20}
+            height={20}
+            className="absolute -top-1 -right-2 h-3 w-3"
+          />
+          Videos
+        </button>
+      </div>
+
       {pages.map((page, pIdx) => (
         <GalleryMosaic
           key={pIdx}
@@ -448,6 +534,8 @@ export function GalleryMosaicPager({
           hasNotPayed={hasNotPayed}
           setSelectedItem={setSelectedItem}
           setIsMediaOpen={setIsMediaOpen}
+          baseIndex={pIdx * 6}
+          onCardClickAt={handleOpen}
         />
       ))}
     </div>
