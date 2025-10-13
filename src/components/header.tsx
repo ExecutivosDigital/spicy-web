@@ -5,7 +5,6 @@ import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import PixSheetSteps from "./PixSheetSteps";
 type IconProps = { route: string; className?: string };
 
 type ButtonProps = {
@@ -111,7 +110,7 @@ export function Header() {
           </div>
         </div>
       </header>
-      {selectedChat && openQrCode && (
+      {/* {selectedChat && openQrCode && (
         <PixSheetSteps
           open={openQrCode}
           onClose={() => setOpenQrCode(false)}
@@ -119,7 +118,7 @@ export function Header() {
           modelName={selectedChat?.model.name}
           modelPhoto={selectedChat?.model.photoUrl}
         />
-      )}
+      )} */}
     </>
   );
 }
