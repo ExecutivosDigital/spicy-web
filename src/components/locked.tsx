@@ -85,8 +85,8 @@ export function Locked() {
               onChange={(e) => setPhone(e.target.value)}
               maxLength={15}
               className={cn(
-                "w-80 rounded-md border-2 border-neutral-500 p-2 text-center text-white placeholder:text-neutral-500 focus:border-[#E77988] focus:outline-none",
-                phone.length === 15 && "border-[#E77988]",
+                "w-80 rounded-md border-2 border-neutral-500 p-2 text-center text-white placeholder:text-neutral-500 focus:border-[#ff0080] focus:outline-none",
+                phone.length === 15 && "border-[#ff0080]",
               )}
             />
 
@@ -97,7 +97,7 @@ export function Locked() {
                 handleVerify();
               }}
               disabled={isVerifying}
-              className="flex w-80 cursor-pointer items-center justify-center gap-1 rounded-lg border-2 border-[#E77988] bg-[#E77988] p-2 text-lg font-bold text-white"
+              className="flex w-80 cursor-pointer items-center justify-center gap-1 rounded-lg border-2 border-[#ff0080] bg-[#ff0080] p-2 text-lg font-bold text-white"
             >
               {isVerifying ? (
                 <>
@@ -117,7 +117,7 @@ export function Locked() {
                 id="check"
                 checked={isChecked}
                 onChange={(e) => setIsChecked(e.target.checked)}
-                className="bg-transparent fill-transparent accent-[#E77988]"
+                className="bg-transparent fill-transparent accent-[#ff0080]"
               />{" "}
               Tenho mais de 18 anos e aceito os termos de uso
             </label>

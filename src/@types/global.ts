@@ -30,3 +30,9 @@ export interface MessageProps {
   videoUrl?: string | null;
   createdAt: Date;
 }
+
+export interface UserProps {
+  name: string;
+  phone: string;
+  hasCpfCnpj: boolean;
+}

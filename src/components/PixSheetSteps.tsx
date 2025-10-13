@@ -219,7 +219,7 @@ export default function PixSheetSteps({
           className={clsx(
             "z-[90999] flex min-h-1/2 w-[100vw] flex-col items-center justify-between gap-0 self-center rounded-t-4xl bg-neutral-900 p-0 outline-none md:rounded-t-none md:border-0 md:bg-transparent",
           )}
-          overlayClass="bg-[#E77988]/5 backdrop-blur-sm "
+          overlayClass="bg-[#ff0080]/5 backdrop-blur-sm "
           onKeyDown={(e: React.KeyboardEvent) => e.key === "Enter" && next()}
         >
           {/* container "cartão" */}
@@ -307,10 +307,10 @@ export default function PixSheetSteps({
                         className="rounded-xl border border-neutral-200 bg-white px-4 py-2 text-sm font-semibold transition hover:bg-neutral-50"
                       >
                         Voltar
-                      </button> */}
-                      <div
-                        // onClick={() => setStepSafe("qr_confirm")}
-                        className="rounded-xl bg-gradient-to-r from-[#B273DF] to-[#E77988] px-4 py-2 text-sm font-black text-white"
+                      </button>
+                      <button
+                        onClick={() => setStepSafe("qr_confirm")}
+                        className="rounded-xl bg-gradient-to-r from-[#B273DF] to-[#ff0080] px-4 py-2 text-sm font-black text-white"
                       >
                         Aguarde enquanto confirmamos seu pagamento
                       </div>
@@ -354,7 +354,7 @@ export default function PixSheetSteps({
                       </button>
                       <button
                         onClick={() => onClose()}
-                        className="rounded-xl bg-gradient-to-r from-[#B273DF] to-[#E77988] px-4 py-2 text-sm font-black text-white"
+                        className="rounded-xl bg-gradient-to-r from-[#B273DF] to-[#ff0080] px-4 py-2 text-sm font-black text-white"
                       >
                         Finalizar
                       </button>
@@ -398,7 +398,7 @@ export default function PixSheetSteps({
                             className={clsx(
                               "flex w-full items-center justify-between rounded-xl border-2 bg-transparent px-3 py-3 text-white",
                               selected
-                                ? "border-[#E77988]"
+                                ? "border-[#ff0080]"
                                 : "border-neutral-500",
                             )}
                           >
@@ -408,12 +408,12 @@ export default function PixSheetSteps({
                                   className={cn(
                                     "flex items-center justify-center rounded-full border-2 p-1",
                                     selected
-                                      ? "border-[#E77988]"
+                                      ? "border-[#ff0080]"
                                       : "border-neutral-500",
                                   )}
                                 >
                                   {selected ? (
-                                    <Check className="h-5 w-5 rounded-full text-[#E77988]" />
+                                    <Check className="h-5 w-5 rounded-full text-[#ff0080]" />
                                   ) : (
                                     <div className="h-5 w-5 rounded-full" />
                                   )}
@@ -434,7 +434,7 @@ export default function PixSheetSteps({
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.2 }}
                       onClick={generatePix}
-                      className="mt-2 w-full rounded-xl bg-gradient-to-r from-[#B273DF] to-[#E77988] px-4 py-3 text-sm font-black text-white"
+                      className="mt-2 w-full rounded-xl bg-gradient-to-r from-[#B273DF] to-[#ff0080] px-4 py-3 text-sm font-black text-white"
                     >
                       {loadingPix ? (
                         <Loader2 className="m-auto h-4 w-4 animate-spin" />

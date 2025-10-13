@@ -26,7 +26,7 @@ const Messages = ({ message, className }: Props) => {
       {entity !== "USER" ? (
         <>
           <div className="group mb-4 ml-2 flex max-w-[calc(100%-8px)] flex-col items-start justify-start gap-1 space-x-2 lg:mb-2 xl:mb-4 xl:ml-[50px] xl:max-w-[calc(100%-50px)] rtl:space-x-reverse">
-            <div className="flex min-w-10 justify-center gap-1 rounded-3xl rounded-bl-none bg-neutral-700 p-2 shadow-sm">
+            <div className="flex min-w-10 justify-center gap-1 rounded-3xl rounded-bl-none bg-gradient-to-r from-[#4B00FF] via-[#7520DF] to-[#E77988] p-2 shadow-sm">
               <div className="flex items-center gap-1">
                 {fileUrl ? (
                   <div className="relative z-[1] break-normal whitespace-pre-wrap">
