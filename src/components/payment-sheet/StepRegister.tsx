@@ -1,13 +1,16 @@
 "use client";
 
+import { useActionSheetsContext } from "@/context/actionSheetsContext";
 import { useApiContext } from "@/context/ApiContext";
 import { useChatContext } from "@/context/chatContext";
+import { cn } from "@/lib/utils";
 import { maskPhone } from "@/utils/masks";
 import { useCookies } from "next-client-cookies";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import toast from "react-hot-toast";
+import { GradientButton } from "./ui";
 
 /**
  * RegisterCard
@@ -33,6 +36,7 @@ export default function RegisterCard({ onNext }: { onNext: () => void }) {
   const cookies = useCookies();
   const { setToken } = useApiContext();
   const { handleGetChats, setUserId, handleVerify } = useChatContext();
+  const { setCurrent } = useActionSheetsContext();
 
   const [nome, setNome] = useState("");
   const [telefone, setTelefone] = useState("");
@@ -60,6 +64,7 @@ export default function RegisterCard({ onNext }: { onNext: () => void }) {
   const errors = useMemo(() => {
     const e: Partial<Record<keyof RegisterData, string>> = {};
     if (!nome.trim()) e.nome = "Informe seu nome";
+    if (telefone.length < 11) e.telefone = "Telefone inválido";
     if (senha.length < 4) e.senha = "Mínimo 4 caracteres";
     if (!aceitouTermos) e.aceitouTermos = "É necessário aceitar os termos";
     return e;
@@ -171,6 +176,7 @@ export default function RegisterCard({ onNext }: { onNext: () => void }) {
             onChange={(e) => setTelefone(e.target.value)}
             onBlur={() => setTocado((t) => ({ ...t, telefone: true }))}
             inputMode="numeric"
+            maxLength={15}
             placeholder="(xx) xxxxx-xxxx"
             className="w-full bg-transparent px-4 py-3 text-base outline-none placeholder:text-white/30"
           />
@@ -198,10 +204,12 @@ export default function RegisterCard({ onNext }: { onNext: () => void }) {
         )}
 
         {/* termos */}
-        <div className="mt-4 flex items-start gap-3">
+        <div
+          onClick={() => setAceitouTermos((v) => !v)}
+          className="mt-4 flex items-start gap-3"
+        >
           <button
             type="button"
-            onClick={() => setAceitouTermos((v) => !v)}
             className={`mt-0.5 grid h-5 w-5 place-items-center rounded-md border border-[#FF0080] ${
               aceitouTermos ? "bg-[#FF0080]" : "bg-transparent"
             }`}
@@ -219,7 +227,22 @@ export default function RegisterCard({ onNext }: { onNext: () => void }) {
           <p className="mt-1 text-xs text-red-400">{errors.aceitouTermos}</p>
         )}
 
-        {/* botão */}
+        <div className="flex w-full items-center gap-2">
+          <GradientButton
+            disabled={loading}
+            onClick={() => setCurrent("password")}
+          >
+            Entrar
+          </GradientButton>
+          <GradientButton
+            type="submit"
+            disabled={loading}
+            className={cn(loading && "opacity-80")}
+          >
+            {loading ? "Cadastrando..." : "Cadastrar"}
+          </GradientButton>
+        </div>
+        {/*        
         <button
           type="submit"
           disabled={invalid || loading}
@@ -230,7 +253,7 @@ export default function RegisterCard({ onNext }: { onNext: () => void }) {
               {loading ? "Enviando..." : "Cadastrar - se"}
             </div>
           </div>
-        </button>
+        </button> */}
       </form>
     </div>
   );
@@ -240,10 +263,10 @@ export default function RegisterCard({ onNext }: { onNext: () => void }) {
  * Wrapper que cria a moldura de gradiente ao redor do input,
  * imitando o look do mock.
  */
-function GradientInput({ children }: { children: React.ReactNode }) {
+export function GradientInput({ children }: { children: React.ReactNode }) {
   return (
     <div className="mt-2 rounded-xl bg-gradient-to-r from-pink-500/70 via-fuchsia-500/70 to-purple-600/70 p-[1.5px]">
-      <div className="rounded-[11px] bg-[#141414] ring-1 ring-white/5 focus-within:ring-2 focus-within:ring-pink-500">
+      <div className="rounded-[11px] bg-[#141414] ring-1 ring-white/5 transition duration-150 focus-within:ring-2 focus-within:ring-pink-500">
         {children}
       </div>
     </div>

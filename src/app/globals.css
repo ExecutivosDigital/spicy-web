@@ -40,25 +40,30 @@
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px; /* largura fina */
   height: 6px; /* para horizontal */
+  scrollbar-gutter: stable !important;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
   background: transparent; /* fundo */
+  scrollbar-gutter: stable !important;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background-color: #ff0080; /* rosa Tailwind (pink-500) */
   border-radius: 9999px; /* arredondada */
+  scrollbar-gutter: stable !important;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background-color: #7928ca; /* pink-600 no hover */
+  scrollbar-gutter: stable !important;
 }
 
 /* Para Firefox */
 .custom-scrollbar {
   scrollbar-width: thin;
   scrollbar-color: #ff0080 transparent;
+  scrollbar-gutter: stable !important;
 }
 .swiper-slide {
   max-width: fit-content;

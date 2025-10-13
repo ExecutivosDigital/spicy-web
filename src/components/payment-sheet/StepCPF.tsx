@@ -29,11 +29,9 @@ export function StepCPF({
         onNext(cpf);
       } else {
         console.error("Failed to update CPF:", response);
-        // Optionally, show an error message to the user
       }
     } catch (error) {
       console.error("Error updating CPF:", error);
-      // Optionally, show an error message to the user
     } finally {
       setIsUpdating(false);
     }
@@ -41,14 +39,13 @@ export function StepCPF({
 
   return (
     <div className="space-y-4">
-      <div className="relative m-4 overflow-hidden rounded-2xl bg-[#2A2A2E]">
-        {/* Give the banner a predictable but responsive height */}
-        <div className="aspect-[16/6]">
+      <div className="relative m-4 overflow-hidden rounded-2xl">
+        <div className="relative flex aspect-[16/6] w-full items-center justify-center">
           <Image
-            src="/gab/photos/8.jpeg"
+            src="/gab/photos/10.jpeg"
             alt="Gabriela"
             fill
-            className="rounded-3xl object-cover"
+            className="rounded-xl object-cover"
           />
         </div>
       </div>

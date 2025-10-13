@@ -1,11 +1,13 @@
 "use client";
 import { useChatContext } from "@/context/chatContext";
+import { useLoadingContext } from "@/context/LoadingContext";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 
 export function Header() {
   const { modelId, modelProfile } = useChatContext();
+  const { handleNavigation } = useLoadingContext();
 
   type IconProps = { route: string; className?: string };
 
@@ -66,7 +68,8 @@ export function Header() {
               ].map((it: ButtonProps, idx) => (
                 <button
                   key={idx}
-                  onClick={() => (window.location.href = it.route)}
+                  onClick={() => handleNavigation(it.route)}
+                  // onClick={() => (window.location.href = it.route)}
                   className={cn(
                     "flex flex-col items-center justify-center gap-1 px-2.5 py-1 hover:text-white",
                     pathname === it.route &&

@@ -32,7 +32,6 @@ export function StepPix({}: { onPaid: (pixCode: string) => void }) {
         },
         true,
       );
-      console.log(response);
 
       if (response.status === 200) {
         setPix(response.body.payment);

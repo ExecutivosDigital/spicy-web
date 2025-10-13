@@ -26,7 +26,6 @@ export function Locked() {
   async function handleVerify() {
     if (!isChecked) return toast.error("Você precisa aceitar os termos");
     setIsVerifying(true);
-    console.log("phone: ", phone);
 
     const modelId = params.get("modelId");
     const response = await PostAPI("/user/auth", { phone, modelId }, false);

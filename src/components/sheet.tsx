@@ -91,12 +91,12 @@ const SheetContent = React.forwardRef<
           <button
             onClick={onClose}
             type="button"
-            className="data-[state=open]:bg-secondary absolute top-6 right-6 rounded-sm opacity-70 ring-offset-[#FF0080] transition-opacity hover:opacity-100 focus:outline-none disabled:pointer-events-none"
+            className="data-[state=open]:bg-secondary absolute top-3 right-3 rounded-sm opacity-70 ring-offset-[#FF0080] transition-opacity hover:opacity-100 focus:outline-none disabled:pointer-events-none"
           >
             {closeIcon}
           </button>
         ) : (
-          <SheetPrimitive.Close className="focus:ring-ring data-[state=open]:bg-secondary absolute top-6 right-6 rounded-full from-[#FF0080] to-[#7928CA] text-white ring-offset-[#FF0080] transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:pointer-events-none">
+          <SheetPrimitive.Close className="focus:ring-ring data-[state=open]:bg-secondary absolute top-3 right-3 rounded-full from-[#FF0080] to-[#7928CA] text-white ring-offset-[#FF0080] transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:pointer-events-none">
             {closeIcon}
           </SheetPrimitive.Close>
         )}

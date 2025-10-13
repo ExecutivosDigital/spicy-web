@@ -1,6 +1,7 @@
 "use client";
 import { AnimatePresence, motion } from "framer-motion";
 import React, { useEffect, useMemo, useRef } from "react";
+import { useVideoPoster } from "./galery";
 
 /* ------------------------- utils ------------------------- */
 function useBodyLock(locked: boolean) {
@@ -50,81 +51,81 @@ function makePlaceholder(w = 1280, h = 720) {
 }
 
 /** gera poster client-side para vídeos quando não há thumb */
-function useVideoPoster(src?: string) {
-  const [poster, setPoster] = React.useState<string | null>(null);
+// function useVideoPoster(src?: string) {
+//   const [poster, setPoster] = React.useState<string | null>(null);
 
-  useEffect(() => {
-    let cancelled = false;
-    async function run() {
-      if (!src) {
-        setPoster(null);
-        return;
-      }
-      if (!/\.(mp4|webm|ogg)$/i.test(src)) {
-        setPoster(src);
-        return;
-      }
+//   useEffect(() => {
+//     let cancelled = false;
+//     async function run() {
+//       if (!src) {
+//         setPoster(null);
+//         return;
+//       }
+//       if (!/\.(mp4|webm|ogg)$/i.test(src)) {
+//         setPoster(src);
+//         return;
+//       }
 
-      try {
-        const v = document.createElement("video");
-        v.crossOrigin = "anonymous";
-        v.preload = "metadata";
-        v.muted = true;
-        v.playsInline = true;
-        v.src = src;
+//       try {
+//         const v = document.createElement("video");
+//         v.crossOrigin = "anonymous";
+//         v.preload = "metadata";
+//         v.muted = true;
+//         v.playsInline = true;
+//         v.src = src;
 
-        await new Promise<void>((res, rej) => {
-          const t = setTimeout(() => rej(new Error("timeout metadata")), 8000);
-          v.onloadedmetadata = () => {
-            clearTimeout(t);
-            res();
-          };
-          v.onerror = () => {
-            clearTimeout(t);
-            rej(new Error("metadata error"));
-          };
-        });
+//         await new Promise<void>((res, rej) => {
+//           const t = setTimeout(() => rej(new Error("timeout metadata")), 8000);
+//           v.onloadedmetadata = () => {
+//             clearTimeout(t);
+//             res();
+//           };
+//           v.onerror = () => {
+//             clearTimeout(t);
+//             rej(new Error("metadata error"));
+//           };
+//         });
 
-        const target = Math.min(0.1, (v.duration || 1) - 0.05);
-        await new Promise<void>((res, rej) => {
-          const t = setTimeout(() => rej(new Error("timeout seeked")), 8000);
-          const onSeeked = () => {
-            clearTimeout(t);
-            res();
-          };
-          v.currentTime = target > 0 ? target : 0;
-          v.addEventListener("seeked", onSeeked, { once: true });
-          v.addEventListener(
-            "error",
-            () => {
-              clearTimeout(t);
-              rej(new Error("seek error"));
-            },
-            { once: true },
-          );
-        });
+//         const target = Math.min(0.1, (v.duration || 1) - 0.05);
+//         await new Promise<void>((res, rej) => {
+//           const t = setTimeout(() => rej(new Error("timeout seeked")), 8000);
+//           const onSeeked = () => {
+//             clearTimeout(t);
+//             res();
+//           };
+//           v.currentTime = target > 0 ? target : 0;
+//           v.addEventListener("seeked", onSeeked, { once: true });
+//           v.addEventListener(
+//             "error",
+//             () => {
+//               clearTimeout(t);
+//               rej(new Error("seek error"));
+//             },
+//             { once: true },
+//           );
+//         });
 
-        const canvas = document.createElement("canvas");
-        const w = v.videoWidth || 1280;
-        const h = v.videoHeight || 720;
-        canvas.width = w;
-        canvas.height = h;
-        const ctx = canvas.getContext("2d")!;
-        ctx.drawImage(v, 0, 0, w, h);
-        const data = canvas.toDataURL("image/jpeg", 0.9);
-        if (!cancelled) setPoster(data);
-      } catch {
-        if (!cancelled) setPoster(makePlaceholder());
-      }
-    }
-    run();
-    return () => {
-      cancelled = true;
-    };
-  }, [src]);
+//         const canvas = document.createElement("canvas");
+//         const w = v.videoWidth || 1280;
+//         const h = v.videoHeight || 720;
+//         canvas.width = w;
+//         canvas.height = h;
+//         const ctx = canvas.getContext("2d")!;
+//         ctx.drawImage(v, 0, 0, w, h);
+//         const data = canvas.toDataURL("image/jpeg", 0.9);
+//         if (!cancelled) setPoster(data);
+//       } catch {
+//         if (!cancelled) setPoster(makePlaceholder());
+//       }
+//     }
+//     run();
+//     return () => {
+//       cancelled = true;
+//     };
+//   }, [src]);
 
-  return poster;
-}
+//   return poster;
+// }
 
 /* ------------------------- Lightbox ------------------------- */
 export function Lightbox({
@@ -160,11 +161,13 @@ export function Lightbox({
   // item atual e derivadas: calculados SEM retornar antes dos hooks
   const item = list.length ? list[Math.min(index, list.length - 1)] : undefined;
   const video = isVideo(item);
-  const autoPoster = useVideoPoster(video ? item?.src : undefined);
-  const poster = useMemo(
-    () => item?.poster ?? autoPoster ?? undefined,
-    [item?.poster, autoPoster],
-  );
+  // const autoPoster = useVideoPoster(video ? item?.src : undefined);
+  const { poster } = useVideoPoster(item?.src as string);
+
+  // const poster = useMemo(
+  //   () => item?.poster ?? autoPoster ?? undefined,
+  //   [item?.poster, autoPoster],
+  // );
 
   const hasContent = open && list.length > 0;
 
@@ -231,16 +234,18 @@ export function Lightbox({
               <motion.video
                 key={index}
                 ref={videoRef}
-                className="max-h-[85vh] max-w-[92vw] rounded-xl bg-black object-contain shadow-2xl select-none"
+                className="max-h-[85vh] w-[92vw] rounded-xl bg-black object-contain shadow-2xl select-none"
                 controls
                 playsInline
                 preload="metadata"
-                poster={poster}
+                poster={poster ?? item.poster ?? undefined}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.25 }}
                 drag="x"
+                autoPlay
+                muted
                 dragConstraints={{ left: 0, right: 0 }}
                 dragElastic={0.2}
                 onDragEnd={(_e, info) => {

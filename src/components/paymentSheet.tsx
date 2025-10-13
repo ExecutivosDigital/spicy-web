@@ -6,7 +6,6 @@ import { StepPassword } from "./payment-sheet/StepPassword";
 import { StepPix } from "./payment-sheet/StepPix";
 // remove .tsx in import path
 import { cn } from "@/lib/utils";
-import { ArrowLeft } from "lucide-react";
 import { StepPlans } from "./payment-sheet/StepPlans";
 import RegisterCard from "./payment-sheet/StepRegister";
 import { StepSuccess } from "./payment-sheet/StepSuccess";
@@ -49,6 +48,8 @@ export function PaymentSheet() {
   }, [closeSheet, setCurrent]);
 
   const [phone, setPhone] = useState<string>("");
+
+  console.log("current: ", current);
   return (
     <Sheet open={open} onOpenChange={resetAndClose}>
       <SheetContent
@@ -56,7 +57,7 @@ export function PaymentSheet() {
         side="bottom"
         className={cn(
           // auto height; cap to viewport; enable scroll if needed
-          "z-[999999999] w-full border-0 bg-gradient-to-b from-[#1B1418] to-[#19000c] px-1 pt-1 text-white lg:mx-auto lg:w-[500px]",
+          "z-[999999999] w-full rounded-t-4xl border-0 bg-gradient-to-b from-[#1B1418] to-[#19000c] px-1 pt-1 text-white lg:mx-auto lg:w-[500px]",
           "border border-[#FF0080]/20 border-b-transparent",
         )}
       >
@@ -64,16 +65,14 @@ export function PaymentSheet() {
           {/* Banner */}
 
           <div className="overflow-visible px-5 pt-2 pb-4">
-            {current !== "success" &&
-              current !== "email" &&
-              current !== "password" && (
-                <button
-                  onClick={goBack}
-                  className="focus:ring-ring data-[state=open]:bg-secondary absolute top-6 left-5 opacity-70 ring-offset-[#FF0080] transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:pointer-events-none"
-                >
-                  <ArrowLeft className="h-6 w-6" />
-                </button>
-              )}
+            {/* {current === "register" && (
+              <button
+                onClick={() => setCurrent("password")}
+                className="absolute top-3 left-3 opacity-70 transition-opacity hover:opacity-100 focus:outline-none disabled:pointer-events-none"
+              >
+                <ArrowLeft className="h-6 w-6" />
+              </button>
+            )} */}
             {current === "password" && (
               <StepPassword
                 phone={phone}

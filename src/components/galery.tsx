@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import clsx from "clsx";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import React from "react";
+import React, { useEffect, useState } from "react";
 
 export type GalleryItem = {
   src: string;
@@ -89,7 +89,7 @@ function isVideo(item: GalleryItem) {
 }
 
 /** Hook: gera poster client-side sem reproduzir o vídeo */
-function useVideoPoster(src: string, opts?: { time?: number }) {
+export function useVideoPoster(src: string, opts?: { time?: number }) {
   const [poster, setPoster] = React.useState<string | null>(null);
   const [error, setError] = React.useState<unknown>(null);
 
@@ -216,6 +216,7 @@ function Card({
               alt={item.alt ?? ""}
               className="h-full w-full object-cover"
               draggable={false}
+              loading="lazy"
             />
           )}
 
@@ -241,7 +242,6 @@ function Card({
 type MosaicProps = {
   items: GalleryItem[];
   inverse?: boolean;
-  className?: string;
   setOpenQrCode: React.Dispatch<React.SetStateAction<boolean>>;
   setSelectedItem: React.Dispatch<React.SetStateAction<GalleryItem | null>>;
   setIsMediaOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -254,7 +254,6 @@ type MosaicProps = {
 export default function GalleryMosaic({
   items,
   inverse,
-  className,
   setOpenQrCode,
   setSelectedItem,
   setIsMediaOpen,
@@ -277,12 +276,7 @@ export default function GalleryMosaic({
       : undefined;
 
   return (
-    <section
-      className={clsx(
-        "mt-5 space-y-3 overflow-hidden rounded-[40px]",
-        className,
-      )}
-    >
+    <section className="mt-3 flex w-full flex-col gap-3 overflow-hidden rounded-[40px]">
       {/* Linha de cima */}
       <div className="grid grid-cols-2 gap-3">
         {inverse ? (
@@ -306,7 +300,7 @@ export default function GalleryMosaic({
             <Card
               setOpenQrCode={setOpenQrCode}
               item={a}
-              className="col-span-1 row-span-2 h-[262px]"
+              className="col-span-1 h-[262px]"
               setSelectedItem={setSelectedItem}
               setIsMediaOpen={setIsMediaOpen}
               onClick={handle(0, a)}
@@ -319,7 +313,7 @@ export default function GalleryMosaic({
             <Card
               setOpenQrCode={setOpenQrCode}
               item={c}
-              className="col-span-1 row-span-2 h-[262px]"
+              className="col-span-1 h-[262px]"
               setSelectedItem={setSelectedItem}
               setIsMediaOpen={setIsMediaOpen}
               onClick={handle(2, c)}
@@ -385,29 +379,34 @@ export function GalleryMosaicPager({
   const { modelId } = useChatContext();
 
   // estado para o tab atual
-  const [secondTabSelected, setSecondTabSelected] = React.useState<number>(0);
-
-  const [media, setMedia] = React.useState<MediaProps>({
+  const [secondTabSelected, setSecondTabSelected] = useState<number>(0);
+  const [media, setMedia] = useState<MediaProps>({
     photos: [],
     videos: [],
   });
+  const [isGettingMedia, setIsGettingMedia] = useState(true);
 
-  // load from API
-  React.useEffect(() => {
-    (async () => {
-      const [ph, vd] = await Promise.all([
-        GetAPI(`/photo/${modelId}`, false),
-        GetAPI(`/video/${modelId}`, false),
-      ]);
+  async function GetMedia() {
+    const [ph, vd] = await Promise.all([
+      GetAPI(`/photo/${modelId}`, false),
+      GetAPI(`/video/${modelId}`, false),
+    ]);
 
-      console.log(ph, vd);
-
+    if (ph?.status === 200 && vd?.status === 200) {
       setMedia({
-        photos: ph?.status === 200 ? ph.body.photos : [],
-        videos: vd?.status === 200 ? vd.body.videos : [],
+        photos: ph.body.photos,
+        videos: vd.body.videos,
       });
-    })();
-  }, [GetAPI, modelId]);
+      setIsGettingMedia(false);
+    }
+    setIsGettingMedia(false);
+  }
+
+  useEffect(() => {
+    if (modelId) {
+      GetMedia();
+    }
+  }, [modelId]);
 
   // MediaProps -> GalleryItem[]
   function toGalleryItems(m: MediaProps): GalleryItem[] {
@@ -466,13 +465,13 @@ export function GalleryMosaicPager({
   );
 
   return (
-    <div className={cn("relative", className)}>
+    <div className={cn("relative flex w-full flex-col gap-0", className)}>
       <div className="mt-4 flex w-full items-center justify-center gap-4">
         <button
           type="button"
           className={cn(
-            "cursor-pointer font-semibold",
-            secondTabSelected === 0 && "border-b border-[#FF0080]",
+            "cursor-pointer border-b border-b-transparent font-semibold transition duration-150 hover:border-b-[#FF0080]",
+            secondTabSelected === 0 && "border-b-[#FF0080]",
           )}
           onClick={() => setSecondTabSelected(0)}
         >
@@ -481,8 +480,8 @@ export function GalleryMosaicPager({
         <button
           type="button"
           className={cn(
-            "relative flex items-center gap-2 pr-2 font-semibold",
-            secondTabSelected === 1 && "border-b border-[#FF0080]",
+            "relative flex cursor-pointer items-center gap-2 border-b border-b-transparent pr-2 font-semibold transition duration-150 hover:border-b-[#FF0080]",
+            secondTabSelected === 1 && "border-b-[#FF0080]",
           )}
           onClick={() => setSecondTabSelected(1)}
         >
@@ -498,8 +497,8 @@ export function GalleryMosaicPager({
         <button
           type="button"
           className={cn(
-            "relative flex items-center gap-2 pr-2 font-semibold",
-            secondTabSelected === 2 && "border-b border-[#FF0080]",
+            "relative flex cursor-pointer items-center gap-2 border-b border-b-transparent pr-2 font-semibold transition duration-150 hover:border-b-[#FF0080]",
+            secondTabSelected === 2 && "border-b-[#FF0080]",
           )}
           onClick={() => setSecondTabSelected(2)}
         >
@@ -514,19 +513,55 @@ export function GalleryMosaicPager({
         </button>
       </div>
 
-      {pages.map((page, pIdx) => (
-        <GalleryMosaic
-          key={pIdx}
-          items={page}
-          inverse={pIdx % 2 === 1}
-          setOpenQrCode={setOpenQrCode}
-          className="mb-6"
-          setSelectedItem={setSelectedItem}
-          setIsMediaOpen={setIsMediaOpen}
-          baseIndex={pIdx * 6}
-          onCardClickAt={handleOpen}
-        />
-      ))}
+      {isGettingMedia ? (
+        <section className="mt-5 flex w-full flex-col gap-3 overflow-hidden rounded-[40px]">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="col-span-1 h-[262px] animate-pulse bg-[#2A2A2E]" />
+            <div className="flex flex-col gap-3">
+              {Array.from({ length: 2 }).map((_, index) => (
+                <div
+                  key={index}
+                  className="h-[125px] animate-pulse bg-[#2A2A2E]"
+                />
+              ))}
+            </div>
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            {Array.from({ length: 3 }).map((_, index) => (
+              <div key={index} className="h-40 animate-pulse bg-[#2A2A2E]" />
+            ))}
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col gap-3">
+              {Array.from({ length: 2 }).map((_, index) => (
+                <div
+                  key={index}
+                  className="h-[125px] animate-pulse bg-[#2A2A2E]"
+                />
+              ))}
+            </div>
+            <div className="col-span-1 h-[262px] animate-pulse bg-[#2A2A2E]" />
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            {Array.from({ length: 3 }).map((_, index) => (
+              <div key={index} className="h-40 animate-pulse bg-[#2A2A2E]" />
+            ))}
+          </div>
+        </section>
+      ) : (
+        pages.map((page, pIdx) => (
+          <GalleryMosaic
+            key={pIdx}
+            items={page}
+            inverse={pIdx % 2 === 1}
+            setOpenQrCode={setOpenQrCode}
+            setSelectedItem={setSelectedItem}
+            setIsMediaOpen={setIsMediaOpen}
+            baseIndex={pIdx * 6}
+            onCardClickAt={handleOpen}
+          />
+        ))
+      )}
     </div>
   );
 }

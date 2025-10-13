@@ -11,7 +11,8 @@ import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { z } from "zod";
-import { GradientButton, TextField } from "./ui";
+import { GradientInput } from "./StepRegister";
+import { GradientButton } from "./ui";
 type Props = {
   phone: string;
   onNext: (status: string) => void;
@@ -67,7 +68,8 @@ export function StepPassword({ phone, setPhone, onNext }: Props) {
     const Payload = { phone: digitsPhone, password: pwd, modelId: id };
     const response = await PostAPI("user/auth", Payload, false);
     if (response.status !== 200) {
-      return toast.error("Verifique os dados inseridos e tente novamente");
+      toast.error("Verifique os dados inseridos e tente novamente");
+      return setIsLoading(false);
     }
     if (response.status === 200) {
       cookies.set(
@@ -81,11 +83,10 @@ export function StepPassword({ phone, setPhone, onNext }: Props) {
       setToken(response.body.accessToken);
       setUserId(response.body.userId);
       handleGetChats();
+      onNext("success");
+      return setIsLoading(false);
     }
-    setIsLoading(false);
-
-    // Avança o fluxo: você pode trocar "success" por algo que seu wizard use
-    onNext("success");
+    return setIsLoading(false);
   }
 
   return (
@@ -110,71 +111,54 @@ export function StepPassword({ phone, setPhone, onNext }: Props) {
         </div>
       )}
 
-      <p className="text-sm text-white/70">Seu WhatsApp:</p>
-      <TextField
-        type="tel"
-        placeholder="(00) 00000-0000"
-        maxLength={15}
-        value={maskPhone(phone)}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-          setPhone(e.target.value)
-        }
-        aria-invalid={!!errors.phone}
-        aria-describedby={errors.phone ? "phone-error" : undefined}
-      />
+      <label className="mt-6 block text-sm text-white/80">Seu Whatsapp:</label>
+      <GradientInput>
+        <input
+          type="tel"
+          value={maskPhone(phone)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            setPhone(e.target.value)
+          }
+          maxLength={15}
+          placeholder="(00) 00000-0000"
+          className="w-full bg-transparent px-4 py-3 text-base outline-none placeholder:text-white/30"
+        />
+      </GradientInput>
       {errors.phone && (
-        <span id="phone-error" className="text-xs text-red-400">
-          {errors.phone}
-        </span>
+        <p className="mt-1 text-xs text-red-400">{errors.phone}</p>
       )}
 
-      <p className="text-sm text-white/70">Senha:</p>
-      <TextField
-        type="password"
-        placeholder="••••"
-        value={password}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-          setPassword(e.target.value)
-        }
-        aria-invalid={!!errors.password}
-        aria-describedby={errors.password ? "password-error" : undefined}
-      />
+      <label className="mt-4 block text-sm text-white/80">
+        Digite sua Senha
+      </label>
+      <GradientInput>
+        <input
+          type="password"
+          placeholder="••••"
+          value={password}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            setPassword(e.target.value)
+          }
+          className="w-full bg-transparent px-4 py-3 text-base outline-none placeholder:text-white/30"
+        />
+      </GradientInput>
       {errors.password && (
-        <span id="password-error" className="text-xs text-red-400">
-          {errors.password}
-        </span>
+        <p className="mt-1 text-xs text-red-400">{errors.password}</p>
       )}
-      {/* 
-      <div className="flex w-full flex-row items-center gap-2">
-        <button
-          type="button"
-          onClick={() => setIsChecked((v) => !v)}
-          className={cn(
-            "flex h-5 w-5 min-w-5 items-center justify-center rounded-md border border-[#FF0080] transition-colors",
-            isChecked && "bg-[#FF0080]",
-          )}
-          aria-pressed={isChecked}
-          aria-label="Salvar Informações"
-        >
-          {isChecked && "✓"}
-        </button>
-        <span className="text-xs">Salvar Informações</span>
-      </div> */}
 
       <div className="flex w-full items-center gap-2">
         <GradientButton
           disabled={isLoading}
           onClick={() => setCurrent("register")}
-          className={cn(isLoading && "opacity-80")}
         >
-          {isLoading ? "Entrando..." : "Cadastrar"}
+          Cadastrar
         </GradientButton>
         <GradientButton
           type="submit"
           disabled={isLoading}
           className={cn(isLoading && "opacity-80")}
         >
-          {isLoading ? "Entrando..." : "Avançar"}
+          {isLoading ? "Entrando..." : "Entrar"}
         </GradientButton>
       </div>
     </form>

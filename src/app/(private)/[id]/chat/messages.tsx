@@ -26,7 +26,7 @@ const Messages = ({ message, className }: Props) => {
       {entity !== "USER" ? (
         <>
           <div className="group mb-4 ml-2 flex max-w-[calc(100%-8px)] flex-col items-start justify-start gap-1 space-x-2 lg:mb-2 xl:mb-4 xl:ml-[50px] xl:max-w-[calc(100%-50px)] rtl:space-x-reverse">
-            <div className="flex min-w-10 justify-center gap-1 rounded-3xl rounded-bl-none bg-gradient-to-r from-[#4B00FF] via-[#7520DF] to-[#E77988] p-2 shadow-sm">
+            <div className="flex min-w-10 justify-center gap-1 rounded-2xl rounded-bl-none bg-gradient-to-br from-[#441A7D] to-[#6D3A5D] p-2 shadow-sm">
               <div className="flex items-center gap-1">
                 {fileUrl ? (
                   <div className="relative z-[1] break-normal whitespace-pre-wrap">
@@ -121,7 +121,7 @@ const Messages = ({ message, className }: Props) => {
         </>
       ) : (
         <div className="group mb-4 flex max-w-[calc(100%-8px)] flex-col items-end justify-end gap-1 lg:mb-2 xl:mb-4 xl:max-w-[calc(100%-50px)]">
-          <div className="flex min-w-10 justify-center gap-1 rounded-3xl rounded-br-none bg-gradient-to-r from-[#4945de] to-[#4945de] p-2 shadow-sm">
+          <div className="flex min-w-10 justify-center gap-1 rounded-2xl rounded-br-none bg-gradient-to-b from-[#31108B] to-[#39448B] p-2 shadow-sm">
             <div className="group flex items-center gap-1">
               {audioUrl ? (
                 <div className="relative z-[1] break-normal whitespace-pre-wrap">
@@ -270,7 +270,6 @@ const Messages = ({ message, className }: Props) => {
           </div>
         </div>
       )}
-
       {routeModal && (
         <div
           className="fixed top-0 right-0 bottom-0 left-0 z-[1002] flex w-full items-center justify-center text-center transition-opacity duration-300 ease-in-out"

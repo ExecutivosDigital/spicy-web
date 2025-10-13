@@ -7,6 +7,7 @@ import {
   UserProps,
 } from "@/@types/global";
 import { useCookies } from "next-client-cookies";
+import { useParams } from "next/navigation";
 import { createContext, useContext, useEffect, useState } from "react";
 import { Socket, io } from "socket.io-client";
 import { useApiContext } from "./ApiContext";
@@ -36,6 +37,8 @@ interface ChatContextProps {
   modelId: string | undefined;
   modelProfile: ModelProps | null;
   setModelId: React.Dispatch<React.SetStateAction<string | undefined>>;
+  isGettingModelProfile: boolean;
+  isVerifying: boolean;
 }
 
 const ChatContext = createContext<ChatContextProps | undefined>(undefined);
@@ -45,6 +48,7 @@ interface ProviderProps {
 }
 
 export const ChatContextProvider = ({ children }: ProviderProps) => {
+  const { id } = useParams<{ id: string }>();
   const { GetAPI, token } = useApiContext();
   const cookies = useCookies();
 
@@ -67,6 +71,8 @@ export const ChatContextProvider = ({ children }: ProviderProps) => {
     MessageProps[]
   >([]);
   const [isMessageLoading, setIsMessageLoading] = useState(false);
+  const [isGettingModelProfile, setIsGettingModelProfile] = useState(true);
+  const [isVerifying, setIsVerifying] = useState(true);
 
   async function handleGetChats() {
     setIsChatsLoading(true);
@@ -92,14 +98,17 @@ export const ChatContextProvider = ({ children }: ProviderProps) => {
   async function getModelProfile() {
     if (!modelId) return;
     const connect = await GetAPI(`/model/profile/${modelId}`, true);
-    console.log(connect);
     if (connect.status === 200) {
       setModelProfile(connect.body.model);
+      setIsGettingModelProfile(false);
     }
+    setIsGettingModelProfile(false);
   }
 
   useEffect(() => {
-    getModelProfile();
+    if (modelId) {
+      getModelProfile();
+    }
   }, [modelId]);
 
   async function handleGetChatMessages() {
@@ -124,10 +133,19 @@ export const ChatContextProvider = ({ children }: ProviderProps) => {
     if (response.status === 403) {
       // setOpenQrCode(true);
       setIsPaymentConfirmed(false);
+      setIsVerifying(false);
     } else if (response.status === 200) {
+      setIsVerifying(false);
       setIsPaymentConfirmed(true);
     }
+    setIsVerifying(false);
   }
+
+  useEffect(() => {
+    if (id) {
+      setModelId(id);
+    }
+  }, [id]);
 
   useEffect(() => {
     if (!socket) {
@@ -162,7 +180,6 @@ export const ChatContextProvider = ({ children }: ProviderProps) => {
       });
 
       socket.on("payment", () => {
-        console.log("entou aqui");
         setPaymentWebHookConfirmation(true);
         setIsPaymentConfirmed(true);
       });
@@ -204,6 +221,8 @@ export const ChatContextProvider = ({ children }: ProviderProps) => {
         modelId,
         modelProfile,
         setModelId,
+        isGettingModelProfile,
+        isVerifying,
       }}
     >
       {children}
