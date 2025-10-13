@@ -5,6 +5,7 @@ import * as React from "react";
 
 export function GradientButton({
   children,
+  className,
   ...props
 }: React.ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
@@ -13,6 +14,7 @@ export function GradientButton({
         "mt-4 w-full rounded-lg px-4 py-3 font-medium text-white",
         "bg-gradient-to-br from-[#FF0080] to-[#7928CA]",
         "disabled:opacity-50",
+        className,
       )}
       {...props}
     >
