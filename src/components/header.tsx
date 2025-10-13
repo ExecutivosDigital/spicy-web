@@ -1,29 +1,12 @@
 "use client";
-import { ChatProps } from "@/@types/global";
 import { useChatContext } from "@/context/chatContext";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
-import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-type IconProps = { route: string; className?: string };
+import { usePathname } from "next/navigation";
 
-type ButtonProps = {
-  route: string;
-  className?: string;
-  icon: React.ComponentType<IconProps>; // << aceita className
-  label: string;
-};
 export function Header() {
-  const { chats, selectedChatId, modelId, modelProfile } = useChatContext();
-  const [openQrCode, setOpenQrCode] = useState<boolean>(false);
-  const [selectedChat, setSelectedChat] = useState<ChatProps | null>(null);
-  const router = useRouter();
-  useEffect(() => {
-    const chat = chats.find((chat) => chat.id === selectedChatId);
-    if (chat) {
-      setSelectedChat(chat);
-    }
-  }, [chats, selectedChatId]);
+  const { modelId, modelProfile } = useChatContext();
+
   type IconProps = { route: string; className?: string };
 
   type ButtonProps = {
@@ -33,18 +16,6 @@ export function Header() {
     label: string;
   };
   const pathname = usePathname();
-  function HomeIcon({ route, className }: IconProps) {
-    const isActive = pathname === route;
-    return (
-      <Image
-        src={isActive ? "/heart-pink.png" : "/heart.png"}
-        alt="heart"
-        width={20}
-        height={20}
-        className={cn("h-5 w-5", className)}
-      />
-    );
-  }
 
   function GridIcon({ route, className }: IconProps) {
     const isActive = pathname === route;

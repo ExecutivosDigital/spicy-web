@@ -11,7 +11,7 @@ import { CopyBlock } from "../CopyBlock";
 import { QrBlock } from "../QrBlock";
 import { GradientButton } from "./ui";
 
-export function StepPix({ onPaid }: { onPaid: (pixCode: string) => void }) {
+export function StepPix({}: { onPaid: (pixCode: string) => void }) {
   const { selectedPlan, setCurrent } = useActionSheetsContext();
   const { modelId, isPaymentConfirmed } = useChatContext();
   const { PostAPI } = useApiContext();
@@ -49,20 +49,6 @@ export function StepPix({ onPaid }: { onPaid: (pixCode: string) => void }) {
 
   useEffect(() => {
     handleGeneratePix();
-  }, []);
-  const copy = async () => {
-    setHasCopied(true);
-
-    try {
-      toast.success("Copiado com sucesso");
-      await navigator.clipboard.writeText(pix?.payload ?? "");
-      setTimeout(() => setHasCopied(false), 4000);
-    } catch {}
-  };
-  const [canGoNext, setCanGoNext] = useState(false);
-  useEffect(() => {
-    setCanGoNext(false);
-    setTimeout(() => setCanGoNext(true), 1000);
   }, []);
 
   useEffect(() => {

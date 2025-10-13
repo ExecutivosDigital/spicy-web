@@ -18,7 +18,7 @@ export interface PriceProps {
 }
 
 export function StepPlans() {
-  const { modelId, userProfile, isPaymentConfirmed } = useChatContext();
+  const { modelId, userProfile } = useChatContext();
   const [prices, setPrices] = useState<PriceProps[]>([]);
   const { selectedPlan, setSelectedPlan, setCurrent } =
     useActionSheetsContext();

@@ -32,7 +32,6 @@ export type RegisterData = {
 export default function RegisterCard({ onNext }: { onNext: () => void }) {
   const cookies = useCookies();
   const { setToken } = useApiContext();
-  const { GetAPI } = useApiContext();
   const { handleGetChats, setUserId, handleVerify } = useChatContext();
 
   const [nome, setNome] = useState("");

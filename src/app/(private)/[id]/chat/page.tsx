@@ -4,10 +4,8 @@ import { Header } from "@/components/header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { useChatContext } from "@/context/chatContext";
-import { useMediaQuery } from "@/hook/use-media-query";
 import { ArrowDown, X } from "lucide-react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { use, useEffect, useRef, useState } from "react";
 import EmptyMessage from "./empty-message";
 import MessageFooter from "./message-footer";
@@ -24,7 +22,6 @@ export type GalleryItem = {
 };
 
 const ChatPage = ({ params }: { params: Promise<{ id: string }> }) => {
-  const router = useRouter();
   const { id } = use(params);
 
   const {
@@ -32,15 +29,12 @@ const ChatPage = ({ params }: { params: Promise<{ id: string }> }) => {
     selectedChatMessages,
     isMessageLoading,
     selectedChat,
-    isPaymentConfirmed,
     setModelId,
   } = useChatContext();
 
-  const [page, setPage] = useState<0 | 1 | 2>(2);
   const lastMsgIdRef = useRef<string | null>(null);
   const containerRef = useRef(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
-  const [openQrCode, setOpenQrCode] = useState<boolean>(false);
 
   useEffect(() => {
     if (id) {
@@ -119,16 +113,16 @@ const ChatPage = ({ params }: { params: Promise<{ id: string }> }) => {
     setIsAutoScrollEnabled(true);
   }, [selectedChatId]);
 
-  const [showContactSidebar, setShowContactSidebar] = useState<boolean>(false);
+  // const [showContactSidebar, setShowContactSidebar] = useState<boolean>(false);
 
-  const [showInfo, setShowInfo] = useState<boolean>(false);
+  // const [showInfo, setShowInfo] = useState<boolean>(false);
 
-  const openChat = (chatId: string) => {
-    router.replace(`/?id=${chatId}`);
-    setShowInfo(false);
-    setIsAutoScrollEnabled(true);
-    setShowContactSidebar(false);
-  };
+  // const openChat = (chatId: string) => {
+  //   router.replace(`/?id=${chatId}`);
+  //   setShowInfo(false);
+  //   setIsAutoScrollEnabled(true);
+  //   setShowContactSidebar(false);
+  // };
 
   // async function handleSetUnreadMessages(id: string) {
   //   const userToken = cookies.get(token);
@@ -160,8 +154,6 @@ const ChatPage = ({ params }: { params: Promise<{ id: string }> }) => {
   // useEffect(() => {
   //   setPageName("Chat de Clientes");
   // }, []);
-
-  const isLg = useMediaQuery("(max-width: 1023px)");
 
   // function nameContainsQuery(name: string) {
   //   return normalizeName(name).includes(normalizeName(query));

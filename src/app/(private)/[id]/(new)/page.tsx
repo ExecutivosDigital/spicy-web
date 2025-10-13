@@ -67,7 +67,6 @@ const SpicyScreen = ({ params }: { params: Promise<{ id: string }> }) => {
   }
 
   // ---- estados de Lightbox (centralizados aqui) ----
-  const [openQrCode, setOpenQrCode] = useState(false);
   const [lbOpen, setLbOpen] = useState(false);
   const [lbIndex, setLbIndex] = useState(0);
   const [lbItems, setLbItems] = useState<MediaItem[]>([]);
@@ -103,9 +102,11 @@ const SpicyScreen = ({ params }: { params: Promise<{ id: string }> }) => {
             <button
               onClick={() => {
                 if (userProfile) {
-                  setCurrent("plans"), openSheet();
+                  setCurrent("plans");
+                  openSheet();
                 } else {
-                  setCurrent("password"), openSheet();
+                  setCurrent("password");
+                  openSheet();
                 }
               }}
               className="rounded-md border border-[#FF0080] px-3 py-1.5 text-xs"
@@ -168,7 +169,7 @@ const SpicyScreen = ({ params }: { params: Promise<{ id: string }> }) => {
 
         {/* Pager -> abre lightbox com lista filtrada + índice absoluto */}
         <GalleryMosaicPager
-          setOpenQrCode={setOpenQrCode}
+          setOpenQrCode={() => {}}
           setSelectedItem={() => {}}
           setIsMediaOpen={() => {}}
           onOpenLightbox={(items, index) => {
@@ -185,7 +186,7 @@ const SpicyScreen = ({ params }: { params: Promise<{ id: string }> }) => {
           index={lbIndex}
           onClose={() => setLbOpen(false)}
           setIndex={setLbIndex}
-          setOpenQrCode={setOpenQrCode}
+          setOpenQrCode={() => {}}
         />
 
         {/* bottom nav */}

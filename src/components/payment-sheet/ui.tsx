@@ -4,7 +4,6 @@ import { cn } from "@/lib/utils";
 import * as React from "react";
 
 export function GradientButton({
-  className,
   children,
   ...props
 }: React.ButtonHTMLAttributes<HTMLButtonElement>) {

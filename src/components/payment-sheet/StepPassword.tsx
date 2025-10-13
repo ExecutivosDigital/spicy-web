@@ -33,10 +33,9 @@ export function StepPassword({ phone, setPhone, onNext }: Props) {
   const modelId = searchParams.get("id") ?? undefined;
   const { setToken } = useApiContext();
   const { setCurrent } = useActionSheetsContext();
-  const { PostAPI, GetAPI } = useApiContext();
+  const { PostAPI } = useApiContext();
   const cookies = useCookies();
   const [password, setPassword] = useState("");
-  const [isChecked, setIsChecked] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const { setUserId, handleGetChats } = useChatContext();
   const [errors, setErrors] = useState<{
@@ -64,39 +63,29 @@ export function StepPassword({ phone, setPhone, onNext }: Props) {
 
     const { phone: digitsPhone, password: pwd, modelId: id } = result.data;
 
-    try {
-      setIsLoading(true);
-      const Payload = { phone: digitsPhone, password: pwd, modelId: id };
-      const response = await PostAPI("user/auth", Payload, false);
-      if (response.status !== 200) {
-        return toast.error("Verifique os dados inseridos e tente novamente");
-      }
-      if (response.status === 200) {
-        cookies.set(
-          process.env.NEXT_PUBLIC_USER_TOKEN as string,
-          response.body.accessToken,
-        );
-        cookies.set(
-          process.env.NEXT_PUBLIC_USER_ID as string,
-          response.body.userId,
-        );
-        setToken(response.body.accessToken);
-        setUserId(response.body.userId);
-        handleGetChats();
-      }
-
-      // Avança o fluxo: você pode trocar "success" por algo que seu wizard use
-      onNext("success");
-    } catch (err: any) {
-      // Mostra erro genérico ou vindo da API
-      const apiMessage =
-        err?.response?.data?.message ||
-        err?.message ||
-        "Não foi possível entrar. Tente novamente.";
-      setErrors((prev) => ({ ...prev, general: apiMessage }));
-    } finally {
-      setIsLoading(false);
+    setIsLoading(true);
+    const Payload = { phone: digitsPhone, password: pwd, modelId: id };
+    const response = await PostAPI("user/auth", Payload, false);
+    if (response.status !== 200) {
+      return toast.error("Verifique os dados inseridos e tente novamente");
     }
+    if (response.status === 200) {
+      cookies.set(
+        process.env.NEXT_PUBLIC_USER_TOKEN as string,
+        response.body.accessToken,
+      );
+      cookies.set(
+        process.env.NEXT_PUBLIC_USER_ID as string,
+        response.body.userId,
+      );
+      setToken(response.body.accessToken);
+      setUserId(response.body.userId);
+      handleGetChats();
+    }
+    setIsLoading(false);
+
+    // Avança o fluxo: você pode trocar "success" por algo que seu wizard use
+    onNext("success");
   }
 
   return (

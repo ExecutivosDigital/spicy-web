@@ -7,7 +7,6 @@ import {
   UserProps,
 } from "@/@types/global";
 import { useCookies } from "next-client-cookies";
-import { useSearchParams } from "next/navigation";
 import { createContext, useContext, useEffect, useState } from "react";
 import { Socket, io } from "socket.io-client";
 import { useApiContext } from "./ApiContext";
@@ -48,8 +47,6 @@ interface ProviderProps {
 export const ChatContextProvider = ({ children }: ProviderProps) => {
   const { GetAPI, token } = useApiContext();
   const cookies = useCookies();
-
-  const params = useSearchParams();
 
   const [modelId, setModelId] = useState<string | undefined>();
   const [modelProfile, setModelProfile] = useState<ModelProps | null>(null);

@@ -7,12 +7,10 @@ import React, { useState } from "react";
 import { GradientButton, TextField } from "./ui";
 
 export function StepEmail({
-  initialEmail,
   onNext,
   phone,
   setPhone,
 }: {
-  initialEmail?: string;
   onNext: (email: string) => void;
   phone: string;
   setPhone: React.Dispatch<React.SetStateAction<string>>;
