@@ -29,26 +29,26 @@ function isVideo(item: MediaItem | undefined) {
 }
 
 /** placeholder gerado via canvas (sempre funciona) */
-function makePlaceholder(w = 1280, h = 720) {
-  const c = document.createElement("canvas");
-  c.width = w;
-  c.height = h;
-  const ctx = c.getContext("2d")!;
-  ctx.fillStyle = "#0f172a";
-  ctx.fillRect(0, 0, w, h);
-  ctx.fillStyle = "rgba(255,255,255,.9)";
-  const s = Math.min(w, h) * 0.18;
-  ctx.beginPath();
-  ctx.moveTo(w / 2 - s / 2, h / 2 - s / 1.6 / 2);
-  ctx.lineTo(w / 2 + s / 2, h / 2);
-  ctx.lineTo(w / 2 - s / 2, h / 2 + s / 1.6 / 2);
-  ctx.closePath();
-  ctx.fill();
-  ctx.font = `${Math.round(h * 0.05)}px system-ui, -apple-system, Segoe UI, Roboto`;
-  ctx.textAlign = "center";
-  ctx.fillText("vídeo", w / 2, h * 0.87);
-  return c.toDataURL("image/png");
-}
+// function makePlaceholder(w = 1280, h = 720) {
+//   const c = document.createElement("canvas");
+//   c.width = w;
+//   c.height = h;
+//   const ctx = c.getContext("2d")!;
+//   ctx.fillStyle = "#0f172a";
+//   ctx.fillRect(0, 0, w, h);
+//   ctx.fillStyle = "rgba(255,255,255,.9)";
+//   const s = Math.min(w, h) * 0.18;
+//   ctx.beginPath();
+//   ctx.moveTo(w / 2 - s / 2, h / 2 - s / 1.6 / 2);
+//   ctx.lineTo(w / 2 + s / 2, h / 2);
+//   ctx.lineTo(w / 2 - s / 2, h / 2 + s / 1.6 / 2);
+//   ctx.closePath();
+//   ctx.fill();
+//   ctx.font = `${Math.round(h * 0.05)}px system-ui, -apple-system, Segoe UI, Roboto`;
+//   ctx.textAlign = "center";
+//   ctx.fillText("vídeo", w / 2, h * 0.87);
+//   return c.toDataURL("image/png");
+// }
 
 /** gera poster client-side para vídeos quando não há thumb */
 // function useVideoPoster(src?: string) {

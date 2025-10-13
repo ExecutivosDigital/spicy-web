@@ -1,11 +1,11 @@
 "use client";
-import { StepKey, useActionSheetsContext } from "@/context/actionSheetsContext";
+import { useActionSheetsContext } from "@/context/actionSheetsContext";
 import { useCallback, useState } from "react";
+// remove .tsx in import path
+import { cn } from "@/lib/utils";
 import { StepCPF } from "./payment-sheet/StepCPF";
 import { StepPassword } from "./payment-sheet/StepPassword";
 import { StepPix } from "./payment-sheet/StepPix";
-// remove .tsx in import path
-import { cn } from "@/lib/utils";
 import { StepPlans } from "./payment-sheet/StepPlans";
 import RegisterCard from "./payment-sheet/StepRegister";
 import { StepSuccess } from "./payment-sheet/StepSuccess";
@@ -20,26 +20,26 @@ export type PaymentData = {
   register?: string;
 };
 
-const ORDER: StepKey[] = [
-  "email",
-  "password",
-  "plans",
-  "cpf",
-  "pix",
-  "success",
-  "register",
-];
+// const ORDER: StepKey[] = [
+//   "email",
+//   "password",
+//   "plans",
+//   "cpf",
+//   "pix",
+//   "success",
+//   "register",
+// ];
 
 export function PaymentSheet() {
   const { open, closeSheet, current, setCurrent } = useActionSheetsContext();
   const [data, setData] = useState<PaymentData>({});
 
-  const goBack = useCallback(() => {
-    setCurrent((prev) => {
-      const i = ORDER.indexOf(prev);
-      return ORDER[Math.max(i - 1, 0)];
-    });
-  }, [setCurrent]);
+  // const goBack = useCallback(() => {
+  //   setCurrent((prev) => {
+  //     const i = ORDER.indexOf(prev);
+  //     return ORDER[Math.max(i - 1, 0)];
+  //   });
+  // }, [setCurrent]);
 
   const resetAndClose = useCallback(() => {
     setCurrent("email");

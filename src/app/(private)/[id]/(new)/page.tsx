@@ -7,7 +7,7 @@ import { useActionSheetsContext } from "@/context/actionSheetsContext";
 import { useChatContext } from "@/context/chatContext";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import React, { useState } from "react";
 
 /** tipo que a Lightbox espera */
@@ -30,7 +30,6 @@ const SpicyScreen = () => {
   } = useChatContext();
   const { token } = useApiContext();
   const { handleNavigation } = useLoadingContext();
-  const router = useRouter();
   const pathname = usePathname();
 
   type IconProps = { route: string; className?: string };

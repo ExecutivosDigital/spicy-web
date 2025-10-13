@@ -69,7 +69,7 @@ export function StepPlans() {
             {Array.from({ length: 3 }).map((_, index) => (
               <li
                 key={index}
-                className="flex h-[4.75rem] w-full cursor-pointer flex-col items-center justify-center bg-[#2A2A2E] p-3"
+                className="flex h-[4.75rem] w-full animate-pulse cursor-pointer flex-col items-center justify-center rounded-lg border border-white/10 bg-white/5 p-3"
               >
                 <div className="flex w-full flex-1 flex-row items-center justify-between" />
                 <div className="mt-1 -mb-1 h-0.5 w-full rounded-full bg-white/10" />

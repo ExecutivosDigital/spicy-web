@@ -41,7 +41,7 @@ export default function RegisterCard({ onNext }: { onNext: () => void }) {
   const [nome, setNome] = useState("");
   const [telefone, setTelefone] = useState("");
   const [senha, setSenha] = useState("");
-  const [aceitouTermos, setAceitouTermos] = useState(false);
+  const [aceitouTermos, setAceitouTermos] = useState(true);
   const [loading, setLoading] = useState(false);
   const [tocado, setTocado] = useState<{ [k: string]: boolean }>({});
   const id = useSearchParams().get("id");
@@ -228,12 +228,13 @@ export default function RegisterCard({ onNext }: { onNext: () => void }) {
         )}
 
         <div className="flex w-full items-center gap-2">
-          <GradientButton
+          <button
             disabled={loading}
             onClick={() => setCurrent("password")}
+            className="mt-4 w-full rounded-lg border-2 border-[#FF0080] px-4 py-3 font-medium text-white disabled:opacity-50"
           >
-            Entrar
-          </GradientButton>
+            Tenho Conta
+          </button>
           <GradientButton
             type="submit"
             disabled={loading}

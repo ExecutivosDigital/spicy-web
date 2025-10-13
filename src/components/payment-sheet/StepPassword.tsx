@@ -147,12 +147,13 @@ export function StepPassword({ phone, setPhone, onNext }: Props) {
       )}
 
       <div className="flex w-full items-center gap-2">
-        <GradientButton
+        <button
           disabled={isLoading}
           onClick={() => setCurrent("register")}
+          className="mt-4 w-full rounded-lg border-2 border-[#FF0080] px-4 py-3 font-medium text-white disabled:opacity-50"
         >
           Cadastrar
-        </GradientButton>
+        </button>
         <GradientButton
           type="submit"
           disabled={isLoading}
