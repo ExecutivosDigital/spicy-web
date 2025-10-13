@@ -252,7 +252,7 @@ const ChatPage = ({ params }: { params: Promise<{ id: string }> }) => {
   return (
     <div className="flex flex-1 justify-center gap-2 text-white xl:gap-5 rtl:space-x-reverse">
       <div className="relative h-full max-w-[540px] flex-1 overflow-hidden pb-4 md:rounded-md md:border md:px-4">
-        <section className="relative flex h-full max-h-screen w-[100%] flex-1 overflow-hidden">
+        <section className="relative flex h-full max-h-[100svh] w-[100%] flex-1 overflow-hidden">
           {/* <Chat /> */}
 
           <div className="flex h-full w-full flex-1">

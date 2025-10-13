@@ -21,11 +21,7 @@ type Props = {
 const loginSchema = z.object({
   phone: z
     .string()
-    // valida o número cru, só dígitos (11 dígitos no BR com DDD)
-    .transform((v) => v.replace(/\D/g, ""))
-    .refine((v) => v.length === 10, {
-      message: "Informe um número válido com DDD (10 dígitos).",
-    }),
+    .min(11, { message: "O telefone deve ter ao menos 11 dígitos." }),
   password: z
     .string()
     .min(4, { message: "A senha deve ter ao menos 4 caracteres." }),
