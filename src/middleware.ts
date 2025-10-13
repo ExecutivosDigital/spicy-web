@@ -35,7 +35,6 @@ export async function middleware(req: NextRequest) {
       body: data,
     };
   };
-
   if (
     req.nextUrl.pathname.indexOf("icon") > -1 ||
     req.nextUrl.pathname.indexOf("chrome") > -1
