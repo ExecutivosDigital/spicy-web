@@ -73,6 +73,7 @@ const MessageFooter = ({ onSend }: { onSend: () => void }) => {
         connect.body.message,
       ]);
       onSend();
+      setMessage("");
     }
 
     if (connect.status !== 200) {
@@ -342,10 +343,7 @@ const MessageFooter = ({ onSend }: { onSend: () => void }) => {
           </DropdownMenu>
 
           <div className="flex-1">
-            <form
-              onSubmit={handleSubmit}
-              className={twMerge("flex flex-col", "gap-2")}
-            >
+            <div className={twMerge("flex flex-col", "gap-2")}>
               {file && fileType === "audio" && (
                 <div className={twMerge("w-full transition duration-500")}>
                   <AudioPlayer className="w-full" audioUrl={audioUrl} />
@@ -446,7 +444,7 @@ const MessageFooter = ({ onSend }: { onSend: () => void }) => {
                   </div>
                 </Button>
               </div>
-            </form>
+            </div>
           </div>
         </>
       </div>

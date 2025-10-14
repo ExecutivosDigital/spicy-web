@@ -376,7 +376,7 @@ export function GalleryMosaicPager({
   onOpenLightbox?: (items: GalleryItem[], index: number) => void;
 }) {
   const { GetAPI } = useApiContext();
-  const { modelId } = useChatContext();
+  const { modelId, isPaymentConfirmed } = useChatContext();
 
   // estado para o tab atual
   const [secondTabSelected, setSecondTabSelected] = useState<number>(0);
@@ -454,7 +454,10 @@ export function GalleryMosaicPager({
   const handleOpen = React.useCallback(
     (absIndex: number, item: GalleryItem) => {
       if (onOpenLightbox) {
-        onOpenLightbox(filtered, absIndex);
+        onOpenLightbox(
+          filtered.filter((item) => (isPaymentConfirmed ? true : !item.locked)),
+          absIndex,
+        );
       } else {
         // fallback antigo
         setSelectedItem(item);

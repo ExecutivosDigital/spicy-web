@@ -39,6 +39,7 @@ interface ChatContextProps {
   setModelId: React.Dispatch<React.SetStateAction<string | undefined>>;
   isGettingModelProfile: boolean;
   isVerifying: boolean;
+  isTyping: boolean;
 }
 
 const ChatContext = createContext<ChatContextProps | undefined>(undefined);
@@ -73,6 +74,7 @@ export const ChatContextProvider = ({ children }: ProviderProps) => {
   const [isMessageLoading, setIsMessageLoading] = useState(false);
   const [isGettingModelProfile, setIsGettingModelProfile] = useState(true);
   const [isVerifying, setIsVerifying] = useState(true);
+  const [isTyping] = useState(false);
 
   async function handleGetChats() {
     setIsChatsLoading(true);
@@ -158,6 +160,9 @@ export const ChatContextProvider = ({ children }: ProviderProps) => {
         socket.emit("connectRoom", userId);
       }
       socket.on("newMessage", (message: MessageProps) => {
+        // setIsTyping(true);
+        // setTimeout(() => {
+        //   setIsTyping(false);
         if (message.chatId === selectedChatId) {
           setSelectedChatMessages((prev) => [...prev, message]);
         }
@@ -177,6 +182,7 @@ export const ChatContextProvider = ({ children }: ProviderProps) => {
             return prev;
           }
         });
+        // });
       });
 
       socket.on("payment", () => {
@@ -195,6 +201,12 @@ export const ChatContextProvider = ({ children }: ProviderProps) => {
     handleGetChats();
     profile();
   }, [token, modelId]);
+
+  useEffect(() => {
+    if (cookies.get(process.env.NEXT_PUBLIC_USER_ID as string)) {
+      setUserId(cookies.get(process.env.NEXT_PUBLIC_USER_ID as string));
+    }
+  }, [cookies ? cookies : undefined]);
 
   return (
     <ChatContext.Provider
@@ -223,6 +235,7 @@ export const ChatContextProvider = ({ children }: ProviderProps) => {
         setModelId,
         isGettingModelProfile,
         isVerifying,
+        isTyping,
       }}
     >
       {children}

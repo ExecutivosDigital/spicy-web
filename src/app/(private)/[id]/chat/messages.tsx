@@ -25,7 +25,7 @@ const Messages = ({ message, className }: Props) => {
     <div className="">
       {entity !== "USER" ? (
         <>
-          <div className="group mb-4 ml-2 flex max-w-[calc(100%-8px)] flex-col items-start justify-start gap-1 space-x-2 lg:mb-2 xl:mb-4 xl:ml-[50px] xl:max-w-[calc(100%-50px)] rtl:space-x-reverse">
+          <div className="group mb-4 ml-2 flex max-w-[calc(100%-50px)] flex-col items-start justify-start gap-1 space-x-2 lg:mb-2 xl:mb-4 xl:ml-[50px] xl:max-w-[calc(100%-50px)] rtl:space-x-reverse">
             <div className="flex min-w-10 justify-center gap-1 rounded-2xl rounded-bl-none bg-gradient-to-br from-[#441A7D] to-[#6D3A5D] p-2 shadow-sm">
               <div className="flex items-center gap-1">
                 {fileUrl ? (
@@ -85,6 +85,15 @@ const Messages = ({ message, className }: Props) => {
                     </div>
                   </div>
                 ) : (
+                  // : isTyping ? (
+                  //   <>
+                  //     <div className="flex space-x-1.5">
+                  //       <div className="bg-primary h-2 w-2 animate-[loaderDots_0.6s_0s_infinite_alternate] rounded-full"></div>
+                  //       <div className="bg-primary h-2 w-2 animate-[loaderDots_0.6s_0.3s_infinite_alternate] rounded-full"></div>
+                  //       <div className="bg-primary h-2 w-2 animate-[loaderDots_0.6s_0.6s_infinite_alternate] rounded-full"></div>
+                  //     </div>
+                  //   </>
+                  // )
                   <ReactMarkdown
                     remarkPlugins={[remarkGfm]}
                     components={{
@@ -120,7 +129,7 @@ const Messages = ({ message, className }: Props) => {
           </div>
         </>
       ) : (
-        <div className="group mb-4 flex max-w-[calc(100%-8px)] flex-col items-end justify-end gap-1 lg:mb-2 xl:mb-4 xl:max-w-[calc(100%-50px)]">
+        <div className="group mb-4 ml-auto flex max-w-[calc(100%-50px)] flex-col items-end justify-end gap-1 lg:mb-2 xl:mb-4 xl:max-w-[calc(100%-50px)]">
           <div className="flex min-w-10 justify-center gap-1 rounded-2xl rounded-br-none bg-gradient-to-b from-[#31108B] to-[#39448B] p-2 shadow-sm">
             <div className="group flex items-center gap-1">
               {audioUrl ? (

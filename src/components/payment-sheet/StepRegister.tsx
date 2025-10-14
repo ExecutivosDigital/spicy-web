@@ -228,13 +228,6 @@ export default function RegisterCard({ onNext }: { onNext: () => void }) {
         )}
 
         <div className="flex w-full items-center gap-2">
-          <button
-            disabled={loading}
-            onClick={() => setCurrent("password")}
-            className="mt-4 w-full rounded-lg border-2 border-[#FF0080] px-4 py-3 font-medium text-white disabled:opacity-50"
-          >
-            Tenho Conta
-          </button>
           <GradientButton
             type="submit"
             disabled={loading}
@@ -242,6 +235,13 @@ export default function RegisterCard({ onNext }: { onNext: () => void }) {
           >
             {loading ? "Cadastrando..." : "Cadastrar"}
           </GradientButton>
+          <button
+            disabled={loading}
+            onClick={() => setCurrent("password")}
+            className="mt-4 w-full rounded-lg border-2 border-[#FF0080] px-4 py-3 font-medium text-white disabled:opacity-50"
+          >
+            Tenho Conta
+          </button>
         </div>
         {/*        
         <button

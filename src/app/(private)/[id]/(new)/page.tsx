@@ -200,7 +200,6 @@ const SpicyScreen = () => {
           }}
         />
 
-        {/* Lightbox controlada por este componente */}
         <Lightbox
           open={lbOpen}
           images={lbItems}

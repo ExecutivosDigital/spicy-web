@@ -58,9 +58,10 @@ export function StepCPF({
       <h2 className="text-center text-lg font-semibold">Informe seu CPF</h2>
       <TextField
         inputMode="numeric"
-        placeholder="00000000000"
+        placeholder="000.000.000-00"
         value={maskCpfCnpj(cpf)}
         onChange={(e) => setCpf(onlyDigits(e.target.value))}
+        maxLength={15}
       />
       <GradientButton disabled={isUpdating} onClick={handleUpdateProfile}>
         {isUpdating ? "Atualizando..." : "Avançar"}
