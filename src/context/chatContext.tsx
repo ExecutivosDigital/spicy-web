@@ -83,9 +83,10 @@ export const ChatContextProvider = ({ children }: ProviderProps) => {
       setChats(connect.body.chats);
       if (connect.body.chats.length > 0) {
         const modelChat = connect.body.chats.find(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (chat: any) => chat.model.id === id,
         );
-        setSelectedChatId(modelChat?.id!);
+        setSelectedChatId(modelChat?.id);
         setSelectedChat(modelChat);
       }
     }

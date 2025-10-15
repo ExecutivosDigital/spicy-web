@@ -7,7 +7,6 @@ import { cn } from "@/lib/utils";
 import { maskPhone } from "@/utils/masks";
 import { useCookies } from "next-client-cookies";
 import Image from "next/image";
-import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { z } from "zod";
@@ -30,7 +29,6 @@ const loginSchema = z.object({
 });
 
 export function StepPassword({ phone, setPhone, onNext }: Props) {
-  const searchParams = useSearchParams();
   const { setToken } = useApiContext();
   const { setCurrent } = useActionSheetsContext();
   const { PostAPI } = useApiContext();
@@ -61,7 +59,7 @@ export function StepPassword({ phone, setPhone, onNext }: Props) {
       return;
     }
 
-    const { phone: digitsPhone, password: pwd, modelId: id } = result.data;
+    const { phone: digitsPhone, password: pwd } = result.data;
 
     setIsLoading(true);
     const Payload = { phone: digitsPhone, password: pwd, modelId: modelId };
