@@ -7,7 +7,6 @@ import { cn } from "@/lib/utils";
 import { maskPhone } from "@/utils/masks";
 import { useCookies } from "next-client-cookies";
 import Image from "next/image";
-import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import { GradientButton } from "./ui";
@@ -35,7 +34,7 @@ export type RegisterData = {
 export default function RegisterCard({ onNext }: { onNext: () => void }) {
   const cookies = useCookies();
   const { setToken } = useApiContext();
-  const { handleGetChats, setUserId, handleVerify } = useChatContext();
+  const { handleGetChats, setUserId, handleVerify, modelId } = useChatContext();
   const { setCurrent } = useActionSheetsContext();
 
   const [nome, setNome] = useState("");
@@ -44,7 +43,6 @@ export default function RegisterCard({ onNext }: { onNext: () => void }) {
   const [aceitouTermos, setAceitouTermos] = useState(true);
   const [loading, setLoading] = useState(false);
   const [tocado, setTocado] = useState<{ [k: string]: boolean }>({});
-  const id = useSearchParams().get("id");
   // helpers ————————————————————————————————————————
   const telMask = (v: string) => {
     // remove tudo que não é dígito
@@ -80,7 +78,12 @@ export default function RegisterCard({ onNext }: { onNext: () => void }) {
       setLoading(true);
       const response = await PostAPI(
         "user/register",
-        { name: nome, password: senha, phone: telefoneFormatado, modelId: id },
+        {
+          name: nome,
+          password: senha,
+          phone: telefoneFormatado,
+          modelId: modelId,
+        },
         false,
       );
       if (response.status === 200) {

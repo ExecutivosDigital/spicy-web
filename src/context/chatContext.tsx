@@ -82,8 +82,11 @@ export const ChatContextProvider = ({ children }: ProviderProps) => {
     if (connect.status === 200) {
       setChats(connect.body.chats);
       if (connect.body.chats.length > 0) {
-        setSelectedChatId(connect.body.chats[0].id!);
-        setSelectedChat(connect.body.chats[0]);
+        const modelChat = connect.body.chats.find(
+          (chat: any) => chat.model.id === id,
+        );
+        setSelectedChatId(modelChat?.id!);
+        setSelectedChat(modelChat);
       }
     }
 
@@ -128,7 +131,7 @@ export const ChatContextProvider = ({ children }: ProviderProps) => {
     if (!selectedChat) return;
 
     const response = await GetAPI(
-      `/user-signature/validation/${selectedChat?.model.id}`,
+      `/user-signature/validation/${modelId}`,
       true,
     );
 

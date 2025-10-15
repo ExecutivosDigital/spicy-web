@@ -31,14 +31,13 @@ const loginSchema = z.object({
 
 export function StepPassword({ phone, setPhone, onNext }: Props) {
   const searchParams = useSearchParams();
-  const modelId = searchParams.get("id") ?? undefined;
   const { setToken } = useApiContext();
   const { setCurrent } = useActionSheetsContext();
   const { PostAPI } = useApiContext();
   const cookies = useCookies();
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const { setUserId, handleGetChats } = useChatContext();
+  const { setUserId, handleGetChats, modelId } = useChatContext();
   const [errors, setErrors] = useState<{
     phone?: string;
     password?: string;
@@ -65,7 +64,8 @@ export function StepPassword({ phone, setPhone, onNext }: Props) {
     const { phone: digitsPhone, password: pwd, modelId: id } = result.data;
 
     setIsLoading(true);
-    const Payload = { phone: digitsPhone, password: pwd, modelId: id };
+    const Payload = { phone: digitsPhone, password: pwd, modelId: modelId };
+    console.log("Payload: ", Payload);
     const response = await PostAPI("user/auth", Payload, false);
     if (response.status !== 200) {
       toast.error("Verifique os dados inseridos e tente novamente");
