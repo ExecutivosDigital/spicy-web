@@ -1,14 +1,9 @@
 "use client";
-
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/cn";
 import * as SheetPrimitive from "@radix-ui/react-dialog";
 import { cva, type VariantProps } from "class-variance-authority";
 import { X } from "lucide-react";
 import * as React from "react";
-
-// -------------------------
-// Core Sheet (Radix Dialog)
-// -------------------------
 
 const Sheet = SheetPrimitive.Root;
 const SheetTrigger = SheetPrimitive.Trigger;
@@ -33,14 +28,12 @@ const SheetOverlay = React.forwardRef<
 SheetOverlay.displayName = SheetPrimitive.Overlay.displayName;
 
 const sheetVariants = cva(
-  // NOTE: remove fixed heights; let it be auto and cap with max-h
   "fixed z-[999] gap-4 bg-card p-1 shadow-lg rounded-t-[60px] transition ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:duration-300 data-[state=open]:duration-500 overflow-hidden",
   {
     variants: {
       side: {
         top: "inset-x-0 top-0 border-b data-[state=closed]:slide-out-to-top data-[state=open]:slide-in-from-top",
         bottom:
-          // key bit: width full, height auto, with a viewport cap and natural growth
           "inset-x-0 bottom-0 w-full border-t p-1 pt-4 data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom h-auto max-h-[98svh] md:max-h-[85vh]",
         left: "inset-y-0 left-0 h-full w-3/4 border-r data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left max-w-sm",
         right:
@@ -82,7 +75,6 @@ const SheetContent = React.forwardRef<
       <SheetTitle />
       <SheetPrimitive.Content
         ref={ref}
-        // important: allow the content to scroll if it exceeds the cap
         className={cn(sheetVariants({ side }), "overflow-auto", className)}
         {...props}
       >

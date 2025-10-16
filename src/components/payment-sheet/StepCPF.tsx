@@ -1,9 +1,11 @@
 "use client";
 
 import { useApiContext } from "@/context/ApiContext";
+import { useModelGalleryContext } from "@/context/ModelGalleryContext";
+import { getRandomItem } from "@/utils/getRandomItem";
 import { maskCpfCnpj } from "@/utils/masks";
 import Image from "next/image";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { GradientButton, TextField } from "./ui";
 
 function onlyDigits(v: string) {
@@ -17,9 +19,15 @@ export function StepCPF({
   initialCPF?: string;
   onNext: (cpf: string) => void;
 }) {
+  const { photos } = useModelGalleryContext();
+  const { PutAPI } = useApiContext();
   const [cpf, setCpf] = useState(onlyDigits(initialCPF ?? ""));
   const [isUpdating, setIsUpdating] = useState(false);
-  const { PutAPI } = useApiContext();
+
+  const banner = useMemo(
+    () => getRandomItem(photos.filter((it) => it.isFreeAvailable)),
+    [],
+  );
 
   async function handleUpdateProfile() {
     setIsUpdating(true);
@@ -39,20 +47,30 @@ export function StepCPF({
 
   return (
     <div className="space-y-4">
-      <div className="relative m-4 overflow-hidden rounded-2xl">
-        <div className="relative flex aspect-[16/6] w-full items-center justify-center">
+      <div className="absolute top-0 left-0 flex h-40 w-full items-center justify-center">
+        {banner ? (
           <Image
-            src="/gab/photos/10.jpeg"
+            src={banner?.photoUrl}
             alt="Gabriela"
-            fill
-            className="rounded-xl object-cover"
+            width={500}
+            height={250}
+            className="h-full w-full object-cover"
+            priority
           />
-        </div>
+        ) : (
+          <Image
+            src="/logo.png"
+            alt="Gabriela"
+            width={500}
+            height={250}
+            className="m-auto h-max w-2/3 object-contain"
+            priority
+          />
+        )}
       </div>
-      <div className="flex flex-row items-center justify-center gap-4 px-4">
+      <div className="mt-40 flex flex-row items-center justify-center gap-4 px-4">
         <div className="h-1 w-12 rounded-full bg-gradient-to-r from-[#FF0080] to-[#7928CA]"></div>
         <div className="h-1 w-12 rounded-full bg-gradient-to-r from-[#FF0080] to-[#7928CA]"></div>
-        <div className="h-1 w-12 rounded-full bg-gradient-to-r from-[#FF0080] to-[#7928CA] opacity-20"></div>
         <div className="h-1 w-12 rounded-full bg-gradient-to-r from-[#FF0080] to-[#7928CA] opacity-20"></div>
       </div>
       <h2 className="text-center text-lg font-semibold">Informe seu CPF</h2>

@@ -1,11 +1,14 @@
 "use client";
 
 import { useApiContext } from "@/context/ApiContext";
+import { useModelGalleryContext } from "@/context/ModelGalleryContext";
 import { useActionSheetsContext } from "@/context/actionSheetsContext";
 import { useChatContext } from "@/context/chatContext";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/cn";
+import { GenerateCpf } from "@/utils/generate-cpf";
+import { getRandomItem } from "@/utils/getRandomItem";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { GradientButton } from "./ui";
 
 export interface PriceProps {
@@ -18,13 +21,21 @@ export interface PriceProps {
 }
 
 export function StepPlans() {
-  const { modelId, userProfile } = useChatContext();
-  const [prices, setPrices] = useState<PriceProps[]>([]);
-  const [isGettingPrices, setIsGettingPrices] = useState(true);
   const { selectedPlan, setSelectedPlan, setCurrent } =
     useActionSheetsContext();
+  const { modelId } = useChatContext();
+  const { photos } = useModelGalleryContext();
+  const { GetAPI, PutAPI } = useApiContext();
 
-  const { GetAPI } = useApiContext();
+  const [prices, setPrices] = useState<PriceProps[]>([]);
+  const [isGettingPrices, setIsGettingPrices] = useState(true);
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  const banner = useMemo(
+    () => getRandomItem(photos.filter((it) => it.isFreeAvailable)),
+    [],
+  );
+
   async function handleGetPlans() {
     const response = await GetAPI(`/model-price/fetch/${modelId}`, true);
     if (response.status === 200) {
@@ -34,39 +45,56 @@ export function StepPlans() {
     setIsGettingPrices(false);
   }
 
+  async function handleUpdateProfile() {
+    setIsUpdating(true);
+    const response = await PutAPI(
+      "/user/profile",
+      { cpfCnpj: GenerateCpf() },
+      true,
+    );
+    if (response.status === 200) {
+      setCurrent("plans");
+      return setIsUpdating(false);
+    }
+    return setIsUpdating(false);
+  }
+
   useEffect(() => {
     handleGetPlans();
   }, []);
 
   return (
     <div className="space-y-4">
-      <div className="relative m-4 overflow-hidden rounded-2xl">
-        <div className="relative flex aspect-[16/6] w-full items-center justify-center">
+      <div className="absolute top-0 left-0 flex h-40 w-full items-center justify-center">
+        {banner ? (
           <Image
-            src="/gab/photos/10.jpeg"
+            src={banner?.photoUrl}
             alt="Gabriela"
-            fill
-            className="rounded-xl object-cover"
+            width={500}
+            height={250}
+            className="h-full w-full object-cover"
+            priority
           />
-          <div className="absolute flex w-full items-center justify-center gap-3 select-none">
-            <div className="flex flex-row items-center rounded-lg bg-black/60 p-2">
-              <h2 className="text-center text-lg font-semibold">
-                Selecione seu plano
-              </h2>
-            </div>
-          </div>
-        </div>
+        ) : (
+          <Image
+            src="/logo.png"
+            alt="Gabriela"
+            width={500}
+            height={250}
+            className="m-auto h-max w-2/3 object-contain"
+            priority
+          />
+        )}
       </div>
-      <div className="flex flex-row items-center justify-center gap-4 px-4">
+      <div className="mt-40 flex flex-row items-center justify-center gap-4 px-4">
         <div className="h-1 w-12 rounded-full bg-gradient-to-r from-[#FF0080] to-[#7928CA]"></div>
-        <div className="h-1 w-12 rounded-full bg-gradient-to-r from-[#FF0080] to-[#7928CA] opacity-20"></div>
         <div className="h-1 w-12 rounded-full bg-gradient-to-r from-[#FF0080] to-[#7928CA] opacity-20"></div>
         <div className="h-1 w-12 rounded-full bg-gradient-to-r from-[#FF0080] to-[#7928CA] opacity-20"></div>
       </div>
       <ul className="space-y-2">
         {isGettingPrices ? (
           <>
-            {Array.from({ length: 3 }).map((_, index) => (
+            {Array.from({ length: 4 }).map((_, index) => (
               <li
                 key={index}
                 className="flex h-[4.75rem] w-full animate-pulse cursor-pointer flex-col items-center justify-center rounded-lg border border-white/10 bg-white/5 p-3"
@@ -124,15 +152,11 @@ export function StepPlans() {
         )}
       </ul>
       <GradientButton
-        onClick={() => {
-          if (userProfile && userProfile.hasCpfCnpj) {
-            setCurrent("pix");
-          } else {
-            setCurrent("cpf");
-          }
-        }}
+        onClick={handleUpdateProfile}
+        disabled={isUpdating}
+        className={cn(isUpdating && "opacity-80")}
       >
-        Avançar
+        {isUpdating ? "Aguarde..." : "Avançar"}
       </GradientButton>
     </div>
   );

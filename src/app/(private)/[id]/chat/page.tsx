@@ -1,6 +1,5 @@
 "use client";
 import { MessageProps } from "@/@types/global";
-import { Header } from "@/components/header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { useChatContext } from "@/context/chatContext";
@@ -8,6 +7,7 @@ import { ArrowDown, X } from "lucide-react";
 import Image from "next/image";
 import { use, useEffect, useRef, useState } from "react";
 import EmptyMessage from "./empty-message";
+import { Header } from "./header";
 import MessageFooter from "./message-footer";
 import Messages from "./messages";
 
@@ -23,7 +23,6 @@ export type GalleryItem = {
 
 const ChatPage = ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = use(params);
-
   const {
     selectedChatId,
     selectedChatMessages,
@@ -32,15 +31,13 @@ const ChatPage = ({ params }: { params: Promise<{ id: string }> }) => {
     setModelId,
   } = useChatContext();
 
+  const [isMediaOpen, setIsMediaOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<GalleryItem | null>(null);
+  const [isAutoScrollEnabled, setIsAutoScrollEnabled] = useState(true);
+  const lastScrollTop = useRef(0);
   const lastMsgIdRef = useRef<string | null>(null);
   const containerRef = useRef(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    if (id) {
-      setModelId(id);
-    }
-  }, [id]);
 
   const handleScrollToBottom = () => {
     setIsAutoScrollEnabled(true);
@@ -51,9 +48,6 @@ const ChatPage = ({ params }: { params: Promise<{ id: string }> }) => {
       });
     }
   };
-
-  const [isAutoScrollEnabled, setIsAutoScrollEnabled] = useState(true);
-  const lastScrollTop = useRef(0);
 
   useEffect(() => {
     if (selectedChatMessages.length > 0 && isAutoScrollEnabled) {
@@ -101,152 +95,26 @@ const ChatPage = ({ params }: { params: Promise<{ id: string }> }) => {
     const last = selectedChatMessages[selectedChatMessages.length - 1];
     if (!last) return;
 
-    // If the last message changed, we just appended one → scroll
     if (last.id !== lastMsgIdRef.current) {
       lastMsgIdRef.current = last.id;
-      // next frame to ensure layout is ready
       requestAnimationFrame(() => handleScrollToBottom());
     }
-  }, [selectedChatMessages.length]); // only care that the list grew
+  }, [selectedChatMessages.length]);
 
   useEffect(() => {
     setIsAutoScrollEnabled(true);
   }, [selectedChatId]);
 
-  // const [showContactSidebar, setShowContactSidebar] = useState<boolean>(false);
-
-  // const [showInfo, setShowInfo] = useState<boolean>(false);
-
-  // const openChat = (chatId: string) => {
-  //   router.replace(`/?id=${chatId}`);
-  //   setShowInfo(false);
-  //   setIsAutoScrollEnabled(true);
-  //   setShowContactSidebar(false);
-  // };
-
-  // async function handleSetUnreadMessages(id: string) {
-  //   const userToken = cookies.get(token);
-
-  //   const connect = await AuthPutAPI(`/message/status/${id}`, {}, userToken);
-
-  //   if (connect.status === 200) {
-  //     const chat = chats.find((chat) => chat.id === id);
-
-  //     if (chat) {
-  //       setChats((prevChats) => {
-  //         return prevChats.map((chat) => {
-  //           if (chat.id === id) {
-  //             return { ...chat, hasUnreadMessages: true };
-  //           }
-  //           return chat;
-  //         });
-  //       });
-  //     }
-
-  //     if (selectedChatId === id && selectedChat) {
-  //       setSelectedChat(null);
-  //       setSelectedChatId(null);
-  //       router.replace(`/chat`);
-  //     }
-  //   }
-  // }
-
-  // useEffect(() => {
-  //   setPageName("Chat de Clientes");
-  // }, []);
-
-  // function nameContainsQuery(name: string) {
-  //   return normalizeName(name).includes(normalizeName(query));
-  // }
-
-  // function sortByQueryMatch(clients: ClientChatProps[]) {
-  //   return clients.sort((a, b) => {
-  //     const aMatch = nameContainsQuery(a.name);
-  //     const bMatch = nameContainsQuery(b.name);
-
-  //     if (aMatch && !bMatch) return -1; // a vem antes
-  //     if (!aMatch && bMatch) return 1; // b vem antes
-  //     return 0; // mantém a ordem
-  //   });
-  // }
-
-  /* ========================= Chat ========================= */
-  // function Bubble({ msg }: { msg: ChatMessage }) {
-  //   const mine = msg.sender === "me";
-  //   return (
-  //     <div
-  //       className={clsx(
-  //         "flex items-end gap-2",
-  //         mine ? "justify-end" : "justify-start"
-  //       )}
-  //     >
-  //       {!mine && (
-  //         <img
-  //           src="/gab/avt.png"
-  //           className="h-6 w-6 rounded-full object-cover"
-  //           alt="Gabi"
-  //         />
-  //       )}
-  //       <div
-  //         className={cn(
-  //           "max-w-[78%] rounded-2xl flex flex-col bg-neutral-100 text-lg font-semibold text-neutral-900 rounded-bl-none px-3 py-2  shadow-sm",
-  //           msg.kind === "image" && "px-1 py-1 bg-transparent",
-  //           mine && "bg-[#E55C00] rounded-bl-2xl rounded-br-none  text-white "
-  //         )}
-  //       >
-  //         {msg.kind === "text" && <p>{msg.text}</p>}
-  //         {msg.kind === "image" && (
-  //           <img
-  //             src={msg.url}
-  //             alt="enviado"
-  //             className="rounded-lg max-h-[220px] object-cover"
-  //           />
-  //         )}
-  //         {msg.kind === "audio" && (
-  //           <audio src={msg.url} controls className="w-48" />
-  //         )}
-  //         <div
-  //           className={clsx(
-  //             "mt-1 text-sm opacity-70",
-  //             mine ? "text-white self-end" : "text-neutral-500"
-  //           )}
-  //         >
-  //           {new Date(msg.ts).toLocaleTimeString()}
-  //         </div>
-  //       </div>
-  //       {!mine && (
-  //         <button
-  //           aria-label="Curtir"
-  //           onClick={() =>
-  //             setMessages((m) =>
-  //               m.map((x) => (x.id === msg.id ? { ...x, liked: !x.liked } : x))
-  //             )
-  //           }
-  //           className="p-1 -mb-0.5"
-  //         >
-  //           <Heart
-  //             className={clsx(
-  //               "h-5 w-5 transition",
-  //               msg.liked
-  //                 ? "fill-rose-500 text-rose-500"
-  //                 : "text-neutral-400 hover:text-rose-500"
-  //             )}
-  //           />
-  //         </button>
-  //       )}
-  //     </div>
-  //   );
-  // }
-
-  const [isMediaOpen, setIsMediaOpen] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<GalleryItem | null>(null);
+  useEffect(() => {
+    if (id) {
+      setModelId(id);
+    }
+  }, [id]);
 
   return (
     <div className="flex flex-1 justify-center gap-2 text-white xl:gap-5 rtl:space-x-reverse">
       <div className="relative h-full max-w-[540px] flex-1 overflow-hidden pb-4 md:rounded-md md:border md:px-4">
         <section className="relative flex h-full max-h-[100svh] w-[100%] flex-1 overflow-hidden">
-          {/* <Chat /> */}
-
           <div className="flex h-full w-full flex-1">
             <div className="flex h-full flex-1 space-x-5 lg:space-x-2 xl:space-x-5 rtl:space-x-reverse">
               <div className="h-full flex-1">
@@ -393,15 +261,6 @@ const ChatPage = ({ params }: { params: Promise<{ id: string }> }) => {
           )}
         </div>
       )}
-
-      {/* <Lightbox
-        open={lightboxOpen}
-        images={lightboxItems}
-        index={lightboxIndex}
-        onClose={() => setLightboxOpen(false)}
-        setIndex={(i: number) => setLightboxIndex(i)}
-        setOpenQrCode={() => console.log(false)}
-      /> */}
     </div>
   );
 };

@@ -1,7 +1,7 @@
 "use client";
 import { useChatContext } from "@/context/chatContext";
 import { useLoadingContext } from "@/context/LoadingContext";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/cn";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 
@@ -14,7 +14,7 @@ export function Header() {
   type ButtonProps = {
     route: string;
     className?: string;
-    icon: React.ComponentType<IconProps>; // << aceita className
+    icon: React.ComponentType<IconProps>;
     label: string;
   };
   const pathname = usePathname();
@@ -37,10 +37,8 @@ export function Header() {
         <div className="flex flex-1 items-center gap-3 px-4 py-3 pt-0">
           <div className="relative">
             <img
-              src={
-                modelProfile ? modelProfile.photoUrl : "/gab/photos/profile.png"
-              }
-              alt="Gabi"
+              src={modelProfile ? modelProfile.photoUrl : "/small-logo.png"}
+              alt=""
               className="h-10 w-10 rounded-full object-cover"
             />
             <span className="absolute -right-1 -bottom-1 h-3 w-3 rounded-full bg-emerald-500 ring-2 ring-white" />
@@ -61,38 +59,26 @@ export function Header() {
           </div>
           <div className="items-center gap-1 text-neutral-400 sm:flex">
             <div className="flex items-center justify-center gap-2 rounded-full bg-gradient-to-br from-[#FF0080] to-[#7928CA] px-2 py-2 text-xs text-white/80 opacity-100">
-              {[
-                // { label: "Chat", icon: HomeIcon, route: `/${modelId}/chat` },
-                { label: "Galeria", icon: GridIcon, route: `/${modelId}` },
-                // { label: "Perfil", icon: UserIcon as unknown as React.ComponentType<IconProps>, route: "/chat" },
-              ].map((it: ButtonProps, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => handleNavigation(it.route)}
-                  // onClick={() => (window.location.href = it.route)}
-                  className={cn(
-                    "flex flex-col items-center justify-center gap-1 px-2.5 py-1 hover:text-white",
-                    pathname === it.route &&
-                      "cursor-pointer rounded-full bg-white text-[#FF0080]",
-                  )}
-                >
-                  <it.icon route={it.route} className="h-5 w-5" />
-                  {it.label}
-                </button>
-              ))}
+              {[{ label: "Galeria", icon: GridIcon, route: `/${modelId}` }].map(
+                (it: ButtonProps, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => handleNavigation(it.route)}
+                    className={cn(
+                      "flex flex-col items-center justify-center gap-1 px-2.5 py-1 hover:text-white",
+                      pathname === it.route &&
+                        "cursor-pointer rounded-full bg-white text-[#FF0080]",
+                    )}
+                  >
+                    <it.icon route={it.route} className="h-5 w-5" />
+                    {it.label}
+                  </button>
+                ),
+              )}
             </div>
           </div>
         </div>
       </header>
-      {/* {selectedChat && openQrCode && (
-        <PixSheetSteps
-          open={openQrCode}
-          onClose={() => setOpenQrCode(false)}
-          modelId={selectedChat.model.id}
-          modelName={selectedChat?.model.name}
-          modelPhoto={selectedChat?.model.photoUrl}
-        />
-      )} */}
     </>
   );
 }

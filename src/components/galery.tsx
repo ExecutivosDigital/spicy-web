@@ -1,13 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useApiContext } from "@/context/ApiContext";
+import { useActionSheetsContext } from "@/context/actionSheetsContext";
 import { useChatContext } from "@/context/chatContext";
-import { cn } from "@/lib/utils";
+import {
+  MediaProps,
+  useModelGalleryContext,
+} from "@/context/ModelGalleryContext";
+import { cn } from "@/utils/cn";
 import clsx from "clsx";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 
 export type GalleryItem = {
   src: string;
@@ -19,25 +23,6 @@ export type GalleryItem = {
   /** quando true, ocupa espaço visual mas não é clicável */
   placeholder?: boolean;
 };
-
-interface PhotoProps {
-  isFreeAvailable: boolean;
-  modelId: string;
-  photoShootId: string | null;
-  photoUrl: string;
-}
-
-interface VideoProps {
-  isFreeAvailable: boolean;
-  modelId: string;
-  photoShootId: string | null;
-  videoUrl: string;
-}
-
-interface MediaProps {
-  photos: PhotoProps[];
-  videos: VideoProps[];
-}
 
 /* ---------------- helpers de tipo/filtragem e paginação ---------------- */
 
@@ -168,10 +153,11 @@ function Card({
   setIsMediaOpen: React.Dispatch<React.SetStateAction<boolean>>;
   onClick?: () => void; // novo
 }) {
+  const { isPaymentConfirmed } = useChatContext();
+  const { openSheet, setCurrent } = useActionSheetsContext();
   const isPlace = !!item.placeholder;
   const video = !isPlace && isVideo(item);
   const { poster } = useVideoPoster(item.src);
-  const { isPaymentConfirmed } = useChatContext();
 
   return (
     <>
@@ -189,7 +175,6 @@ function Card({
           if (onClick) {
             onClick();
           } else {
-            // fallback retrocompatível
             setIsMediaOpen(true);
             setSelectedItem(item);
           }
@@ -227,7 +212,13 @@ function Card({
           ) : null}
 
           {!isPlace && item.locked && !isPaymentConfirmed ? (
-            <div className="absolute inset-0 grid h-full w-full place-items-center rounded-2xl bg-[#E77988]/5 backdrop-blur-xl">
+            <div
+              onClick={() => {
+                openSheet();
+                setCurrent("password");
+              }}
+              className="absolute inset-0 grid h-full w-full place-items-center rounded-2xl bg-[#E77988]/5 backdrop-blur-xl"
+            >
               <Image src="/lock.png" alt="lock" width={40} height={40} />
             </div>
           ) : null}
@@ -237,17 +228,13 @@ function Card({
   );
 }
 
-/* ------------------------------ Mosaico ------------------------------ */
-
 type MosaicProps = {
   items: GalleryItem[];
   inverse?: boolean;
   setOpenQrCode: React.Dispatch<React.SetStateAction<boolean>>;
   setSelectedItem: React.Dispatch<React.SetStateAction<GalleryItem | null>>;
   setIsMediaOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  /** índice base do page atual (multiplo de 6) */
   baseIndex?: number;
-  /** callback com índice absoluto no array filtrado */
   onCardClickAt?: (absIndex: number, item: GalleryItem) => void;
 };
 
@@ -267,7 +254,6 @@ export default function GalleryMosaic({
   const e = items[4];
   const f = items[5];
 
-  // helper para construir onClick com índice absoluto
   const handle = (localIndex: number, it?: GalleryItem) =>
     it
       ? () => {
@@ -277,7 +263,6 @@ export default function GalleryMosaic({
 
   return (
     <section className="mt-3 flex w-full flex-col gap-3 overflow-hidden rounded-[40px]">
-      {/* Linha de cima */}
       <div className="grid grid-cols-2 gap-3">
         {inverse ? (
           <div className="flex flex-col gap-3">
@@ -338,7 +323,6 @@ export default function GalleryMosaic({
         )}
       </div>
 
-      {/* Linha de baixo */}
       <div className="grid grid-cols-3 gap-3">
         {[d, e, f].map((it, i) =>
           it ? (
@@ -358,57 +342,24 @@ export default function GalleryMosaic({
   );
 }
 
-/* -------------------------- Pager embutido -------------------------- */
-
 export function GalleryMosaicPager({
   setOpenQrCode,
   className,
   setSelectedItem,
   setIsMediaOpen,
-  /** novo: abrir lightbox (array + índice) */
   onOpenLightbox,
 }: {
-  /** 0: Tudo, 1: Fotos (desbloq), 2: Vídeos */
   className?: string;
   setOpenQrCode: React.Dispatch<React.SetStateAction<boolean>>;
   setSelectedItem: React.Dispatch<React.SetStateAction<GalleryItem | null>>;
   setIsMediaOpen: React.Dispatch<React.SetStateAction<boolean>>;
   onOpenLightbox?: (items: GalleryItem[], index: number) => void;
 }) {
-  const { GetAPI } = useApiContext();
-  const { modelId, isPaymentConfirmed } = useChatContext();
+  const { isPaymentConfirmed } = useChatContext();
+  const { media, isGettingMedia } = useModelGalleryContext();
 
-  // estado para o tab atual
   const [secondTabSelected, setSecondTabSelected] = useState<number>(0);
-  const [media, setMedia] = useState<MediaProps>({
-    photos: [],
-    videos: [],
-  });
-  const [isGettingMedia, setIsGettingMedia] = useState(true);
 
-  async function GetMedia() {
-    const [ph, vd] = await Promise.all([
-      GetAPI(`/photo/${modelId}`, false),
-      GetAPI(`/video/${modelId}`, false),
-    ]);
-
-    if (ph?.status === 200 && vd?.status === 200) {
-      setMedia({
-        photos: ph.body.photos,
-        videos: vd.body.videos,
-      });
-      setIsGettingMedia(false);
-    }
-    setIsGettingMedia(false);
-  }
-
-  useEffect(() => {
-    if (modelId) {
-      GetMedia();
-    }
-  }, [modelId]);
-
-  // MediaProps -> GalleryItem[]
   function toGalleryItems(m: MediaProps): GalleryItem[] {
     const photos: GalleryItem[] = m.photos.map((p) => ({
       src: p.photoUrl,
@@ -423,7 +374,6 @@ export function GalleryMosaicPager({
       mediaType: "video",
     }));
 
-    // interleave opcional
     const out: GalleryItem[] = [];
     let i = 0,
       j = 0;
@@ -434,23 +384,23 @@ export function GalleryMosaicPager({
     return out;
   }
 
-  // 0 -> all | 1 -> photos_unlocked | 2 -> videos
   const tabMap: Record<number, TabKey> = {
     0: "all",
     1: "photos_unlocked",
     2: "videos",
   };
 
-  // filtra e pagina
   const allMediaItems = React.useMemo(() => toGalleryItems(media), [media]);
+
   const tabKey = tabMap[secondTabSelected] ?? "all";
+
   const filtered = React.useMemo(
     () => applyFilter(allMediaItems, tabKey),
     [allMediaItems, tabKey],
   );
+
   const pages = React.useMemo(() => chunkAndPad(filtered, 6), [filtered]);
 
-  // handler central de clique no card
   const handleOpen = React.useCallback(
     (absIndex: number, item: GalleryItem) => {
       if (onOpenLightbox) {
@@ -459,7 +409,6 @@ export function GalleryMosaicPager({
           absIndex,
         );
       } else {
-        // fallback antigo
         setSelectedItem(item);
         setIsMediaOpen(true);
       }

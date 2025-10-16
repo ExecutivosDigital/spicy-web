@@ -5,12 +5,11 @@ import { useApiContext } from "@/context/ApiContext";
 import { useLoadingContext } from "@/context/LoadingContext";
 import { useActionSheetsContext } from "@/context/actionSheetsContext";
 import { useChatContext } from "@/context/chatContext";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/cn";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import React, { useState } from "react";
 
-/** tipo que a Lightbox espera */
 type MediaItem = {
   src: string;
   alt: string;
@@ -20,6 +19,9 @@ type MediaItem = {
 
 const SpicyScreen = () => {
   const { openSheet, setCurrent } = useActionSheetsContext();
+  const { handleNavigation } = useLoadingContext();
+  const { token } = useApiContext();
+  const pathname = usePathname();
   const {
     userProfile,
     modelProfile,
@@ -28,11 +30,13 @@ const SpicyScreen = () => {
     isGettingModelProfile,
     isVerifying,
   } = useChatContext();
-  const { token } = useApiContext();
-  const { handleNavigation } = useLoadingContext();
-  const pathname = usePathname();
+
+  const [lbOpen, setLbOpen] = useState(false);
+  const [lbIndex, setLbIndex] = useState(0);
+  const [lbItems, setLbItems] = useState<MediaItem[]>([]);
 
   type IconProps = { route: string; className?: string };
+
   type ButtonProps = {
     route: string;
     className?: string;
@@ -66,12 +70,6 @@ const SpicyScreen = () => {
     );
   }
 
-  // ---- estados de Lightbox (centralizados aqui) ----
-  const [lbOpen, setLbOpen] = useState(false);
-  const [lbIndex, setLbIndex] = useState(0);
-  const [lbItems, setLbItems] = useState<MediaItem[]>([]);
-
-  // conversor de GalleryItem -> MediaItem
   const toMediaItem = (it: GMItem): MediaItem => ({
     src: it.src,
     alt: it.alt ?? "",
@@ -82,7 +80,6 @@ const SpicyScreen = () => {
   return (
     <div className="flex h-full justify-center gap-2 bg-neutral-900 p-2 text-white xl:gap-5 rtl:space-x-reverse">
       <div className="custom-scrollbar relative max-w-[540px] flex-1 overflow-auto pb-40 md:rounded-md md:px-4 md:pb-20">
-        {/* header */}
         <header
           className={cn(
             "flex items-center justify-between pt-4",
@@ -135,7 +132,6 @@ const SpicyScreen = () => {
           </div>
         </header>
 
-        {/* hero */}
         <section className="mt-4">
           {isGettingModelProfile ? (
             <>
@@ -188,7 +184,6 @@ const SpicyScreen = () => {
           </div>
         </section>
 
-        {/* Pager -> abre lightbox com lista filtrada + índice absoluto */}
         <GalleryMosaicPager
           setOpenQrCode={() => {}}
           setSelectedItem={() => {}}
@@ -208,11 +203,8 @@ const SpicyScreen = () => {
           setIndex={setLbIndex}
           setOpenQrCode={() => {}}
         />
-
-        {/* bottom nav */}
       </div>
 
-      {/* bottom nav desktop */}
       <footer className="fixed -bottom-1 hidden w-full items-center justify-center self-center px-1 md:flex md:w-max md:px-4">
         <div className="w-full md:max-w-[520px] md:min-w-[400px]">
           <div className="mb-2 flex items-center justify-center gap-16 rounded-t-3xl bg-gradient-to-br from-[#FF0080] to-[#7928CA] px-8 py-2 text-xs text-white/80">
@@ -237,7 +229,6 @@ const SpicyScreen = () => {
         </div>
       </footer>
 
-      {/* bottom nav mobile */}
       <footer className="fixed right-0 bottom-1 flex items-center justify-center self-center px-1 md:hidden md:w-max md:px-4">
         <div className="w-full md:max-w-[520px] md:min-w-[400px]">
           <div className="mb-2 flex flex-col items-center justify-center gap-2 rounded-l-3xl bg-gradient-to-br from-[#FF0080] to-[#7928CA] px-2 py-2 text-xs text-white/80">

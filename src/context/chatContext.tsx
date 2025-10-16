@@ -104,6 +104,7 @@ export const ChatContextProvider = ({ children }: ProviderProps) => {
   async function getModelProfile() {
     if (!modelId) return;
     const connect = await GetAPI(`/model/profile/${modelId}`, true);
+    console.log("connect", connect);
     if (connect.status === 200) {
       setModelProfile(connect.body.model);
       setIsGettingModelProfile(false);

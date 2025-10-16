@@ -10,7 +10,7 @@ import {
 import { useApiContext } from "@/context/ApiContext";
 import { useActionSheetsContext } from "@/context/actionSheetsContext";
 import { useChatContext } from "@/context/chatContext";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/cn";
 import { Icon } from "@iconify/react";
 import { Loader2, SendHorizontal, Square, X } from "lucide-react";
 import Image from "next/image";
@@ -20,6 +20,8 @@ import fixWebmDuration from "webm-duration-fix";
 import { AudioPlayer } from "./AudioPlayer";
 
 const MessageFooter = ({ onSend }: { onSend: () => void }) => {
+  const { setCurrent, openSheet } = useActionSheetsContext();
+  const { PostAPI } = useApiContext();
   const {
     selectedChatId,
     setSelectedChatMessages,
@@ -27,10 +29,6 @@ const MessageFooter = ({ onSend }: { onSend: () => void }) => {
     userProfile,
   } = useChatContext();
 
-  const { setCurrent, openSheet } = useActionSheetsContext();
-
-  const { PostAPI } = useApiContext();
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [message, setMessage] = useState("");
   const [audioUrl, setAudioUrl] = useState("");
   const [file, setFile] = useState<File | null>(null);
@@ -44,6 +42,7 @@ const MessageFooter = ({ onSend }: { onSend: () => void }) => {
     null,
   );
   const [isRecording, setIsRecording] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   function notPayed() {
     if (!userProfile) {
@@ -83,7 +82,7 @@ const MessageFooter = ({ onSend }: { onSend: () => void }) => {
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setMessage(e.target.value);
-    e.target.style.height = "auto"; // Reset the height to auto to adjust
+    e.target.style.height = "auto";
     e.target.style.height = `${e.target.scrollHeight - 15}px`;
   };
 
@@ -94,6 +93,7 @@ const MessageFooter = ({ onSend }: { onSend: () => void }) => {
       notPayed();
     }
   };
+
   const startRecording = async () => {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     const options = { mimeType: "audio/webm;codecs=opus" };
@@ -134,74 +134,6 @@ const MessageFooter = ({ onSend }: { onSend: () => void }) => {
     }
   };
 
-  useEffect(() => {
-    let intervalId: any;
-    if (recordStartTime && isRecording) {
-      intervalId = setInterval(() => {
-        const elapsedTime = (Date.now() - recordStartTime) / 1000;
-        const minutes = Math.floor(elapsedTime / 60);
-        const seconds = Math.floor(elapsedTime % 60);
-        setElapsedTime(
-          `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`,
-        );
-      }, 100);
-    }
-    return () => clearInterval(intervalId);
-  }, [recordStartTime, isRecording]);
-
-  const HandleSend = async () => {
-    if (message.length === 0 && !file) {
-      if (isRecording) {
-        return stopRecording();
-      } else {
-        return startRecording();
-      }
-    } else if (message.length !== 0 && !file) {
-      handleSendMessage(message);
-      if (!isPaymentConfirmed) {
-        return notPayed();
-      }
-    } else if (message.length === 0 && file) {
-      return handleSendFile();
-    }
-  };
-
-  const HandleCancelAudio = () => {
-    setAudioUrl("");
-    setFile(null);
-    setIsRecording(false);
-    setMediaRecorder(null);
-    setRecordStartTime(null);
-    setElapsedTime("00:00");
-  };
-  useEffect(() => {
-    const handlePaste = (event: ClipboardEvent) => {
-      if (event.clipboardData) {
-        const items = event.clipboardData.items;
-        for (const item of items) {
-          if (item.type.startsWith("image/")) {
-            const file = item.getAsFile();
-            if (file) {
-              setFile(file);
-              setFileType("image");
-            }
-          }
-        }
-      }
-    };
-
-    const textarea = textareaRef.current;
-    if (textarea) {
-      textarea.addEventListener("paste", handlePaste as any);
-    }
-
-    return () => {
-      if (textarea) {
-        textarea.removeEventListener("paste", handlePaste as any);
-      }
-    };
-  }, []);
-
   async function handleSendFile() {
     if (!isPaymentConfirmed) return notPayed();
     setIsSendingMessage(true);
@@ -240,22 +172,85 @@ const MessageFooter = ({ onSend }: { onSend: () => void }) => {
     setElapsedTime("00:00");
   }
 
+  const HandleSend = async () => {
+    if (message.length === 0 && !file) {
+      if (isRecording) {
+        return stopRecording();
+      } else {
+        return startRecording();
+      }
+    } else if (message.length !== 0 && !file) {
+      handleSendMessage(message);
+      if (!isPaymentConfirmed) {
+        return notPayed();
+      }
+    } else if (message.length === 0 && file) {
+      return handleSendFile();
+    }
+  };
+
+  const HandleCancelAudio = () => {
+    setAudioUrl("");
+    setFile(null);
+    setIsRecording(false);
+    setMediaRecorder(null);
+    setRecordStartTime(null);
+    setElapsedTime("00:00");
+  };
+
+  useEffect(() => {
+    let intervalId: any;
+    if (recordStartTime && isRecording) {
+      intervalId = setInterval(() => {
+        const elapsedTime = (Date.now() - recordStartTime) / 1000;
+        const minutes = Math.floor(elapsedTime / 60);
+        const seconds = Math.floor(elapsedTime % 60);
+        setElapsedTime(
+          `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`,
+        );
+      }, 100);
+    }
+    return () => clearInterval(intervalId);
+  }, [recordStartTime, isRecording]);
+
+  useEffect(() => {
+    const handlePaste = (event: ClipboardEvent) => {
+      if (event.clipboardData) {
+        const items = event.clipboardData.items;
+        for (const item of items) {
+          if (item.type.startsWith("image/")) {
+            const file = item.getAsFile();
+            if (file) {
+              setFile(file);
+              setFileType("image");
+            }
+          }
+        }
+      }
+    };
+
+    const textarea = textareaRef.current;
+    if (textarea) {
+      textarea.addEventListener("paste", handlePaste as any);
+    }
+
+    return () => {
+      if (textarea) {
+        textarea.removeEventListener("paste", handlePaste as any);
+      }
+    };
+  }, []);
+
   useEffect(() => {
     openChat();
   }, [selectedChatId]);
+
   return (
     <>
       <div
         className={`relative flex w-[98%] items-end gap-1 rounded-lg border-t border-t-neutral-500 bg-gradient-to-br from-[#FF0080] to-[#7928CA] px-2 py-2 lg:gap-2 lg:px-2 xl:gap-4 xl:px-4`}
       >
         <>
-          {/* <button
-            onClick={() => openSheet()}
-            className="group absolute -top-14 right-0 z-[9999] flex cursor-pointer items-center justify-center gap-2 rounded-full border border-[#E77988] bg-[#E77988]/20 from-[#FF0080]/20 to-[#7928CA]/20 p-2 text-sm backdrop-opacity-50 hover:border-[#ff0080]/60 disabled:opacity-50"
-          >
-            🌶️ Quero uma foto sua
-           
-          </button> */}
           <DropdownMenu
             open={
               (file && fileType === "image") || (file && fileType === "video")
@@ -264,40 +259,6 @@ const MessageFooter = ({ onSend }: { onSend: () => void }) => {
             }
             modal={false}
           >
-            {/* <DropdownMenuTrigger asChild>
-              <div className="absolute -top-14 left-0 rounded-full bg-neutral-900">
-                <button className="group z-[9999] flex cursor-pointer items-center justify-center gap-2 rounded-full border border-[#ff0080] bg-gradient-to-br from-[#FF0080]/20 to-[#7928CA]/20 p-2 text-sm backdrop-opacity-50 hover:border-[#ff0080]/60 disabled:opacity-50">
-                  <Image
-                    alt="x"
-                    width={50}
-                    height={50}
-                    src={"/image.png"}
-                    className="h-4 w-4"
-                  />
-                  Enviar Foto/Video
-                  <input
-                    type="file"
-                    accept=".jpg, .jpeg, .png, .mp4, .webm"
-                    className="absolute top-0 left-0 h-full w-full cursor-pointer rounded-full opacity-0"
-                    onChange={(e) => {
-                      const files = e.target.files;
-
-                      if (files && files.length > 0) {
-                        if (files[0].type.startsWith("image/")) {
-                          setFileType("image");
-                        } else if (files[0].type.startsWith("video/")) {
-                          setFileType("video");
-                        } else {
-                          return;
-                        }
-                        setFile(files[0]);
-                      }
-                    }}
-                  />
-                </button>
-              </div>
-            </DropdownMenuTrigger> */}
-
             {file && fileType === "image" && (
               <DropdownMenuContent
                 align="start"

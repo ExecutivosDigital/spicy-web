@@ -12,7 +12,6 @@ export function StepSuccess({ onClose }: { onClose: () => void }) {
           <div className="h-1 w-12 rounded-full bg-gradient-to-r from-[#FF0080] to-[#7928CA]"></div>
           <div className="h-1 w-12 rounded-full bg-gradient-to-r from-[#FF0080] to-[#7928CA]"></div>
           <div className="h-1 w-12 rounded-full bg-gradient-to-r from-[#FF0080] to-[#7928CA]"></div>
-          <div className="h-1 w-12 rounded-full bg-gradient-to-r from-[#FF0080] to-[#7928CA]"></div>
         </div>
         <div className="mt-20 grid h-16 w-16 place-items-center rounded-full bg-gradient-to-br from-[#FF0080] to-[#7928CA]">
           <Check className="h-8 w-8 text-white" />

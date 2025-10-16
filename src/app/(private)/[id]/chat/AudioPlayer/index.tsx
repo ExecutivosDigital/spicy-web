@@ -1,5 +1,5 @@
 // c:\Users\Gabriel\Desktop\AdvSpace\adv-space\src\app\(dashboard)\(apps)\chat\AudioPlayer\index.tsx
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/cn";
 import "./styles/audio.css";
 
 export function AudioPlayer({

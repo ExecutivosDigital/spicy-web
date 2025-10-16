@@ -1,13 +1,15 @@
 "use client";
 
 import { useApiContext } from "@/context/ApiContext";
+import { useModelGalleryContext } from "@/context/ModelGalleryContext";
 import { useActionSheetsContext } from "@/context/actionSheetsContext";
 import { useChatContext } from "@/context/chatContext";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/cn";
+import { getRandomItem } from "@/utils/getRandomItem";
 import { maskPhone } from "@/utils/masks";
 import { useCookies } from "next-client-cookies";
 import Image from "next/image";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import { z } from "zod";
 import { GradientInput } from "./StepRegister";
@@ -29,30 +31,36 @@ const loginSchema = z.object({
 });
 
 export function StepPassword({ phone, setPhone, onNext }: Props) {
-  const { setToken } = useApiContext();
+  const { setUserId, handleGetChats, modelId } = useChatContext();
   const { setCurrent } = useActionSheetsContext();
+  const { photos } = useModelGalleryContext();
+  const { setToken } = useApiContext();
   const { PostAPI } = useApiContext();
   const cookies = useCookies();
+
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const { setUserId, handleGetChats, modelId } = useChatContext();
   const [errors, setErrors] = useState<{
     phone?: string;
     password?: string;
     general?: string;
   }>({});
+
+  const banner = useMemo(
+    () => getRandomItem(photos.filter((it) => it.isFreeAvailable)),
+    [],
+  );
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setErrors({});
 
-    // validação com Zod
     const result = loginSchema.safeParse({ phone, password, modelId });
 
     if (!result.success) {
       const fieldErrors: Record<string, string> = {};
       for (const issue of result.error.issues) {
         const path = issue.path[0] as string;
-        // só mostra a primeira mensagem por campo
         if (!fieldErrors[path]) fieldErrors[path] = issue.message;
       }
       setErrors({ phone: fieldErrors.phone, password: fieldErrors.password });
@@ -63,7 +71,6 @@ export function StepPassword({ phone, setPhone, onNext }: Props) {
 
     setIsLoading(true);
     const Payload = { phone: digitsPhone, password: pwd, modelId: modelId };
-    console.log("Payload: ", Payload);
     const response = await PostAPI("user/auth", Payload, false);
     if (response.status !== 200) {
       toast.error("Verifique os dados inseridos e tente novamente");
@@ -89,19 +96,31 @@ export function StepPassword({ phone, setPhone, onNext }: Props) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="relative m-4 overflow-hidden rounded-2xl bg-[#2A2A2E]">
-        <div className="aspect-[16/6]">
+      <div className="absolute top-0 left-0 flex h-40 w-full items-center justify-center">
+        {banner ? (
           <Image
-            src="/gab/photos/7.jpeg"
+            src={banner?.photoUrl}
             alt="Gabriela"
-            fill
-            className="rounded-3xl object-cover"
+            width={500}
+            height={250}
+            className="h-full w-full object-cover"
             priority
           />
-        </div>
+        ) : (
+          <Image
+            src="/logo.png"
+            alt="Gabriela"
+            width={500}
+            height={250}
+            className="m-auto h-max w-2/3 object-contain"
+            priority
+          />
+        )}
       </div>
 
-      <h2 className="text-center text-lg font-semibold">Digite sua senha</h2>
+      <h2 className="mt-40 text-center text-lg font-semibold">
+        Digite sua senha
+      </h2>
 
       {errors.general && (
         <div className="rounded-md border border-red-500/40 bg-red-500/10 p-2 text-sm text-red-300">

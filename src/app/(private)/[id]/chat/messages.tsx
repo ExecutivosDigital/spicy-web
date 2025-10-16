@@ -202,11 +202,6 @@ const Messages = ({ message, className }: Props) => {
                         />
                       ),
                     }}
-                    // className={twMerge(
-                    //   "max-w-[calc(100vw-200px)] flex-1 rounded-md rounded-tl-none bg-[#F3F6F8] px-3 py-2 text-sm break-words whitespace-pre-line lg:max-w-[750px] lg:px-2 lg:py-1 lg:text-[10px] xl:max-w-[950px] xl:px-3 xl:py-2 xl:text-sm",
-                    //   isMessageDeleted && "opacity-50",
-                    //   className,
-                    // )}
                   >
                     {cleanedText}
                   </ReactMarkdown>
@@ -261,7 +256,7 @@ const Messages = ({ message, className }: Props) => {
                   }}
                 >
                   <Image
-                    key={imageUrl} // Add this line
+                    key={imageUrl}
                     className="z-[999999] h-full"
                     alt=""
                     src={imageUrl}

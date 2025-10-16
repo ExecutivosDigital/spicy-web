@@ -3,6 +3,7 @@ import { ActionSheetsProvider } from "./actionSheetsContext";
 import { ApiContextProvider } from "./ApiContext";
 import { ChatContextProvider } from "./chatContext";
 import { LoadingContextProvider } from "./LoadingContext";
+import { ModelGalleryContextProvider } from "./ModelGalleryContext";
 
 export function ContextProviders({ children }: { children: React.ReactNode }) {
   return (
@@ -10,9 +11,11 @@ export function ContextProviders({ children }: { children: React.ReactNode }) {
       <CookiesProvider>
         <ApiContextProvider>
           <ChatContextProvider>
-            <ActionSheetsProvider>
-              <LoadingContextProvider>{children}</LoadingContextProvider>
-            </ActionSheetsProvider>
+            <ModelGalleryContextProvider>
+              <ActionSheetsProvider>
+                <LoadingContextProvider>{children}</LoadingContextProvider>
+              </ActionSheetsProvider>
+            </ModelGalleryContextProvider>
           </ChatContextProvider>
         </ApiContextProvider>
       </CookiesProvider>

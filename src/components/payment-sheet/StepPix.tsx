@@ -74,7 +74,6 @@ export function StepPix({}: { onPaid: (pixCode: string) => void }) {
       <div className="flex flex-row items-center justify-center gap-4 px-4">
         <div className="h-1 w-12 rounded-full bg-gradient-to-r from-[#FF0080] to-[#7928CA]"></div>
         <div className="h-1 w-12 rounded-full bg-gradient-to-r from-[#FF0080] to-[#7928CA]"></div>
-        <div className="h-1 w-12 rounded-full bg-gradient-to-r from-[#FF0080] to-[#7928CA]"></div>
         <div className="h-1 w-12 rounded-full bg-gradient-to-r from-[#FF0080] to-[#7928CA] opacity-20"></div>
       </div>
       {generatingPix || !pix ? (

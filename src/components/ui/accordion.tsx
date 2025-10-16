@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/cn";
 import * as AccordionPrimitive from "@radix-ui/react-accordion";
 import * as React from "react";
 
@@ -33,9 +33,6 @@ const AccordionTrigger = React.forwardRef<
       {...props}
     >
       {children}
-      {/* {!arrow && (
-        <ChevronDown className="h-5 w-5 shrink-0 transition-transform duration-200" />
-      )} */}
     </AccordionPrimitive.Trigger>
   </AccordionPrimitive.Header>
 ));

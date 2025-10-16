@@ -1,6 +1,7 @@
 "use client";
 import { useChatContext } from "@/context/chatContext";
 import { Icon } from "@iconify/react";
+
 const EmptyMessage = () => {
   const { modelProfile } = useChatContext();
 

@@ -1,28 +1,18 @@
 "use client";
-
 import { useActionSheetsContext } from "@/context/actionSheetsContext";
 import { useApiContext } from "@/context/ApiContext";
 import { useChatContext } from "@/context/chatContext";
-import { cn } from "@/lib/utils";
+import { useModelGalleryContext } from "@/context/ModelGalleryContext";
+import { cn } from "@/utils/cn";
+import { getRandomItem } from "@/utils/getRandomItem";
 import { maskPhone } from "@/utils/masks";
+import { fakerPT_BR } from "@faker-js/faker";
+import { Check } from "lucide-react";
 import { useCookies } from "next-client-cookies";
 import Image from "next/image";
 import { useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import { GradientButton } from "./ui";
-
-/**
- * RegisterCard
- * ————————————————————————————————————————————
- * Componente de registro inspirado no layout do screenshot.
- *
- * • Next.js/React + TailwindCSS
- * • Validação simples no cliente
- * • Máscara de telefone brasileira
- * • Botão com gradiente
- * • Inputs com borda/halo em gradiente
- * • Callback onSubmit para integrar com seu backend
- */
 
 export type RegisterData = {
   nome: string;
@@ -32,133 +22,115 @@ export type RegisterData = {
 };
 
 export default function RegisterCard({ onNext }: { onNext: () => void }) {
-  const cookies = useCookies();
-  const { setToken } = useApiContext();
   const { handleGetChats, setUserId, handleVerify, modelId } = useChatContext();
   const { setCurrent } = useActionSheetsContext();
+  const { photos } = useModelGalleryContext();
+  const { PostAPI, setToken } = useApiContext();
+  const cookies = useCookies();
 
-  const [nome, setNome] = useState("");
-  const [telefone, setTelefone] = useState("");
-  const [senha, setSenha] = useState("");
-  const [aceitouTermos, setAceitouTermos] = useState(true);
+  const [registerData, setRegisterData] = useState<RegisterData>({
+    nome: fakerPT_BR.person.fullName(),
+    telefone: "",
+    senha: "",
+    aceitouTermos: true,
+  });
+
   const [loading, setLoading] = useState(false);
   const [tocado, setTocado] = useState<{ [k: string]: boolean }>({});
-  // helpers ————————————————————————————————————————
-  const telMask = (v: string) => {
-    // remove tudo que não é dígito
-    v = v.replace(/\D/g, "");
 
-    // (xx) xxxxx-xxxx
-    if (v.length > 11) v = v.slice(0, 11);
-    if (v.length > 6)
-      return `(${v.slice(0, 2)}) ${v.slice(2, 7)}-${v.slice(7)}`;
-    if (v.length > 2) return `(${v.slice(0, 2)}) ${v.slice(2)}`;
-    if (v.length > 0) return `(${v}`;
-    return v;
-  };
-
-  const telefoneFormatado = useMemo(() => telMask(telefone), [telefone]);
+  const banner = useMemo(
+    () => getRandomItem(photos.filter((it) => it.isFreeAvailable)),
+    [],
+  );
 
   const errors = useMemo(() => {
     const e: Partial<Record<keyof RegisterData, string>> = {};
-    if (!nome.trim()) e.nome = "Informe seu nome";
-    if (telefone.length < 11) e.telefone = "Telefone inválido";
-    if (senha.length < 4) e.senha = "Mínimo 4 caracteres";
-    if (!aceitouTermos) e.aceitouTermos = "É necessário aceitar os termos";
+    if (!registerData.nome.trim()) e.nome = "Informe seu nome";
+    if (registerData.telefone.length < 11) e.telefone = "Telefone inválido";
+    // if (registerData.senha.length < 4) e.senha = "Mínimo 4 caracteres";
+    if (!registerData.aceitouTermos)
+      e.aceitouTermos = "É necessário aceitar os termos";
     return e;
-  }, [nome, telefoneFormatado, senha, aceitouTermos]);
+  }, [registerData]);
 
   const invalid = Object.keys(errors).length > 0;
-  const { PostAPI } = useApiContext();
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setTocado({ nome: true, telefone: true, senha: true, aceitouTermos: true });
+    setTocado({ nome: true, telefone: true, aceitouTermos: true });
     if (invalid) return;
-    try {
-      setLoading(true);
-      const response = await PostAPI(
-        "user/register",
-        {
-          name: nome,
-          password: senha,
-          phone: telefoneFormatado,
-          modelId: modelId,
-        },
-        false,
+    setLoading(true);
+    const response = await PostAPI(
+      "user/register",
+      {
+        name: registerData.nome,
+        phone: registerData.telefone,
+        password: registerData.telefone.replace(/[^0-9]/g, ""),
+        modelId: modelId,
+      },
+      false,
+    );
+    if (response.status === 200) {
+      toast.success("Registrado com sucesso!");
+      handleVerify();
+      cookies.set(
+        process.env.NEXT_PUBLIC_USER_TOKEN as string,
+        response.body.accessToken,
       );
-      if (response.status === 200) {
-        toast.success("Registrado com sucesso!");
-        handleVerify();
-        cookies.set(
-          process.env.NEXT_PUBLIC_USER_TOKEN as string,
-          response.body.accessToken,
-        );
-        cookies.set(
-          process.env.NEXT_PUBLIC_USER_ID as string,
-          response.body.userId,
-        );
-        setToken(response.body.accessToken);
-        setUserId(response.body.userId);
-        handleGetChats();
-        onNext();
-      } else if (response.status === 409) {
-        toast.error("Telefone ja cadastrado");
-      } else {
-        toast.error("Erro ao registrar");
-      }
-    } finally {
-      setLoading(false);
+      cookies.set(
+        process.env.NEXT_PUBLIC_USER_ID as string,
+        response.body.userId,
+      );
+      setToken(response.body.accessToken);
+      setUserId(response.body.userId);
+      handleGetChats();
+      onNext();
+    } else if (response.status === 409) {
+      toast.error("Telefone ja cadastrado");
+    } else {
+      toast.error("Erro ao registrar");
     }
+    setLoading(false);
   }
 
   return (
     <div className="space-y-4">
-      <div className="relative m-4 overflow-hidden">
-        {/* Give the banner a predictable but responsive height */}
-        <div className="relative flex aspect-[16/6] w-full items-center justify-center">
+      <div className="absolute top-0 left-0 flex h-40 w-full items-center justify-center">
+        {banner ? (
           <Image
-            src="/gab/photos/10.jpeg"
+            src={banner?.photoUrl}
             alt="Gabriela"
-            fill
-            className="rounded-3xl object-cover"
+            width={500}
+            height={250}
+            className="h-full w-full object-cover"
+            priority
           />
-          <div className="absolute flex w-full items-center justify-center gap-3 select-none">
-            <div className="flex flex-row items-center rounded-lg bg-black/60 p-2">
-              <Image
-                src="/logoBunny.png"
-                alt="Spicy.ai"
-                width={32}
-                height={32}
-                className="h-8 w-8 min-w-8 object-contain"
-              />
-              <div className="rounded-full p-2 leading-tight">
-                <p className="text-sm tracking-widest text-white">
-                  MODELS.CLUB
-                </p>
-                <p className="text-[10px] tracking-[0.3em] text-white uppercase">
-                  Digital Models
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
+        ) : (
+          <Image
+            src="/logo.png"
+            alt="Gabriela"
+            width={500}
+            height={250}
+            className="m-auto h-max w-2/3 object-contain"
+            priority
+          />
+        )}
       </div>
-      <form onSubmit={handleSubmit} className="w-full text-white">
-        {/* header */}
-
+      <form onSubmit={handleSubmit} className="mt-40 w-full text-white">
         <h1 className="mt-6 text-xl font-semibold">
           Faça seu Cadastro Gratuito
         </h1>
 
-        {/* NOME */}
-        <label className="mt-6 block text-sm text-white/80">
+        {/* <label className="mt-6 block text-sm text-white/80">
           Insira seu Nome
         </label>
         <GradientInput>
           <input
             type="text"
-            value={nome}
-            onChange={(e) => setNome(e.target.value)}
+            value={registerData.nome}
+            onChange={(e) =>
+              setRegisterData((prev) => ({ ...prev, nome: e.target.value }))
+            }
             onBlur={() => setTocado((t) => ({ ...t, nome: true }))}
             placeholder="Seu nome completo"
             className="w-full bg-transparent px-4 py-3 text-base outline-none placeholder:text-white/30"
@@ -166,17 +138,18 @@ export default function RegisterCard({ onNext }: { onNext: () => void }) {
         </GradientInput>
         {tocado.nome && errors.nome && (
           <p className="mt-1 text-xs text-red-400">{errors.nome}</p>
-        )}
+        )} */}
 
-        {/* TELEFONE */}
         <label className="mt-4 block text-sm text-white/80">
           Insira seu Telefone
         </label>
         <GradientInput>
           <input
             type="tel"
-            value={maskPhone(telefone)}
-            onChange={(e) => setTelefone(e.target.value)}
+            value={maskPhone(registerData.telefone)}
+            onChange={(e) =>
+              setRegisterData((prev) => ({ ...prev, telefone: e.target.value }))
+            }
             onBlur={() => setTocado((t) => ({ ...t, telefone: true }))}
             inputMode="numeric"
             maxLength={15}
@@ -188,15 +161,16 @@ export default function RegisterCard({ onNext }: { onNext: () => void }) {
           <p className="mt-1 text-xs text-red-400">{errors.telefone}</p>
         )}
 
-        {/* SENHA */}
-        <label className="mt-4 block text-sm text-white/80">
+        {/* <label className="mt-4 block text-sm text-white/80">
           Digite sua Senha
         </label>
         <GradientInput>
           <input
             type="password"
-            value={senha}
-            onChange={(e) => setSenha(e.target.value)}
+            value={registerData.senha}
+            onChange={(e) =>
+              setRegisterData((prev) => ({ ...prev, senha: e.target.value }))
+            }
             onBlur={() => setTocado((t) => ({ ...t, senha: true }))}
             placeholder="••••"
             className="w-full bg-transparent px-4 py-3 text-base outline-none placeholder:text-white/30"
@@ -204,21 +178,26 @@ export default function RegisterCard({ onNext }: { onNext: () => void }) {
         </GradientInput>
         {tocado.senha && errors.senha && (
           <p className="mt-1 text-xs text-red-400">{errors.senha}</p>
-        )}
+        )} */}
 
-        {/* termos */}
         <div
-          onClick={() => setAceitouTermos((v) => !v)}
+          onClick={() =>
+            setRegisterData((prev) => ({
+              ...prev,
+              aceitouTermos: !prev.aceitouTermos,
+            }))
+          }
           className="mt-4 flex items-start gap-3"
         >
           <button
             type="button"
-            className={`mt-0.5 grid h-5 w-5 place-items-center rounded-md border border-[#FF0080] ${
-              aceitouTermos ? "bg-[#FF0080]" : "bg-transparent"
-            }`}
-            aria-pressed={aceitouTermos}
+            className={cn(
+              "mt-0.5 grid h-5 w-5 place-items-center rounded-md border border-[#FF0080]",
+              registerData.aceitouTermos ? "bg-[#FF0080]" : "bg-transparent",
+            )}
+            aria-pressed={registerData.aceitouTermos}
           >
-            {aceitouTermos && <span className="text-xs">✓</span>}
+            {registerData.aceitouTermos && <Check className="h-4 w-4" />}
           </button>
           <p className="text-xs leading-5 text-white/80">
             Aceito os{" "}
