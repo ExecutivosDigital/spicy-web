@@ -24,9 +24,6 @@ const loginSchema = z.object({
   phone: z
     .string()
     .min(11, { message: "O telefone deve ter ao menos 11 dígitos." }),
-  password: z
-    .string()
-    .min(4, { message: "A senha deve ter ao menos 4 caracteres." }),
   modelId: z.string().optional(),
 });
 
@@ -38,7 +35,7 @@ export function StepPassword({ phone, setPhone, onNext }: Props) {
   const { PostAPI } = useApiContext();
   const cookies = useCookies();
 
-  const [password, setPassword] = useState("");
+  // const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [errors, setErrors] = useState<{
     phone?: string;
@@ -55,7 +52,7 @@ export function StepPassword({ phone, setPhone, onNext }: Props) {
     e.preventDefault();
     setErrors({});
 
-    const result = loginSchema.safeParse({ phone, password, modelId });
+    const result = loginSchema.safeParse({ phone, modelId });
 
     if (!result.success) {
       const fieldErrors: Record<string, string> = {};
@@ -67,13 +64,14 @@ export function StepPassword({ phone, setPhone, onNext }: Props) {
       return;
     }
 
-    const { phone: digitsPhone, password: pwd } = result.data;
+    const { phone: digitsPhone } = result.data;
 
     setIsLoading(true);
-    const Payload = { phone: digitsPhone, password: pwd, modelId: modelId };
+    const Payload = { phone: digitsPhone, modelId: modelId };
     const response = await PostAPI("user/auth", Payload, false);
     if (response.status !== 200) {
-      toast.error("Verifique os dados inseridos e tente novamente");
+      toast.error("Telefone não encontrado, realize o cadastro");
+      setCurrent("register");
       return setIsLoading(false);
     }
     if (response.status === 200) {
@@ -119,7 +117,7 @@ export function StepPassword({ phone, setPhone, onNext }: Props) {
       </div>
 
       <h2 className="mt-40 text-center text-lg font-semibold">
-        Digite sua senha
+        Digite seu telefone
       </h2>
 
       {errors.general && (
@@ -145,7 +143,7 @@ export function StepPassword({ phone, setPhone, onNext }: Props) {
         <p className="mt-1 text-xs text-red-400">{errors.phone}</p>
       )}
 
-      <label className="mt-4 block text-sm text-white/80">
+      {/* <label className="mt-4 block text-sm text-white/80">
         Digite sua Senha
       </label>
       <GradientInput>
@@ -161,7 +159,7 @@ export function StepPassword({ phone, setPhone, onNext }: Props) {
       </GradientInput>
       {errors.password && (
         <p className="mt-1 text-xs text-red-400">{errors.password}</p>
-      )}
+      )} */}
 
       <div className="flex w-full items-center gap-2">
         <GradientButton
