@@ -1,4 +1,6 @@
 "use client";
+import { useChatContext } from "@/context/chatContext";
+import { cn } from "@/utils/cn";
 import { AnimatePresence, motion } from "framer-motion";
 import React, { useEffect, useMemo, useRef } from "react";
 import { useVideoPoster } from "./galery";
@@ -143,6 +145,7 @@ export function Lightbox({
   setIndex: (i: number) => void;
   setOpenQrCode?: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
+  const { isPaymentConfirmed } = useChatContext();
   useBodyLock(open);
 
   // normaliza para lista
@@ -317,7 +320,12 @@ export function Lightbox({
           </motion.div>
 
           {/* CTA opcional */}
-          <div className="fixed inset-x-0 bottom-4 z-50 px-5">
+          <div
+            className={cn(
+              "fixed inset-x-0 bottom-4 z-50 px-5",
+              isPaymentConfirmed && "hidden",
+            )}
+          >
             <button
               onClick={() => {
                 if (setOpenQrCode) setOpenQrCode(true);

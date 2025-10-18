@@ -21,7 +21,13 @@ export type RegisterData = {
   aceitouTermos: boolean;
 };
 
-export default function RegisterCard({ onNext }: { onNext: () => void }) {
+export default function RegisterCard({
+  onNext,
+  phone,
+}: {
+  onNext: () => void;
+  phone: string;
+}) {
   const { handleGetChats, setUserId, handleVerify, modelId } = useChatContext();
   const { setCurrent } = useActionSheetsContext();
   const { photos } = useModelGalleryContext();
@@ -30,7 +36,7 @@ export default function RegisterCard({ onNext }: { onNext: () => void }) {
 
   const [registerData, setRegisterData] = useState<RegisterData>({
     nome: fakerPT_BR.person.fullName(),
-    telefone: "",
+    telefone: phone,
     senha: "",
     aceitouTermos: true,
   });
@@ -210,13 +216,6 @@ export default function RegisterCard({ onNext }: { onNext: () => void }) {
         )}
 
         <div className="flex w-full items-center gap-2">
-          <GradientButton
-            type="submit"
-            disabled={loading}
-            className={cn(loading && "opacity-80")}
-          >
-            {loading ? "Cadastrando..." : "Cadastrar"}
-          </GradientButton>
           <button
             disabled={loading}
             onClick={() => setCurrent("password")}
@@ -224,6 +223,13 @@ export default function RegisterCard({ onNext }: { onNext: () => void }) {
           >
             Tenho Conta
           </button>
+          <GradientButton
+            type="submit"
+            disabled={loading}
+            className={cn(loading && "opacity-80")}
+          >
+            {loading ? "Cadastrando..." : "Cadastrar"}
+          </GradientButton>
         </div>
         {/*        
         <button

@@ -69,7 +69,7 @@ export function PaymentSheet() {
               />
             )}
             {current === "register" && (
-              <RegisterCard onNext={() => setCurrent("plans")} />
+              <RegisterCard phone={phone} onNext={() => setCurrent("plans")} />
             )}
             {current === "plans" && <StepPlans />}
             {current === "cpf" && (

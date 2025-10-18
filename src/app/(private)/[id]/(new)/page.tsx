@@ -97,7 +97,7 @@ const SpicyScreen = () => {
               </>
             ) : (
               <>
-                <button
+                {/* <button
                   onClick={() => {
                     setCurrent("register");
                     openSheet();
@@ -108,7 +108,7 @@ const SpicyScreen = () => {
                   )}
                 >
                   Registro Grátis
-                </button>
+                </button> */}
                 <button
                   onClick={() => {
                     if (userProfile) {
@@ -201,7 +201,10 @@ const SpicyScreen = () => {
           index={lbIndex}
           onClose={() => setLbOpen(false)}
           setIndex={setLbIndex}
-          setOpenQrCode={() => {}}
+          setOpenQrCode={() => {
+            setCurrent("password");
+            openSheet();
+          }}
         />
       </div>
 

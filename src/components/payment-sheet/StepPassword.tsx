@@ -7,12 +7,13 @@ import { useChatContext } from "@/context/chatContext";
 import { cn } from "@/utils/cn";
 import { getRandomItem } from "@/utils/getRandomItem";
 import { maskPhone } from "@/utils/masks";
+import { fakerPT_BR } from "@faker-js/faker";
 import { useCookies } from "next-client-cookies";
 import Image from "next/image";
 import { useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import { z } from "zod";
-import { GradientInput } from "./StepRegister";
+import { GradientInput, RegisterData } from "./StepRegister";
 import { GradientButton } from "./ui";
 type Props = {
   phone: string;
@@ -28,7 +29,7 @@ const loginSchema = z.object({
 });
 
 export function StepPassword({ phone, setPhone, onNext }: Props) {
-  const { setUserId, handleGetChats, modelId } = useChatContext();
+  const { setUserId, handleGetChats, modelId, handleVerify } = useChatContext();
   const { setCurrent } = useActionSheetsContext();
   const { photos } = useModelGalleryContext();
   const { setToken } = useApiContext();
@@ -42,11 +43,51 @@ export function StepPassword({ phone, setPhone, onNext }: Props) {
     password?: string;
     general?: string;
   }>({});
+  const [registerData] = useState<RegisterData>({
+    nome: fakerPT_BR.person.fullName(),
+    telefone: phone,
+    senha: "",
+    aceitouTermos: true,
+  });
 
   const banner = useMemo(
     () => getRandomItem(photos.filter((it) => it.isFreeAvailable)),
     [],
   );
+
+  async function handleRegister() {
+    const response = await PostAPI(
+      "user/register",
+      {
+        name: registerData.nome,
+        phone,
+        password: phone,
+        modelId: modelId,
+      },
+      false,
+    );
+    console.log("register: ", response);
+    if (response.status === 200) {
+      toast.success("Registrado com sucesso!");
+      handleVerify();
+      cookies.set(
+        process.env.NEXT_PUBLIC_USER_TOKEN as string,
+        response.body.accessToken,
+      );
+      cookies.set(
+        process.env.NEXT_PUBLIC_USER_ID as string,
+        response.body.userId,
+      );
+      setToken(response.body.accessToken);
+      setUserId(response.body.userId);
+      handleGetChats();
+      setCurrent("plans");
+    } else if (response.status === 409) {
+      toast.error("Telefone já cadastrado");
+    } else {
+      toast.error("Erro ao registrar");
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -68,10 +109,17 @@ export function StepPassword({ phone, setPhone, onNext }: Props) {
 
     setIsLoading(true);
     const Payload = { phone: digitsPhone, modelId: modelId };
-    const response = await PostAPI("user/auth", Payload, false);
+    const response = await PostAPI(
+      "user/auth",
+      {
+        ...Payload,
+        password: digitsPhone.replace(/[^0-9]/g, ""),
+      },
+      false,
+    );
+    console.log("login: ", response);
     if (response.status !== 200) {
-      toast.error("Telefone não encontrado, realize o cadastro");
-      setCurrent("register");
+      await handleRegister();
       return setIsLoading(false);
     }
     if (response.status === 200) {
@@ -130,9 +178,9 @@ export function StepPassword({ phone, setPhone, onNext }: Props) {
       <GradientInput>
         <input
           type="tel"
-          value={maskPhone(phone)}
+          value={phone}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            setPhone(e.target.value)
+            setPhone(maskPhone(e.target.value))
           }
           maxLength={15}
           placeholder="(00) 00000-0000"
@@ -162,6 +210,13 @@ export function StepPassword({ phone, setPhone, onNext }: Props) {
       )} */}
 
       <div className="flex w-full items-center gap-2">
+        {/* <button
+          disabled={isLoading}
+          onClick={() => setCurrent("register")}
+          className="mt-4 w-full rounded-lg border-2 border-[#FF0080] px-4 py-3 font-medium text-white disabled:opacity-50"
+        >
+          Cadastrar
+        </button> */}
         <GradientButton
           type="submit"
           disabled={isLoading}
@@ -169,13 +224,6 @@ export function StepPassword({ phone, setPhone, onNext }: Props) {
         >
           {isLoading ? "Entrando..." : "Entrar"}
         </GradientButton>
-        <button
-          disabled={isLoading}
-          onClick={() => setCurrent("register")}
-          className="mt-4 w-full rounded-lg border-2 border-[#FF0080] px-4 py-3 font-medium text-white disabled:opacity-50"
-        >
-          Cadastrar
-        </button>
       </div>
     </form>
   );

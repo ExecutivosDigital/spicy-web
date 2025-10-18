@@ -53,7 +53,7 @@ export function StepPlans() {
       true,
     );
     if (response.status === 200) {
-      setCurrent("plans");
+      setCurrent("pix");
       return setIsUpdating(false);
     }
     return setIsUpdating(false);
