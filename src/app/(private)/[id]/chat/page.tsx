@@ -126,7 +126,7 @@ const ChatPage = ({ params }: { params: Promise<{ id: string }> }) => {
               <div className="h-full flex-1">
                 <Card className="relative flex h-full flex-col">
                   <Header />
-                  <CardContent className="custom-scrollbar relative flex-1 overflow-y-auto p-2 pb-8">
+                  <CardContent className="custom-scrollbar relative flex-1 overflow-y-auto p-2 pb-12">
                     <div
                       className="custom-scrollbar flex w-full flex-1 flex-col overflow-y-auto py-4 lg:py-2 xl:py-4"
                       ref={containerRef}

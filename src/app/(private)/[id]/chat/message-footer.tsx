@@ -52,6 +52,10 @@ const MessageFooter = ({ onSend }: { onSend: () => void }) => {
 
   const handleSendMessage = async (message: string) => {
     // if (!isPaymentConfirmed) return notPayed();
+    if (!userProfile) {
+      setCurrent("password");
+      openSheet();
+    }
     if (!selectedChatId || !message) return;
 
     const connect = await PostAPI(
@@ -129,6 +133,10 @@ const MessageFooter = ({ onSend }: { onSend: () => void }) => {
 
   async function handleSendFile() {
     // if (!isPaymentConfirmed) return notPayed();
+    if (!userProfile) {
+      setCurrent("password");
+      openSheet();
+    }
     setIsSendingMessage(true);
     if (file) {
       const uploadFormData = new FormData();
@@ -166,6 +174,11 @@ const MessageFooter = ({ onSend }: { onSend: () => void }) => {
   }
 
   const HandleSend = async () => {
+    if (!userProfile) {
+      setCurrent("password");
+      openSheet();
+    }
+
     if (message.length === 0 && !file) {
       if (isRecording) {
         return stopRecording();
