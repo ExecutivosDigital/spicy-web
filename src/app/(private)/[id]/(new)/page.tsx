@@ -1,14 +1,23 @@
 "use client";
-import { GalleryItem as GMItem, GalleryMosaicPager } from "@/components/galery";
+import {
+  GalleryItem as GMItem,
+  GalleryItem,
+  GalleryMosaicPager,
+  TabKey,
+  applyFilter,
+} from "@/components/galery";
 import { Lightbox } from "@/components/light-box";
 import { useApiContext } from "@/context/ApiContext";
 import { useLoadingContext } from "@/context/LoadingContext";
+import {
+  MediaProps,
+  useModelGalleryContext,
+} from "@/context/ModelGalleryContext";
 import { useActionSheetsContext } from "@/context/actionSheetsContext";
 import { useChatContext } from "@/context/chatContext";
 import { cn } from "@/utils/cn";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
-import React, { useState } from "react";
+import { useMemo, useState } from "react";
 
 type MediaItem = {
   src: string;
@@ -21,7 +30,6 @@ const SpicyScreen = () => {
   const { openSheet, setCurrent } = useActionSheetsContext();
   const { handleNavigation } = useLoadingContext();
   const { token } = useApiContext();
-  const pathname = usePathname();
   const {
     userProfile,
     modelProfile,
@@ -30,45 +38,11 @@ const SpicyScreen = () => {
     isGettingModelProfile,
     isVerifying,
   } = useChatContext();
+  const { media } = useModelGalleryContext();
 
   const [lbOpen, setLbOpen] = useState(false);
   const [lbIndex, setLbIndex] = useState(0);
   const [lbItems, setLbItems] = useState<MediaItem[]>([]);
-
-  type IconProps = { route: string; className?: string };
-
-  type ButtonProps = {
-    route: string;
-    className?: string;
-    icon: React.ComponentType<IconProps>;
-    label: string;
-  };
-
-  function HomeIcon({ route, className }: IconProps) {
-    const isActive = pathname === route;
-    return (
-      <Image
-        src={isActive ? "/heart-pink.png" : "/heart.png"}
-        alt="heart"
-        width={20}
-        height={20}
-        className={cn("h-5 w-5", className)}
-      />
-    );
-  }
-
-  function GridIcon({ route, className }: IconProps) {
-    const isActive = pathname === route;
-    return (
-      <Image
-        src={isActive ? "/gallery-pink.png" : "/galery.png"}
-        alt="gallery"
-        width={20}
-        height={20}
-        className={cn("h-5 w-5", className)}
-      />
-    );
-  }
 
   const toMediaItem = (it: GMItem): MediaItem => ({
     src: it.src,
@@ -76,6 +50,52 @@ const SpicyScreen = () => {
     poster: it.poster,
     mediaType: it.mediaType,
   });
+
+  function toGalleryItems(m: MediaProps): GalleryItem[] {
+    const photos: GalleryItem[] = m.photos.map((p) => ({
+      src: p.photoUrl,
+      alt: "photo",
+      locked: !p.isFreeAvailable,
+      mediaType: "image",
+    }));
+    const videos: GalleryItem[] = m.videos.map((v) => ({
+      src: v.videoUrl,
+      alt: "video",
+      locked: !v.isFreeAvailable,
+      mediaType: "video",
+    }));
+
+    const out: GalleryItem[] = [];
+    let i = 0,
+      j = 0;
+    while (i < photos.length || j < videos.length) {
+      if (i < photos.length) out.push(photos[i++]);
+      if (j < videos.length) out.push(videos[j++]);
+    }
+    return out;
+  }
+
+  const [secondTabSelected, setSecondTabSelected] = useState<number>(0);
+  const allMediaItems = useMemo(() => toGalleryItems(media), [media]);
+
+  const tabMap: Record<number, TabKey> = {
+    0: "all",
+    1: "photos_unlocked",
+    2: "videos",
+  };
+
+  const tabKey = tabMap[secondTabSelected] ?? "all";
+
+  const filtered = useMemo(
+    () => applyFilter(allMediaItems, tabKey),
+    [allMediaItems, tabKey],
+  );
+
+  const availableItemsForLightbox = useMemo(() => {
+    return filtered.filter((item) =>
+      isPaymentConfirmed ? true : !item.locked,
+    );
+  }, [filtered, isPaymentConfirmed]);
 
   return (
     <div className="flex h-full justify-center gap-2 bg-neutral-900 p-2 text-white xl:gap-5 rtl:space-x-reverse">
@@ -178,7 +198,20 @@ const SpicyScreen = () => {
               />
               Iniciar Conversa
             </button>
-            <button className="rounded-lg bg-gradient-to-br from-[#FF0080] to-[#7928CA] px-3 py-2 text-sm text-white transition-all duration-300">
+            <button
+              onClick={() => {
+                setLbOpen(true);
+                setLbItems(
+                  filtered
+                    .filter((item) =>
+                      isPaymentConfirmed ? true : !item.locked,
+                    )
+                    .map(toMediaItem),
+                );
+                setLbIndex(0);
+              }}
+              className="rounded-lg bg-gradient-to-br from-[#FF0080] to-[#7928CA] px-3 py-2 text-sm text-white transition-all duration-300"
+            >
               Galeria de Conteúdo
             </button>
           </div>
@@ -189,8 +222,13 @@ const SpicyScreen = () => {
           setSelectedItem={() => {}}
           setIsMediaOpen={() => {}}
           onOpenLightbox={(items, index) => {
+            // 1. Converte a lista (que agora já vem filtrada e é a correta)
             setLbItems(items.map(toMediaItem));
+
+            // 2. Define o índice (que agora já vem mapeado corretamente)
             setLbIndex(index);
+
+            // 3. Abre o Lightbox
             setLbOpen(true);
           }}
         />
@@ -207,54 +245,6 @@ const SpicyScreen = () => {
           }}
         />
       </div>
-
-      <footer className="fixed -bottom-1 hidden w-full items-center justify-center self-center px-1 md:flex md:w-max md:px-4">
-        <div className="w-full md:max-w-[520px] md:min-w-[400px]">
-          <div className="mb-2 flex items-center justify-center gap-16 rounded-t-3xl bg-gradient-to-br from-[#FF0080] to-[#7928CA] px-8 py-2 text-xs text-white/80">
-            {[
-              { label: "Chat", icon: HomeIcon, route: `/${modelId}/chat` },
-              { label: "Galeria", icon: GridIcon, route: `/${modelId}` },
-            ].map((it: ButtonProps, idx) => (
-              <button
-                key={idx}
-                onClick={() => (window.location.href = it.route)}
-                className={cn(
-                  "flex w-20 flex-col items-center justify-center gap-1 py-1 transition duration-150 hover:text-white",
-                  pathname === it.route &&
-                    "rounded-lg bg-white px-4 text-[#FF0080]",
-                )}
-              >
-                <it.icon route={it.route} className="h-5 w-5" />
-                {it.label}
-              </button>
-            ))}
-          </div>
-        </div>
-      </footer>
-
-      <footer className="fixed right-0 bottom-1 flex items-center justify-center self-center px-1 md:hidden md:w-max md:px-4">
-        <div className="w-full md:max-w-[520px] md:min-w-[400px]">
-          <div className="mb-2 flex flex-col items-center justify-center gap-2 rounded-l-3xl bg-gradient-to-br from-[#FF0080] to-[#7928CA] px-2 py-2 text-xs text-white/80">
-            {[
-              { label: "Chat", icon: HomeIcon, route: `/${modelId}/chat` },
-              { label: "Galeria", icon: GridIcon, route: `/${modelId}` },
-            ].map((it: ButtonProps, idx) => (
-              <button
-                key={idx}
-                onClick={() => (window.location.href = it.route)}
-                className={cn(
-                  "flex flex-col items-center justify-center gap-1 px-2 py-2 text-[10px] font-bold transition duration-150 hover:text-white",
-                  pathname === it.route &&
-                    "rounded-full bg-white text-[#FF0080]",
-                )}
-              >
-                <it.icon route={it.route} className="h-5 w-5" />
-                {it.label}
-              </button>
-            ))}
-          </div>
-        </div>
-      </footer>
     </div>
   );
 };

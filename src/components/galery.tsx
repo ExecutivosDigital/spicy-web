@@ -402,18 +402,38 @@ export function GalleryMosaicPager({
   const pages = React.useMemo(() => chunkAndPad(filtered, 6), [filtered]);
 
   const handleOpen = React.useCallback(
-    (absIndex: number, item: GalleryItem) => {
+    // O 'item' (segundo argumento) é a mídia exata que foi clicada
+    (absIndex: number, clickedItem: GalleryItem) => {
+      // 1. Crie a lista de mídias que o Lightbox deve ver (somente as disponíveis)
+      const availableItems = filtered.filter((item) =>
+        isPaymentConfirmed ? true : !item.locked,
+      );
+
+      // 2. Encontre o índice da mídia clicada (clickedItem) dentro da lista 'availableItems'.
+      // Usamos 'src' como um identificador único para garantir a correspondência correta.
+      const newLbIndex = availableItems.findIndex(
+        (item) => item.src === clickedItem.src,
+      );
+
       if (onOpenLightbox) {
+        // 3. Passe a lista FILTRADA e o NOVO ÍNDICE CORRETO.
         onOpenLightbox(
-          filtered.filter((item) => (isPaymentConfirmed ? true : !item.locked)),
-          absIndex,
+          availableItems, // Lista de itens para navegação do Lightbox
+          newLbIndex, // Índice correto na lista de navegação
         );
       } else {
-        setSelectedItem(item);
+        setSelectedItem(clickedItem);
         setIsMediaOpen(true);
       }
     },
-    [filtered, onOpenLightbox, setIsMediaOpen, setSelectedItem],
+    // **IMPORTANTE**: Adicione `isPaymentConfirmed` à lista de dependências!
+    [
+      filtered,
+      onOpenLightbox,
+      setIsMediaOpen,
+      setSelectedItem,
+      isPaymentConfirmed,
+    ],
   );
 
   return (
