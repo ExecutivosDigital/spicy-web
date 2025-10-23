@@ -8,6 +8,7 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import { useApiContext } from "@/context/ApiContext";
+import { useActionSheetsContext } from "@/context/actionSheetsContext";
 import { useChatContext } from "@/context/chatContext";
 import { cn } from "@/utils/cn";
 import { Icon } from "@iconify/react";
@@ -20,12 +21,9 @@ import { AudioPlayer } from "./AudioPlayer";
 
 const MessageFooter = ({ onSend }: { onSend: () => void }) => {
   const { PostAPI } = useApiContext();
-  const {
-    selectedChatId,
-    setSelectedChatMessages,
-    isPaymentConfirmed,
-    userProfile,
-  } = useChatContext();
+  const { selectedChatId, setSelectedChatMessages, userProfile } =
+    useChatContext();
+  const { openSheet, setCurrent } = useActionSheetsContext();
 
   const [message, setMessage] = useState("");
   const [audioUrl, setAudioUrl] = useState("");
@@ -400,7 +398,18 @@ const MessageFooter = ({ onSend }: { onSend: () => void }) => {
             </div>
           </div>
         </>
-        <button className="absolute -top-12 left-0 z-10 animate-[float_3s_ease-in-out_infinite] cursor-pointer rounded-md border border-[#FF0080] px-3 py-1.5 text-sm">
+        <button
+          onClick={() => {
+            if (!userProfile) {
+              setCurrent("password");
+              openSheet();
+            } else {
+              setCurrent("plans");
+              openSheet();
+            }
+          }}
+          className="absolute -top-12 right-0 z-10 animate-[float_3s_ease-in-out_infinite] cursor-pointer rounded-md border border-[#FF0080] px-3 py-1.5 text-sm"
+        >
           ❤️‍🔥 Apoiar Modelo
         </button>
       </div>
