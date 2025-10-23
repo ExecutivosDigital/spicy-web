@@ -8,7 +8,7 @@ import { useChatContext } from "@/context/chatContext";
 import { cn } from "@/utils/cn";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 type MediaItem = {
   src: string;
@@ -18,7 +18,7 @@ type MediaItem = {
 };
 
 const SpicyScreen = () => {
-  const { openSheet, setCurrent } = useActionSheetsContext();
+  const { openSheet, setCurrent, setSendToCheckout } = useActionSheetsContext();
   const { handleNavigation } = useLoadingContext();
   const { token } = useApiContext();
   const pathname = usePathname();
@@ -76,6 +76,10 @@ const SpicyScreen = () => {
     poster: it.poster,
     mediaType: it.mediaType,
   });
+
+  useEffect(() => {
+    setSendToCheckout(true);
+  }, []);
 
   return (
     <div className="flex h-full justify-center gap-2 bg-neutral-900 p-2 text-white xl:gap-5 rtl:space-x-reverse">

@@ -30,7 +30,7 @@ const loginSchema = z.object({
 
 export function StepPassword({ phone, setPhone, onNext }: Props) {
   const { setUserId, handleGetChats, modelId, handleVerify } = useChatContext();
-  const { setCurrent } = useActionSheetsContext();
+  const { setCurrent, sendToCheckout, closeSheet } = useActionSheetsContext();
   const { photos } = useModelGalleryContext();
   const { setToken } = useApiContext();
   const { PostAPI } = useApiContext();
@@ -66,7 +66,6 @@ export function StepPassword({ phone, setPhone, onNext }: Props) {
       },
       false,
     );
-    console.log("register: ", response);
     if (response.status === 200) {
       toast.success("Registrado com sucesso!");
       handleVerify();
@@ -81,6 +80,7 @@ export function StepPassword({ phone, setPhone, onNext }: Props) {
       setToken(response.body.accessToken);
       setUserId(response.body.userId);
       handleGetChats();
+      if (!sendToCheckout) return closeSheet();
       setCurrent("plans");
     } else if (response.status === 409) {
       toast.error("Telefone já cadastrado");
@@ -117,7 +117,6 @@ export function StepPassword({ phone, setPhone, onNext }: Props) {
       },
       false,
     );
-    console.log("login: ", response);
     if (response.status !== 200) {
       await handleRegister();
       return setIsLoading(false);
@@ -134,6 +133,7 @@ export function StepPassword({ phone, setPhone, onNext }: Props) {
       setToken(response.body.accessToken);
       setUserId(response.body.userId);
       handleGetChats();
+      if (!sendToCheckout) closeSheet();
       onNext("success");
       return setIsLoading(false);
     }

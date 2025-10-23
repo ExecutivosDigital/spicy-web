@@ -8,7 +8,6 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import { useApiContext } from "@/context/ApiContext";
-import { useActionSheetsContext } from "@/context/actionSheetsContext";
 import { useChatContext } from "@/context/chatContext";
 import { cn } from "@/utils/cn";
 import { Icon } from "@iconify/react";
@@ -20,7 +19,6 @@ import fixWebmDuration from "webm-duration-fix";
 import { AudioPlayer } from "./AudioPlayer";
 
 const MessageFooter = ({ onSend }: { onSend: () => void }) => {
-  const { setCurrent, openSheet } = useActionSheetsContext();
   const { PostAPI } = useApiContext();
   const {
     selectedChatId,
@@ -44,18 +42,18 @@ const MessageFooter = ({ onSend }: { onSend: () => void }) => {
   const [isRecording, setIsRecording] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  function notPayed() {
-    if (!userProfile) {
-      setCurrent("password");
-      openSheet();
-    } else {
-      setCurrent("plans");
-      openSheet();
-    }
-  }
+  // function notPayed() {
+  //   if (!userProfile) {
+  //     setCurrent("password");
+  //     openSheet();
+  //   } else {
+  //     setCurrent("plans");
+  //     openSheet();
+  //   }
+  // }
 
   const handleSendMessage = async (message: string) => {
-    if (!isPaymentConfirmed) return notPayed();
+    // if (!isPaymentConfirmed) return notPayed();
     if (!selectedChatId || !message) return;
 
     const connect = await PostAPI(
@@ -89,9 +87,6 @@ const MessageFooter = ({ onSend }: { onSend: () => void }) => {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     handleSendMessage(message);
-    if (!isPaymentConfirmed) {
-      notPayed();
-    }
   };
 
   const startRecording = async () => {
@@ -135,7 +130,7 @@ const MessageFooter = ({ onSend }: { onSend: () => void }) => {
   };
 
   async function handleSendFile() {
-    if (!isPaymentConfirmed) return notPayed();
+    // if (!isPaymentConfirmed) return notPayed();
     setIsSendingMessage(true);
     if (file) {
       const uploadFormData = new FormData();
@@ -181,9 +176,6 @@ const MessageFooter = ({ onSend }: { onSend: () => void }) => {
       }
     } else if (message.length !== 0 && !file) {
       handleSendMessage(message);
-      if (!isPaymentConfirmed) {
-        return notPayed();
-      }
     } else if (message.length === 0 && file) {
       return handleSendFile();
     }
@@ -408,6 +400,9 @@ const MessageFooter = ({ onSend }: { onSend: () => void }) => {
             </div>
           </div>
         </>
+        <button className="absolute -top-12 left-0 z-10 animate-[float_3s_ease-in-out_infinite] cursor-pointer rounded-md border border-[#FF0080] px-3 py-1.5 text-sm">
+          ❤️‍🔥 Apoiar Modelo
+        </button>
       </div>
     </>
   );

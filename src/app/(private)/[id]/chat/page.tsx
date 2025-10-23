@@ -2,6 +2,7 @@
 import { MessageProps } from "@/@types/global";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { useActionSheetsContext } from "@/context/actionSheetsContext";
 import { useChatContext } from "@/context/chatContext";
 import { ArrowDown, X } from "lucide-react";
 import Image from "next/image";
@@ -30,6 +31,7 @@ const ChatPage = ({ params }: { params: Promise<{ id: string }> }) => {
     selectedChat,
     setModelId,
   } = useChatContext();
+  const { setSendToCheckout } = useActionSheetsContext();
 
   const [isMediaOpen, setIsMediaOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<GalleryItem | null>(null);
@@ -38,6 +40,10 @@ const ChatPage = ({ params }: { params: Promise<{ id: string }> }) => {
   const lastMsgIdRef = useRef<string | null>(null);
   const containerRef = useRef(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    setSendToCheckout(false);
+  }, []);
 
   const handleScrollToBottom = () => {
     setIsAutoScrollEnabled(true);
